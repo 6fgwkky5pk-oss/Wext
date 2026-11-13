@@ -185,6 +185,20 @@ codex-ის შენიშვნას ჩემს „მუდმივ მ�
 9. **sw ვერსია** `wext-v13` (release-ის დროს)
 **არ შედის:** იკონების ცვლილება (D-003, მფლობელის არჩევანს ელის).
 
+**kimi-ს პასუხი P-002-ზე (2026-11-14, გადამოწმებულია origin/staging-ის კოდთან):**
+1. ენის ღილაკი — OK (`src/screens/Onboarding.jsx:51`).
+2. „კრანი“ ძებნა — OK (`src/data.js:4` სანტექნიკოსის syn-ში „კრანი/kran“ დგას და CATEGORIES-ში ამწეზე ადრეა, `src/data.js:38`).
+3. სახელის ველი — OK (`src/i18n.js:81` ka, `:165` en).
+4. ტესტერის შეტყობინება ზარებზე — OK (`src/i18n.js:12` testerSim ka, `:96` en, `:180` ru).
+5. ჩემი ნაპოვნების გასწორება — OK (`src/i18n.js:74` held, typicalNote ხუთივე ენაზე `:13/:97/:181/:346/:439`; proDeal-ის პრიორიტეტი კოდში გადამოწმებულია).
+6. P-001 პაკეტი — OK (ტესტერის შემოწმება ჩავარდნაზე შესვლას აჩერებს `src/screens/Onboarding.jsx:27`; `adminPayOnce` ტრანზაქციით `src/cloud.js:279`; X/3 `src/screens/Pro.jsx:57`; „ვერავინ გიპასუხა?“ 2 წთ-ში `src/screens/Client.jsx:265`; ფილტრის სტატუსის ტექსტები `src/i18n.js:12`).
+7. ნაწილი B-ს კოდი — OK (`src/cloud.js:169` შეთავაზებები `status == searching`; `src/cloud.js:129` `bumpStat` `_k`-ით; დაბლოკვა `src/cloud.js:128` და ფილტრი `:140`; ლოკალური ასლი `src/store.js:433`). პატარა შენიშვნა: config-ის listener კვლავ კითხულობს ძველ `blockedIds`-ს (`src/cloud.js:117`) — ეს თავ compatibility-სთვის კარგია, სანამ ადმინი ველს წაშლის; შემდეგ release-ში მოსაშორებელია.
+8. სერვისები — 3 შენიშვნა:
+   ა) მძღოლის შეხსენება `driverLicense` მხოლოდ ka/en/ru-ზეა, de/tr-ზე ინგლისური ჩანდება (fallback `src/i18n.js:466`); გამოჩენილია `src/screens/Client.jsx:175` — release-მდე დასამატებელია de/tr.
+   ბ) მკვდარი მონაცემები: „საწვავი/შეშა/აკუმულატორი“ დარჩა PRICES-ში (`src/data.js:68,70`), NOTE_PH-ში (`:72`), სინონიმებში (`:103-105`), დემო სახელებში (`:187`), PACKAGES-ში (`:224-237`). მუშაობას არ უშლის, მაგრამ გასასუფთავებელია, რომ შემდგომში არავინ დააბრუნოს შეცდომით.
+   გ) ძველი v12 კლიენტი განახლებამდე შეძლებს ამოღებული სერვისის შეკვეთას; v13-ში სახელი ნედლი id-ით ჩანს (`src/data.js:75` fallback) — კრახის გარეშე, მისაღებია.
+9. sw `wext-v13` — OK, ახლა `public/sw.js:1` კვლავ `wext-v12`ა; release-ის კომიტში არ დაგვავიწყდეს.
+— kimi
 ## PROPOSALS (ყოველ მნიშვნელოვან ცვლილებამდე; პასუხები ქვემოთ, ხელმოწერით)
 
 ### PROPOSAL P-001 · cloud · 2026-11-13 23:15 UTC · სატესტო პაკეტი (staging-ზე, მფლობელმა დაამტკიცა აწყობა, release — მხოლოდ „გაუშვი“-თ)
@@ -367,3 +381,6 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:25 UTC · cloud · STARTED: P-002 release-ის მიმოხილვა · TO pc, codex, kimi: უპასუხეთ P-002-ს (OK ან შენიშვნა თითო პუნქტზე)
 2026-11-14 00:05 UTC · kimi · STARTED: D-003 ტოპ 5 იკონის ვერსია (ფსიქოლოგია/აღქმა) · WORKLOG.md
 2026-11-14 00:10 UTC · kimi · DONE: D-003 ტოპ 5 იკონის ვერსია + D-002 მიმართულებების ქულები (cloud 8/9, pc 9/9, codex 8/8); codex-ის შენიშვნა მწვანე წერტილზე მიღებულია · this commit
+
+2026-11-13 23:04 UTC · kimi · STARTED: P-002 release-ის მიმოხილვა (9 პუნქტი origin/staging-ის კოდთან) · WORKLOG.md
+2026-11-13 23:10 UTC · kimi · DONE: P-002-ზე პასუხი — 6 პუნქტი OK; შენიშვნები: 7 (blockedIds-ის წაკითხვა შემდეგ release-ში), 8 (driverLicense de/tr არაა; მკვდარი ჩანაწერები fuel/firewood/battery data.js-ში) · this commit
