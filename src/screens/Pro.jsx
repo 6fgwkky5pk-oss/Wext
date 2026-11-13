@@ -10,7 +10,7 @@ export function ProHome() {
   const user = useStore(s => s.user)
   const jobs = useStore(s => s.proJobs)
   const pro = user.pro
-  const active = jobs.filter(j => ['accepted', 'arrived'].includes(j.status))
+  const active = jobs.filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status))
   const todayN = jobs.filter(j => new Date(j.acceptedAt).toDateString() === new Date().toDateString()).length
 
   if (!pro.registered) return <ProJoin />
@@ -37,9 +37,14 @@ export function ProHome() {
           <a className="btn light sm" style={{ width: '100%', textDecoration: 'none' }} href={`https://www.google.com/maps/dir/?api=1&destination=${j.pos[0]},${j.pos[1]}`} target="_blank" rel="noreferrer"><Icon n="nav" s={18} />{t('navigate')}</a>
           <button className="btn yellow sm" style={{ width: '100%' }} onClick={() => nav.go('chat', { threadId: j.threadId })}><Icon n="chat" s={18} />{t('chat')}</button>
         </div>
-        {j.status === 'accepted'
-          ? <button className="btn green" style={{ marginTop: 10 }} onClick={() => api.proArrived(j.id)}><Icon n="pin" />{t('iArrived')}</button>
-          : <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proDone(j.id)}><Icon n="check" />{t('jobDone')}</button>}
+        {j.status === 'agreed'
+          ? <><div className="badge g" style={{ marginTop: 10 }}>🤝 {t('agreedOk')}</div><button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proDone(j.id)}><Icon n="check" />{t('jobDone')}</button></>
+          : <>
+            {j.status === 'accepted' && <button className="btn light" style={{ marginTop: 10 }} onClick={() => api.proArrived(j.id)}><Icon n="pin" s={18} />{t('iArrived')}</button>}
+            <div className="grid2 dealrow" style={{ marginTop: 10 }}>
+              <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.proNoDeal(j.id)}>✕ {t('noDeal')}</button>
+              <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
+            </div></>}
       </div>)}
 
       <div className="row" style={{ gap: 10 }}>

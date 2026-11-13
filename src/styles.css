@@ -397,3 +397,4 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .tgl i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tgl.on{background:var(--green)}.tgl.on i{left:21px}
 .app.big{zoom:1.15}
+.dealrow .btn{font-size:14.5px;padding:0 8px;gap:5px;min-width:0;white-space:nowrap}

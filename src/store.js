@@ -226,6 +226,11 @@ export const api = {
     await payments.release(p.id)
     set(s => ({ payments: s.payments.map(x => x.id === payId ? { ...x, status: 'released' } : x) }))
   },
+  // outcome buttons. The fee is decided by system facts (call >20s, chat reply, GPS arrival), never by these buttons.
+  agree(reqId) { api._updReq(reqId, { status: 'agreed', agreedAt: now(), outcomeBy: 'client' }); api.registerContact(reqId, 'agreed') },
+  noDeal(reqId) { api._updReq(reqId, { status: 'nodeal', closedAt: now(), outcomeBy: 'client' }) },
+  proAgree(jobId) { const p = { status: 'agreed', agreedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })) },
+  proNoDeal(jobId) { const p = { status: 'nodeal', closedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   markArrived(reqId) { api._updReq(reqId, { status: 'arrived', arrivedAt: now() }); api.registerContact(reqId, 'arrived') },
   finish(reqId, rating) { api._updReq(reqId, { status: 'done', rating }) },
 

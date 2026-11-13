@@ -21,7 +21,7 @@ export function Home({ install }) {
   const [q, setQ] = useState('')
   const res = useMemo(() => searchCats(q, lang), [q, lang])
   const p = priceFor('handyman')
-  const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived'].includes(r.status)))
+  const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status)))
   const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, blocked])
   const eta = near.length ? Math.max(5, Math.round(near[0].dist * 3 + 5)) : null
   const featured = useMemo(() => { const seen = new Set(); return near.filter(x => !seen.has(x.cat) && seen.add(x.cat)).slice(0, 8) }, [near])
@@ -31,7 +31,7 @@ export function Home({ install }) {
   const G = id => GROUPS.find(g => g.id === id)
   const SUB = { handy: 'groupHandySub', clean: 'groupCleanSub', ride: 'groupRideSub', land: 'groupLandSub', machine: 'groupMachineSub', move: 'groupMoveSub', road: 'groupRoadSub' }
   const stats = useStore(s => s.catStats)
-  const last = useStore(s => s.requests.find(r => r.proName && ['accepted', 'arrived', 'done'].includes(r.status)))
+  const last = useStore(s => s.requests.find(r => r.proName && ['accepted', 'arrived', 'agreed', 'done'].includes(r.status)))
   const order = useMemo(() => groupOrder(stats || {}), [stats])
   const top = order[0], rest = order.slice(1)
   const open = id => { api.bump(null, id); id === 'ride' ? nav.go('rides') : nav.go('call', { group: id }) }
@@ -132,6 +132,8 @@ export function CallNow({ cat: initCat, group }) {
   }
 
   const send = async () => {
+    const live = getState().requests.find(r => r.cat === cat && ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status))
+    if (live) { nav.replace('request', { id: live.id }); return }
     if ((!bundle || brig) && !user.card) { setPay(true); return }
     const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
     nav.replace('request', { id })
@@ -243,6 +245,14 @@ export function RequestTrack({ id }) {
     </div>
   </div>
 
+  if (r.status === 'nodeal' || r.status === 'replaced') return <div className="scroll nopad">
+    <Top title={catName(r.cat, lang)} onBack={nav.back} />
+    <div className="pad col">
+      <div className="empty"><div className="e">🤷</div><b>{t('noDealMsg')}</b></div>
+      <div className="hold"><span>🔒</span><span>{t('noDealFee')}</span></div>
+      <button className="btn primary" onClick={() => nav.replace('call', { cat: r.cat })}>{t('otherPro')}</button>
+    </div>
+  </div>
   if (r.status === 'nopros' || r.status === 'cancelled' || r.status === 'expired') return <div className="scroll nopad">
     <Top title={catName(r.cat, lang)} onBack={nav.back} />
     <div className="empty"><div className="e">{r.status === 'nopros' ? '😔' : '✖️'}</div>{r.status === 'nopros' ? t('noPros') : t('cancel')}
@@ -258,7 +268,7 @@ export function RequestTrack({ id }) {
       </div>
       <div className="sheet">
         <div className="grab" />
-        <div className="row"><span className="badge g" style={{ fontSize: 13, padding: '6px 10px' }}>✓ {r.status === 'arrived' ? t('arrivedOk') : r.status === 'done' ? t('jobDone') : t('accepted')}</span>
+        <div className="row"><span className="badge g" style={{ fontSize: 13, padding: '6px 10px' }}>✓ {r.status === 'agreed' ? '🤝 ' + t('agreedOk') : r.status === 'arrived' ? t('arrivedOk') : r.status === 'done' ? t('jobDone') : t('accepted')}</span>
           {r.status === 'accepted' && <span className="small b mute">{t('onTheWay', { m: r.eta })}</span>}</div>
         <div className="row" style={{ marginTop: 16, gap: 14 }}>
           <Avatar p={pro} lg />
@@ -272,8 +282,12 @@ export function RequestTrack({ id }) {
           <span className="small b">{t('fee')}</span>
           <span className="row" style={{ gap: 8 }}><b>{money(pay.amount)}</b><span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{t(pay.status)}</span></span>
         </div>}
+        {['accepted', 'arrived'].includes(r.status) && <div className="grid2 dealrow" style={{ marginTop: 12 }}>
+          <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.noDeal(id)}>✕ {t('noDeal')}</button>
+          <button className="btn green" onClick={() => { api.agree(id); setRate(false) }}>🤝 {t('agreed')}</button>
+        </div>}
         <div className="col" style={{ marginTop: 14 }}>
-          {(r.status === 'arrived') && <button className="btn primary" onClick={() => setRate(true)}><Icon n="star" />{t('rate')}</button>}
+          {['arrived', 'agreed'].includes(r.status) && <button className="btn primary" onClick={() => setRate(true)}><Icon n="star" />{t('rate')}</button>}
           <button className="btn outline" onClick={() => setComp(true)} style={{ color: 'var(--red)' }}><Icon n="flag" s={18} />{t('complain')}</button>
         </div>
       </div>

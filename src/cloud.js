@@ -101,7 +101,7 @@ function listenUser() {
       if (r.threadId) listenThread(r.threadId, r.id, 'client')
       const old = prev.find(x => x.id === r.id)
       if (r.status === 'accepted' && old?.status === 'searching') ctx.ping('soft')
-      if (r.status === 'arrived' && !r.contacted) ctx.api.registerContact(r.id, 'arrived')
+      if (['arrived', 'agreed'].includes(r.status) && !r.contacted) ctx.api.registerContact(r.id, r.status)
     })
   }))
   // jobs offered to me (online → full screen, offline → SMS-style banner)
@@ -134,6 +134,9 @@ function listenUser() {
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)
+    // one live card per client+service: a newer request from the same client replaces the older one
+    const seen = new Set()
+    jobs.forEach(j => { if (!['accepted', 'arrived', 'agreed'].includes(j.status)) return; const k = j.clientId + j.cat; if (seen.has(k)) { j.status = 'replaced'; updateDoc(doc(db, 'requests', j.id), { status: 'replaced' }).catch(() => {}) } else seen.add(k) })
     ctx.set({ proJobs: jobs })
   }))
   // boards

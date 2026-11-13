@@ -7,6 +7,7 @@ export const LANGS = [
 ]
 
 const ka = {
+  agreed: 'შევთანხმდით', noDeal: 'ვერ შევთანხმდით', agreedOk: 'შეთანხმებულია', noDealMsg: 'ვერ შეთანხმდით. სხვა ხელოსანს მოვძებნით.', noDealFee: 'თანხა ბრუნდება მხოლოდ მაშინ, თუ ხელოსანი არ დაგიკავშირდა. თუ დაგიკავშირდა, იმავე ჯავშნით 24 საათში კიდევ 2 ხელოსანს გამოიძახებ. პრობლემის შემთხვევაში დააჭირე „საჩივარი", ადმინი გადაამოწმებს.', otherPro: 'სხვა ხელოსნის გამოძახება', 
   addPhoto: 'ფოტო', sayIt: 'თქვი ხმით', recStop: 'ჩაწერა… შეჩერება ({s})', noMic: 'მიკროფონი არ ჩაირთო', typical: 'საშუალო ფასი', typicalNote: 'ამას ხელოსანს პირდაპირ უხდი', perH: 'საათი', perD: 'დღე', perM2: 'მ²', perPc: 'ცალი', perM3: 'მ³', again: 'ისევ {name}', againSub: '{cat} · ერთი შეხებით', bigText: 'დიდი ასოები', callBig: 'დარეკე', orChat: 'ან მიწერე', voiceNote: 'ხმოვანი', photo: 'ფოტო', 
   smsSent: 'SMS გაეგზავნა კიდევ {n} ხელოსანს, ვინც ახლა ხაზგარეშეა',
   smsJob: 'ახალი სამუშაო: {cat}, {d} კმ-ში. აიღებ?',
@@ -88,6 +89,7 @@ const ka = {
 }
 
 const en = {
+  agreed: 'We agreed', noDeal: 'No deal', agreedOk: 'Agreed', noDealMsg: 'No deal. We will find another pro.', noDealFee: 'The fee is refunded only if the pro never contacted you. If they did, the same booking covers 2 more pros within 24 hours. If something went wrong, tap “Complain” and an admin will check.', otherPro: 'Call another pro', 
   addPhoto: 'Photo', sayIt: 'Say it', recStop: 'Recording… stop ({s})', noMic: 'Microphone is not available', typical: 'Typical price', typicalNote: 'you pay this to the pro directly', perH: 'hour', perD: 'day', perM2: 'm²', perPc: 'pc', perM3: 'm³', again: '{name} again', againSub: '{cat} · one tap', bigText: 'Large text', callBig: 'Call', orChat: 'or write', voiceNote: 'Voice', photo: 'Photo', 
   smsSent: 'SMS sent to {n} more pros who are offline',
   smsJob: 'New job: {cat}, {d} km away. Take it?',
@@ -169,6 +171,7 @@ const en = {
 }
 
 const ru = {
+  agreed: 'Договорились', noDeal: 'Не договорились', agreedOk: 'Договорились', noDealMsg: 'Не договорились. Найдём другого мастера.', noDealFee: 'Деньги возвращаются, только если мастер не связался с вами. Если связался, той же бронью можно вызвать ещё 2 мастеров за 24 часа. Если что-то не так — нажмите «Пожаловаться», админ проверит.', otherPro: 'Вызвать другого мастера', 
   addPhoto: 'Фото', sayIt: 'Скажи голосом', recStop: 'Запись… стоп ({s})', noMic: 'Микрофон недоступен', typical: 'Обычная цена', typicalNote: 'платите мастеру напрямую', perH: 'час', perD: 'день', perM2: 'м²', perPc: 'шт', perM3: 'м³', again: 'Снова {name}', againSub: '{cat} · одно касание', bigText: 'Крупный текст', callBig: 'Позвонить', orChat: 'или написать', voiceNote: 'Голос', photo: 'Фото', 
   smsSent: 'SMS отправлено ещё {n} мастерам не на линии',
   smsJob: 'Новая работа: {cat}, {d} км. Возьмёте?',
