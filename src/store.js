@@ -252,10 +252,12 @@ export const api = {
     set(s => ({ payments: s.payments.map(x => x.id === payId ? { ...x, status: 'released' } : x) }))
   },
   // outcome buttons. The fee is decided by system facts (call >20s, chat reply, GPS arrival), never by these buttons.
-  agree(reqId) { api._updReq(reqId, { status: 'agreed', agreedAt: now(), outcomeBy: 'client' }); api.registerContact(reqId, 'agreed') },
-  noDeal(reqId) { api._updReq(reqId, { status: 'nodeal', closedAt: now(), outcomeBy: 'client' }) },
-  proAgree(jobId) { const p = { status: 'agreed', agreedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })) },
-  proNoDeal(jobId) { const p = { status: 'nodeal', closedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
+  // each side presses "agreed" for itself; the deal counts ('agreed') only when both have pressed
+  agree(reqId) { const r = api._req(reqId) || {}; const both = r.proDeal === 'yes'
+    api._updReq(reqId, { clientDeal: 'yes', clientDealAt: now(), ...(both ? { status: 'agreed', agreedAt: now() } : {}) }); api.registerContact(reqId, 'agreed') },
+  noDeal(reqId) { api._updReq(reqId, { clientDeal: 'no', status: 'nodeal', closedAt: now(), outcomeBy: 'client' }) },
+  proAgree(jobId) { const j = (state.proJobs || []).find(x => x.id === jobId) || {}; const p = { proDeal: 'yes', proDealAt: now(), ...(j.clientDeal === 'yes' ? { status: 'agreed', agreedAt: now() } : {}) }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })) },
+  proNoDeal(jobId) { const p = { proDeal: 'no', status: 'nodeal', closedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   markArrived(reqId) { api._updReq(reqId, { status: 'arrived', arrivedAt: now() }); api.registerContact(reqId, 'arrived') },
   finish(reqId, rating) { api._updReq(reqId, { status: 'done', rating }) },
   // client says the work is finished (rating is asked after this, never before)

@@ -66,6 +66,8 @@ export async function onLogin() {
   pushProfile()
   listenUser()
 }
+// both pressed 'agreed' at the same moment: neither saw the other's yes, so the listener closes the deal
+const bothYes = r => r.clientDeal === 'yes' && r.proDeal === 'yes' && ['accepted', 'arrived'].includes(r.status)
 export const normPhone = ph => String(ph || '').replace(/\D/g, '').slice(-9)
 let myIds = []
 export const callFrom = (c, id) => !!c && !!id && (c.from === id || (c.fromIds || []).includes(id))
@@ -73,12 +75,21 @@ export const isMe = id => !!id && (id === uid || myIds.includes(id))
 
 // One phone number = one person. Any earlier account with the same number (other phone, reinstalled app)
 // is folded into this one: profile, worker data, request/job history, chats.
+// Lookup key for a phone: SHA-256 of a fixed prefix + last 9 digits. The number itself is never stored there.
+async function phoneKey(p9) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('wext-phone:' + p9))
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')
+}
+// phones/{key} = { uids: [every account id that logged in with this number], uid: latest, at }.
+// Readable only by exact key (rules: get, no list), so nobody can download the list of numbers.
+// We never write to other people's /users docs: old accounts are hidden by the "aliases" of the newest one (see listenUser).
 async function restoreByPhone(phone, p9) {
   try {
-    const ids = new Set()
-    for (const q of [query(collection(db, 'private'), where('p9', '==', p9)), query(collection(db, 'private'), where('phone', '==', phone))]) {
-      const snap = await getDocs(q); snap.forEach(d => d.id !== uid && ids.add(d.id))
-    }
+    const ref = doc(db, 'phones', await phoneKey(p9))
+    const ph = (await getDoc(ref)).data() || {}
+    const ids = new Set((ph.uids || []).filter(id => id && id !== uid))
+    const known = new Set(ctx.get().user.aliases || [])
+    setDoc(ref, { uids: [...new Set([...(ph.uids || []), uid])].slice(-10), uid, at: Date.now() }).catch(e => console.warn('phones', e.code || e))
     if (!ids.size) return
     let best = null; const all = new Set()
     for (const id of ids) {
@@ -88,16 +99,13 @@ async function restoreByPhone(phone, p9) {
       if (!best || score > best.score) best = { id, x, score }
     }
     if (!best) return
-    const cur = ctx.get().user
-    const known = new Set(cur.aliases || [])
     const fresh = [...all].filter(a => !known.has(a))
     if (!fresh.length) return
     const x = best.x
-    ctx.set(s => ({ user: { ...s.user, aliases: [...known, ...fresh], restoredFrom: best.id,
+    ctx.set(s => ({ user: { ...s.user, aliases: [...known, ...fresh].slice(-20), restoredFrom: best.id,
       name: x.name || s.user.name, hue: x.hue ?? s.user.hue,
       pro: x.pro?.registered ? { ...s.user.pro, ...x.pro, online: true } : s.user.pro } }))
-    fresh.forEach(id => updateDoc(doc(db, 'users', id), { movedTo: uid, 'pro.online': false, 'pro.registered': false }).catch(() => {}))
-  } catch (e) { console.warn('restore', e) }
+  } catch (e) { console.warn('restore', e.code || e) }
 }
 
 // ---------- listeners ----------
@@ -122,8 +130,12 @@ function listenUser() {
   sub('pros', onSnapshot(query(collection(db, 'users'), where('region', '==', region)), snap => {
     const now = Date.now()
     const pros = []
-    snap.forEach(d => {
-      const u = d.data(); if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos) return
+    // an account folded into a newer one (same phone, listed in its aliases) is not shown and gets no offers
+    const docs = []; snap.forEach(d => docs.push([d.id, d.data()]))
+    const newer = {}; docs.forEach(([, u]) => (u.aliases || []).forEach(a => { newer[a] = Math.max(newer[a] || 0, u.updatedAt || 0) }))
+    docs.forEach(([id, u]) => {
+      const d = { id }
+      if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || (newer[id] || 0) > (u.updatedAt || 0)) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
@@ -147,6 +159,7 @@ function listenUser() {
       const old = prev.find(x => x.id === r.id)
       if (r.status === 'accepted' && old?.status === 'searching') ctx.ping('soft')
       if (['arrived', 'agreed'].includes(r.status) && !r.contacted) ctx.api.registerContact(r.id, r.status)
+      if (bothYes(r)) updateDoc(doc(db, 'requests', r.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
     })
   }))
   // jobs offered to me (online → full screen, offline → SMS-style banner)
@@ -175,8 +188,9 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
+      if (bothYes(r)) updateDoc(doc(db, 'requests', d.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)
     // one live card per client+service: a newer request from the same client replaces the older one
