@@ -16,13 +16,20 @@ service cloud.firestore {
         || (p[0] == 'p' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/projects/$(p[1])).data.ownerId))
         || (p[0] == 'd' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/rides/$(p[1])).data.driverId));
     }
+    function statsOk() {
+      let old = resource == null ? {} : resource.data;
+      return request.resource.data.keys().hasAll(old.keys()) && request.resource.data.diff(old).affectedKeys().size() <= 3;
+    }
     function inJob(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null); }
 
     match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid) && !(request.resource.data.get('pro', {}).get('verified', false) == true) || isAdmin(); }
     match /private/{uid}  { allow read, write: if me(uid); }
     match /config/{id}    { allow read: if true; allow write: if isAdmin(); } // admin uids = documents in /admins/{uid} (create them by hand in the Firebase console)
     match /admins/{uid}   { allow read: if me(uid); }
-    match /stats/{id}     { allow read: if signedIn(); allow write: if signedIn(); }
+    // stats/cats = demand counters (everyone reads); stats/misses = searches that found nothing (people's own words: admin only).
+    // Users may only add/raise up to 3 counters per write and never delete them; deleting is for admins.
+    match /stats/{id}     { allow read: if signedIn() && (id == 'cats' || isAdmin());
+      allow write: if isAdmin() || (signedIn() && id in ['cats', 'misses'] && statsOk()); }
     match /requests/{id} {
       allow read: if signedIn() && (reqSide(resource.data) || isAdmin());
       allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;

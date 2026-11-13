@@ -33,7 +33,7 @@ To check on real phones: two phones in Telavi, compare the km shown with Google 
 
 ## 3. Other pending
 - Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
-- ✅ Firestore rules deployed 2026-11-13 (see Repo privacy note). Next: `stats/misses` (search terms people typed) is readable by every signed-in user; make it admin-only. `stats` is writable by anyone (stats can be spoiled).
+- ✅ Firestore rules deployed 2026-11-13 (see Repo privacy note). ✅ Also deployed 2026-11-13: `stats/misses` admin-only; users may only add/raise up to 3 stats counters per write, never delete. Live rules = `firestore.rules` on `pc` (main gets the file on the next release).
 - ✅ Admin PIN removed from the client (`pc`, 2026-11-13). Admin = only `/admins/{uid}`. ⚠️ Live `main` still has the PIN path and the old rules (any signed-in user can write `config`): fixed only after Alexander creates his `/admins/{uid}` doc, the rules are deployed and `pc` is released.
 - Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
 - My-pros tab: the call button reuses the old request thread; verify after a job is finished.
