@@ -59,3 +59,7 @@ Status 2026-11-13 on `pc`: early-ICE-candidate fix, call release on early end, d
 - Apple Developer Program: $99 per year (https://developer.apple.com/programs/).
 - Google Play developer account: $25 one-time (https://support.google.com/googleplay/android-developer/answer/6112435).
 Rules: Alexander opens every account and enters the card himself; keys/secrets only in server or environment variables, never in chat or in git.
+
+## Repo privacy (decided with Alexander, 2026-11-13)
+The repo stays **public for now**. Next stage: make it private. Two ways: GitHub Pro (~$4/month, Alexander opens it with the company card), or move hosting to Firebase Hosting and then make the repo private. Until then, keep the rule: no secrets, PINs, keys or real phone numbers in git.
+Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `pc` are **not deployed yet**.
