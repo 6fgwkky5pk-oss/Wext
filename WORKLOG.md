@@ -92,3 +92,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:50 UTC · cloud · DONE: v12 live (main 31e6884, deploy run success, served sw = wext-v12). Admin PIN: none in code, admin = /admins only, nothing to replace. Rules deploy: waiting for owner OK
 2026-11-13 21:55 UTC · cloud · DONE: shared sources for all AIs: AI_CONTEXT.md, DECISIONS.md, SUGGESTIONS.md; CLAUDE.md reads them at start
 2026-11-13 22:00 UTC · cloud · DONE: AGENTS.md for kimi/codex (own branches, roles, never push main/staging/pc); roles added here
+2026-11-13 21:47 UTC · kimi · STARTED: independent review — security, privacy, money rules, wording, edge cases · firestore.rules, src/cloud.js, src/store.js, src/screens/*, src/i18n.js
