@@ -14,23 +14,24 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - **Verified:** order flow offer → accept → both agree → done → rating card, and client no-deal → note to the worker: two headless browser phones on the v12 build against live Firebase (test location far from Georgia, fake numbers); the same flow plus rules in the emulator (pc, 86 checks).
 - **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
 
-## DISCUSSION: add / remove (open 2026-11-13, for the owner)
-**First read AI_CONTEXT.md end to end (section "Full structure, start to end"), then answer.** Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. **Also say your answer in your own session**, so the owner can compare it with this file. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
+## DISCUSSION: რა დავამატოთ / რა ამოვიღოთ (გახსნილია 2026-11-13, მფლობელისთვის)
+**ჯერ წაიკითხე AI_CONTEXT.md ბოლომდე (ნაწილი „Full structure, start to end“), მერე უპასუხე. ქართულად.**
+კითხვა ყველა აგენტს (cloud, pc, codex, kimi): **5 რამ, რაც უნდა დავამატოთ; 5 რამ, რაც უნდა ამოვიღოთ ან გავამარტივოთ; და ერთი ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის.** ჩაწერე შენი ჩანაწერი ქვემოთ, ხელმოწერით, პირადი ინფორმაციის გარეშე. **იგივე პასუხი თქვი შენს სესიაშიც**, რომ მფლობელმა შეადაროს. Codex/Kimi: push გაუკეთე შენს ბრანჩს (`codex` / `kimi`).
 
 ### cloud (Claude, staging)
-Add:
-1. A neutral event counter per category (request created / accepted / seconds to accept) so the scale-up metric (S-008) can be measured from day one.
-2. When a call fails or nobody answers: one tap "write in chat instead" with the request text pre-filled.
-3. Admin: a "new today" list (new users, new bug reports, no-deal flags) on the first admin tab.
-4. Bug report: optional screenshot attach (the hardest bugs are hard to describe in words).
-5. A clear "the worker is coming" status line for the client with the time the worker pressed "on my way".
-Remove / simplify:
-1. In test mode, skip the payment sheet entirely (one tap less, it charges nothing anyway).
-2. Hide the 7 extra languages that were never checked by a native speaker; keep ka/en/ru/de/tr.
-3. Hide the field-work board (projects) during the test; keep ride-along as decided.
-4. Brigade option: hide until a real brigade signs up.
-5. Fewer words on the worker's job card (step chips + one main button is enough; drop repeated hints).
-Biggest risk: testers believe calls are broken because nothing rings while the app is closed or the screen is locked. Mitigation: the tester notice (done on staging), and test calls on two real phones before inviting people.
+დავამატოთ:
+1. ნეიტრალური მთვლელი კატეგორიების მიხედვით (გამოძახება შეიქმნა / მიიღეს / რამდენ წამში), რომ პირველივე დღიდან გავზომოთ, ღირს თუ არა სხვა ქალაქში გადასვლა (S-008).
+2. როცა ზარი ვერ შედგა ან არ უპასუხეს: ერთი ღილაკი „მიწერე ჩატში“, შეკვეთის ტექსტით.
+3. ადმინში „დღეს ახალი“: ახალი მომხმარებლები, ახალი შეცდომები, „ვერ შევთანხმდით“ ნიშნები პირველ გვერდზე.
+4. შეცდომის შეტყობინებაზე სურათის მიმაგრება (არასავალდებულო).
+5. კლიენტისთვის მკაფიო ხაზი „ხელოსანი გზაშია“ და რომელ საათზე გამოვიდა.
+ამოვიღოთ / გავამარტივოთ:
+1. სატესტო რეჟიმში გადახდის ფანჯარა საერთოდ გამოვტოვოთ (ფულს მაინც არ იღებს).
+2. 7 დამატებითი ენა დავმალოთ, რომელიც მშობლიურმა ენაზე მოლაპარაკემ არ შეამოწმა; დარჩეს ka/en/ru/de/tr.
+3. ტესტის დროს დავმალოთ საველე სამუშაოების დაფა; გამაყოლე დარჩეს, როგორც გადაწყდა.
+4. ბრიგადის არჩევანი დავმალოთ, სანამ რეალური ბრიგადა არ დარეგისტრირდება.
+5. ხელოსნის სამუშაო ბარათზე ნაკლები ტექსტი (ნაბიჯები + ერთი მთავარი ღილაკი საკმარისია).
+ყველაზე დიდი რისკი: ტესტერები იფიქრებენ, რომ ზარები არ მუშაობს, რადგან აპი დახურულზე ან ჩაკეტილ ეკრანზე არაფერი რეკავს. გამოსავალი: ტესტერის ახსნაში ეს წერია (staging), და ხალხის მოწვევამდე ზარი ორ რეალურ ტელეფონზე უნდა შემოწმდეს.
 
 ## Rule (both agents, every step)
 1. Before every step: `git fetch`, read this file on **both** `origin/staging` and `origin/pc`, act on open **TO:** items for you.
@@ -129,3 +130,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:20 UTC · cloud · STARTED: DISCUSSION add/remove opened, cloud entry written · TO pc, codex, kimi: add your entries
 2026-11-13 22:30 UTC · cloud · DONE: kimi review merged into SUGGESTIONS as S-010..S-023 with status; fixed on staging: proDeal precedence bug (S-014), 'held' shown as 'on hold, not charged' (S-015), typical price = estimate in en/ru/de/tr (S-016), duplicate availNow keys (S-023)
 2026-11-13 22:40 UTC · cloud · DONE: AI_CONTEXT.md full structure (roles, order lifecycle, screens, data, files, branches, verified); pro-agrees-first flow tested on two phones (passes) · discussion starts after reading it
+2026-11-13 22:45 UTC · cloud · DONE: ენის წესი (ყველა ჩანაწერი ქართულად) AGENTS.md-ში და CLAUDE.md-ში; DISCUSSION ქართულად, cloud-ის ჩანაწერი ქართულად

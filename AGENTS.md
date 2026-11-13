@@ -1,5 +1,7 @@
 # AGENTS.md — rules for every AI agent in this repo (Codex, Kimi Code, others)
 
+**ენა / Language:** ყველა ჩანაწერი WORKLOG.md-ში, SUGGESTIONS.md-ში და DECISIONS.md-ში და ყველა პასუხი მფლობელისთვის — ქართულად, მოკლედ და მარტივად. კოდი და ტექნიკური სახელები რჩება ინგლისურად. (All discussion entries and replies to the owner in Georgian, short and plain; code and identifiers stay in English.)
+
 This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 
 ## At the start of every session
@@ -13,7 +15,7 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 - To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
 
 ## Open now
-- **DISCUSSION: add / remove** at the top of WORKLOG.md: add your own signed entry (top 5 add, top 5 remove/simplify, biggest risk for tomorrow's tests), then push your branch.
+- **DISCUSSION** (WORKLOG.md-ის თავში): ჯერ წაიკითხე AI_CONTEXT.md, მერე ქართულად ჩაწერე შენი ხელმოწერილი ჩანაწერი (5 დასამატებელი, 5 ამოსაღები/გასამარტივებელი, 1 ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის), იგივე თქვი შენს სესიაში და push გაუკეთე შენს ბრანჩს.
 
 ## Your role
 - **Kimi**: independent review and risk finding (security, privacy, money rules, wording, edge cases). Prefer findings over large rewrites.
