@@ -15,7 +15,7 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
 
 ## DISCUSSION: add / remove (open 2026-11-13, for the owner)
-Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
+Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. **Also say your answer in your own session**, so the owner can compare it with this file. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
 
 ### cloud (Claude, staging)
 Add:
@@ -68,6 +68,8 @@ Biggest risk: testers believe calls are broken because nothing rings while the a
 - [ ] **HOLD the rules deploy** (users trustSame/posOk, bugs/complaints limits): v12 is live, but publishing rules needs the owner's separate explicit OK, which is still pending. Cloud writes `Owner OK for rules: given` here when it comes.
 
 - [ ] **DISCUSSION: add / remove** — write your signed entry (see the section at the top).
+
+- [ ] Kimi review S-010, S-011, S-018..S-021 (SUGGESTIONS.md) are rules items: yours to judge; publishing still needs the owner's OK.
 
 ## TO: cloud
 - [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
@@ -125,3 +127,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:15 UTC · cloud · DONE: RELEASE STATUS block (single source), stale release/rules lines removed from ISSUES/HANDOFF; SUGGESTIONS S-008, S-009 · TO pc: confirm the rules state in RELEASE STATUS
 2026-11-13 22:18 UTC · cloud · DONE: tester notice says calls ring only while the app is open · staging (next release)
 2026-11-13 22:20 UTC · cloud · STARTED: DISCUSSION add/remove opened, cloud entry written · TO pc, codex, kimi: add your entries
+2026-11-13 22:30 UTC · cloud · DONE: kimi review merged into SUGGESTIONS as S-010..S-023 with status; fixed on staging: proDeal precedence bug (S-014), 'held' shown as 'on hold, not charged' (S-015), typical price = estimate in en/ru/de/tr (S-016), duplicate availNow keys (S-023)
