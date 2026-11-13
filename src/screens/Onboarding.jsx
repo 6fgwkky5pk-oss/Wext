@@ -24,7 +24,7 @@ export default function Onboarding({ install }) {
   const cfgTesters = useStore(s => s.config?.testersOnly)
   const [notListed, setNotListed] = useState(false)
   const sendCode = async () => {
-    if (CLOUD && cfgTesters) { const ok = await cloud.testerAllowed(cloud.normPhone(cc + digits)); if (ok === false) { setNotListed(true); return } }
+    if (CLOUD && cfgTesters) { const ok = await cloud.testerAllowed(cloud.normPhone(cc + digits)); if (ok !== true) { setNotListed(ok === false ? 'notTester' : 'testerCheckFail'); return } }
     setNotListed(false)
     // SMS provider is plugged in on the backend; in test mode the code is shown on screen
     // test mode (no SMS gateway yet): simulate an incoming SMS and auto-fill the code
@@ -66,7 +66,7 @@ export default function Onboarding({ install }) {
           <div className="phone"><div className="inp cc">{cc}</div>
             <input className="inp" type="tel" inputMode="tel" autoFocus placeholder="5XX XX XX XX" value={phone} onChange={e => setPhone(e.target.value)} /></div>
         </div>
-        {notListed && <div className="card small b" style={{ background: '#FFE3E3' }}>🧪 {t('notTester')}</div>}
+        {notListed && <div className="card small b" style={{ background: '#FFE3E3' }}>🧪 {t(notListed)}</div>}
         <button className="btn primary" disabled={digits.length < 7} onClick={sendCode}>{t('sendCode')}</button>
         <p className="tiny center" style={{ opacity: .6, margin: 0 }}>{t('terms')}</p>
       </>}

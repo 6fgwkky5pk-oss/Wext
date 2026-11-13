@@ -401,7 +401,11 @@ export const api = {
     if (p.status === st) return
     set(s => ({ payments: s.payments.map(x => x.id === p.id ? { ...x, status: st } : x), note: { k: r.adminPay === 'refund' ? 'adminRefunded' : 'adminCharged', icon: r.adminPay === 'refund' ? '↩️' : '💳', cat: r.cat, ts: now() } }))
   },
-  adminPay(reqId, how) { if (CLOUD) cloud.updateRequest(reqId, { adminPay: how, adminPayAt: now() }) },
+  adminPay(reqId, how, why) {
+    why = clean(why, 200); if (!CLOUD || !why) return false
+    const r = (state.adminReqs || []).find(x => x.id === reqId); if (r?.adminPay) return false // once per order
+    cloud.updateRequest(reqId, { adminPay: how, adminPayAt: now(), adminPayWhy: why }); return true
+  },
   clearUser(id) { if (CLOUD) cloud.clearUser(id) },
   async setTester(phone, on) { const p9 = cloud.normPhone(phone); if (p9.length < 9) return false; await cloud.setTester(p9, on); return true },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },

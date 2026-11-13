@@ -145,7 +145,7 @@ export function CallNow({ cat: initCat, group }) {
   const send = async () => {
     const live = getState().requests.find(r => r.cat === cat && ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status))
     if (live) { nav.replace('request', { id: live.id }); return }
-    if ((!bundle || brig) && !user.card) { if (TEST_MODE) api.updateUser({ card: { brand: '🧪', label: t('testPay') } }); else { setPay(true); return } }
+    if ((!bundle || brig) && !user.card) { setPay(true); return }
     const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
     if (id) nav.replace('request', { id })
   }
