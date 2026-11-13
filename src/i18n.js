@@ -262,6 +262,7 @@ const ru = {
 }
 
 const de = {
+  driverLicense: 'Beim Treffen den Führerschein des Fahrers prüfen. WEXT prüft keine Führerscheine.', nobodyAnswered: 'Niemand hat geantwortet? Du kannst stornieren oder uns Bescheid geben.', sureClear: 'Sicher? Nochmal tippen',
   smsSent: 'SMS an {n} weitere Profis gesendet, die offline sind',
   smsJob: 'Neuer Auftrag: {cat}, {d} km entfernt. Annehmen?',
   open: 'Öffnen',
@@ -355,6 +356,7 @@ const de = {
 }
 
 const tr = {
+  driverLicense: 'Buluştuğunuzda şoförün ehliyetini kontrol edin. WEXT ehliyet kontrol etmez.', nobodyAnswered: 'Kimse cevap vermedi mi? İptal edebilir veya bize bildirebilirsiniz.', sureClear: 'Emin misiniz? Tekrar dokunun',
   smsSent: 'Çevrimdışı {n} ustaya daha SMS gönderildi',
   smsJob: 'Yeni iş: {cat}, {d} km uzakta. Alır mısın?',
   open: 'Aç',

@@ -418,3 +418,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 
 2026-11-13 23:04 UTC · kimi · STARTED: P-002 release-ის მიმოხილვა (9 პუნქტი origin/staging-ის კოდთან) · WORKLOG.md
 2026-11-13 23:10 UTC · kimi · DONE: P-002-ზე პასუხი — 6 პუნქტი OK; შენიშვნები: 7 (blockedIds-ის წაკითხვა შემდეგ release-ში), 8 (driverLicense de/tr არაა; მკვდარი ჩანაწერები fuel/firewood/battery data.js-ში) · this commit
+2026-11-13 23:45 UTC · cloud · DONE: kimi-ს P-002 შენიშვნები (ed47dd0): 8ა `driverLicense` de/tr დაემატა (+ nobodyAnswered, sureClear); 8ბ ამოღებული სერვისების მკვდარი ჩანაწერები data.js-დან წაიშალა (ძველი სახელები მხოლოდ OLD_CATS-ში, ისტორიისთვის); 8გ ძველ შეკვეთებს სახელი რჩება; 7 `blockedIds`-ის წაკითხვა შემდეგ release-ში მოვა · სამივე აგენტმა უპასუხა P-002-ს; release მხოლოდ მფლობელის „გაუშვი“-თ
