@@ -36,6 +36,20 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 ## TO: cloud
 - (none open)
 
+## Go / no-go (pc, 2026-11-13)
+GO (checked):
+- Rules live: a signed-in stranger cannot list requests, chats, calls or search words, cannot change prices/config, cannot ring someone without a shared job/ride/project, cannot edit others' rides/projects, cannot change another side's request fields. Checked on the live database with a throwaway login.
+- Admin: no PIN in the live bundle (v11 checked); admin = `/admins/{uid}` only.
+- Full order flow on the `staging` build + the release rules (emulator, two users): offer → accept → on my way → chat → both "agreed" → done → rating; 0 rule denials; client profile holds no location; trust numbers not sent; stars hidden from clients, own average shown to the pro.
+- Git history: no secrets (only the public Firebase web config and the public openrelay test TURN; the old PIN is in history but no longer opens anything).
+- Rules suite: 86 emulator checks pass.
+NO-GO / not verified:
+- Calls on two real phones (ring, voice, both directions, simultaneous call, app closed): needs the owner's two phones. The browser pane blocks the microphone.
+- Locked screen / closed app: nothing rings (needs push + Capacitor; push needs Blaze).
+- TURN: public openrelay only (unreliable on some mobile networks); own TURN not opened.
+- SMS simulated: anyone can sign in with any number. OK only for a closed test with known testers.
+Verdict: GO for a closed tester group, after the combined release and the rule deploy below. NO-GO for public launch until real SMS, own TURN and push.
+
 ## Open items
 - Login on a new phone opens a new profile until real SMS exists (rule in CLAUDE.md).
 - Release waiting on `staging` (sw `wext-v12`).
@@ -56,3 +70,7 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 2026-11-13 21:35 UTC · cloud · DONE: two-phone test of offer → accept → both agree → done → rating card on staging build (passes) · TO pc: pre-launch check added
 2026-11-13 21:12 UTC · pc · STARTED: security half (bugs/complaints limits, users rule trustSame+posOk ready, secrets in history) + pre-launch check on the staging build against the emulator (two users, full order flow) · firestore.rules, WORKLOG.md (Go / no-go)
 2026-11-13 21:40 UTC · cloud · BLOCKED: release paused, waiting for pc status for one combined release · staging ready (two-phone test passes), main untouched (v11)
+2026-11-13 21:22 UTC · pc · DONE: security half — complaints/bugs written as yourself with size limits; users rule trustSame + posOk + name ≤ 80 ready in `firestore.rules` (NOT deployed: v11 clients still send client locations and would be refused); 86 emulator checks; no secrets in history · this commit
+2026-11-13 21:22 UTC · pc · DONE: calls screen — mic refused now shows "Microphone is blocked…" instead of closing silently; chat header showed "[object Object]" before the service name (fixed) · src/screens/Chat.jsx · this commit
+2026-11-13 21:22 UTC · pc · DONE: pre-launch check (Go / no-go section above)
+2026-11-13 21:22 UTC · pc · DONE: ready for combined release · this commit. After the owner's "გაუშვი" and the push to `main`, pc deploys the repo `firestore.rules` within minutes (old phones auto-update to v12 on open; until then their profile writes with a client location are refused, nothing else breaks)

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { api, useStore, getState, ping, CLOUD, callAudio } from '../store'
 import * as cloud from '../cloud'
 import { catName } from '../data'
-import { useT, Icon, Top, Avatar, fmtTime, catIcon } from '../ui'
+import { useT, Icon, Top, Avatar, fmtTime, catIcon, toast } from '../ui'
 import { useNav } from '../nav'
 
 function useThreadMeta(threadId) {
@@ -67,7 +67,7 @@ export function Chat({ threadId }) {
     <div className="top" style={{ borderBottom: '1px solid var(--line)' }}>
       <button className="iconbtn" onClick={nav.back}><Icon n="back" /></button>
       <Avatar p={meta.av} />
-      <div className="grow"><b className="ell" style={{ display: 'block' }}>{meta.name}</b><span className="tiny mute b ell" style={{ display: 'block' }}>{meta.title ? (meta.cat ? catIcon(meta.cat) + ' ' : '🚗 ') + meta.title : catIcon(meta.cat) + ' ' + catName(meta.cat, lang)}</span></div>
+      <div className="grow"><b className="ell" style={{ display: 'block' }}>{meta.name}</b><span className="tiny mute b ell" style={{ display: 'block' }}>{meta.title ? <>{meta.cat ? catIcon(meta.cat) : '🚗'} {meta.title}</> : <>{catIcon(meta.cat)} {catName(meta.cat, lang)}</>}</span></div>
       <button className="iconbtn" style={{ background: 'var(--y)' }} onClick={() => nav.go('voice', { threadId, reqId: meta.reqId })}><Icon n="phone" /></button>
     </div>
     <div className="msgs">
@@ -88,6 +88,8 @@ export function Chat({ threadId }) {
 // Unanswered within 30s → automatic "X called about Y, call back" message in the chat.
 export function Voice({ threadId, reqId, answerId }) {
   const { t } = useT()
+  // the microphone was refused: say so instead of closing the call silently
+  const micHint = e => { if (/NotAllowed|NotFound|NotReadable|Security|Permission/.test(e?.name || '')) toast(t('voiceBlocked')) }
   const nav = useNav()
   const meta = useThreadMeta(threadId)
   const [state, setState] = useState(answerId ? 'connecting' : 'calling')
@@ -109,7 +111,7 @@ export function Voice({ threadId, reqId, answerId }) {
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish() }, 12000)
     } else if (answerId) {
       tm = setTimeout(() => { setState('failed'); finish() }, 25000)
-      cloud.answerCall({ callId: answerId, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(() => { setState('ended'); finish() })
+      cloud.answerCall({ callId: answerId, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(e => { micHint(e); setState('ended'); finish() })
     } else if (cloud.callFrom(getState().ringing, meta.other)) {
       // the other person is already calling me: answer that call instead of starting a second one
       const r = getState().ringing; api.clearRinging(); done.current = true
@@ -117,7 +119,7 @@ export function Voice({ threadId, reqId, answerId }) {
     } else {
       api.setOutgoing(meta.other)
       ring = setInterval(() => ping('ring'), 2200); ping('ring')
-      cloud.startCall({ to: meta.other, threadId, reqId, fromName: getState().user.name, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(() => { setState('ended'); finish() })
+      cloud.startCall({ to: meta.other, threadId, reqId, fromName: getState().user.name, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(e => { micHint(e); setState('ended'); finish() })
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish('missed') }, 30000)
     }
     const bye = () => { if (!done.current) { done.current = true; call.current?.end() } }

@@ -22,6 +22,16 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll(old.keys()) && request.resource.data.diff(old).affectedKeys().size() <= 3;
     }
     function inJob(r, u) { return u == r.clientId || u == r.get('proId', null); }
+    // trust numbers are never changed by the user: rating, jobs, no-shows, blocked, verified (admins only)
+    function trustSame() {
+      let n = request.resource.data.get('pro', {});
+      let o = resource == null ? {} : resource.data.get('pro', {});
+      return n.get('rating', 5) == o.get('rating', 5) && n.get('jobs', 0) == o.get('jobs', 0) && n.get('noShows', 0) == o.get('noShows', 0)
+        && n.get('blocked', false) == o.get('blocked', false) && n.get('verified', false) == o.get('verified', false);
+    }
+    // a location is kept only on registered workers' profiles (for the map); clients' profiles hold none
+    function posOk() { return !('pos' in request.resource.data) || request.resource.data.get('pro', {}).get('registered', false) == true; }
+    function shortText(m, k, n) { return !(k in m) || (m[k] is string && m[k].size() <= n); }
     // who may change which fields of a request
     function reqUpdateOk() {
       let r = resource.data;
@@ -34,7 +44,7 @@ service cloud.firestore {
         || (u in r.get('notified', []) && ch.hasOnly(['declined']));
     }
 
-    match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid) && !(request.resource.data.get('pro', {}).get('verified', false) == true) || isAdmin(); }
+    match /users/{uid}    { allow read: if signedIn(); allow write: if (me(uid) && trustSame() && posOk() && shortText(request.resource.data, 'name', 80)) || isAdmin(); }
     match /private/{uid}  { allow read, write: if me(uid); }
     match /config/{id}    { allow read: if true; allow write: if isAdmin(); } // admin uids = documents in /admins/{uid} (create them by hand in the Firebase console)
     match /admins/{uid}   { allow read: if me(uid); }
@@ -67,7 +77,14 @@ service cloud.firestore {
     match /rides/{id}     { allow read: if signedIn(); allow create: if signedIn() && request.resource.data.driverId == request.auth.uid;
       allow update: if signedIn() && ((resource.data.driverId == request.auth.uid && request.resource.data.driverId == request.auth.uid) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookings']));
       allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
-    match /complaints/{id} { allow create: if signedIn(); allow read: if isAdmin(); }
-    match /bugs/{id}       { allow create: if signedIn(); allow read: if isAdmin(); }
+    // complaints and bug reports: written by the sender as themselves, with size limits; read by admins only
+    match /complaints/{id} { allow read: if isAdmin();
+      allow create: if signedIn() && request.resource.data.byId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['reqId', 'proId', 'reason', 'byId', 'byName', 'ts'])
+        && shortText(request.resource.data, 'reason', 1000) && shortText(request.resource.data, 'byName', 80); }
+    match /bugs/{id}       { allow read: if isAdmin();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['text', 'screen', 'by', 'ua', 'ts'])
+        && shortText(request.resource.data, 'text', 2000) && shortText(request.resource.data, 'screen', 100)
+        && shortText(request.resource.data, 'by', 80) && shortText(request.resource.data, 'ua', 400); }
   }
 }
