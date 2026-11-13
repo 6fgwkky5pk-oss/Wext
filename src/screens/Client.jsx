@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
-import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh, priceLevel } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -113,7 +113,7 @@ export function CallNow({ cat: initCat, group }) {
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
-  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: (p.prices || {})[cat] })) : [], [cat, loc, blocked, brig])
+  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: ((p.prices || {})[cat] || [])[0] || null, priceUnit: (TYPICAL[cat] || [])[2], priceLvl: priceLevel(((p.prices || {})[cat] || [])[0], typicalFor(cat)) })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
   const watching = useStore(s => s.watchCat) === cat
   const p = cat ? priceFor(cat, 'instant', brig) : null
@@ -233,6 +233,8 @@ export function RequestTrack({ id }) {
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const now = useNow()
   const [rate, setRate] = useState(false), [comp, setComp] = useState(false)
+  // pro pressed "done" and the client did not answer in 24h → counts as done (rating is then asked)
+  useEffect(() => { if (r?.status === 'agreed' && r.proDoneAt && Date.now() - r.proDoneAt > 864e5) api.clientDone(id) }, [r?.status, r?.proDoneAt])
   const pro = r?.proId ? { name: r.proName || '—', rating: 5, jobs: 0, type: 'individual', hue: 30, pos: loc, ...(pros || []).find(p => p.id === r.proId), icon: catIcon(r.cat) } : null
   const mapPros = useMemo(() => pro ? [pro] : [], [r?.proId])
 
@@ -301,15 +303,22 @@ export function RequestTrack({ id }) {
         </div>}
         {['accepted', 'arrived'].includes(r.status) && <div className="grid2 dealrow" style={{ marginTop: 12 }}>
           <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.noDeal(id)}>✕ {t('noDeal')}</button>
-          <button className="btn green" onClick={() => { api.agree(id); setRate(false) }}>🤝 {t('agreed')}</button>
+          <button className="btn green" onClick={() => api.agree(id)}>🤝 {t('agreed')}</button>
         </div>}
         <div className="col" style={{ marginTop: 14 }}>
-          {['arrived', 'agreed'].includes(r.status) && <button className="btn primary" onClick={() => setRate(true)}><Icon n="star" />{t('rate')}</button>}
+          {r.status === 'agreed' && r.proDoneAt && <div className="card col" style={{ background: '#E9F8EF', gap: 8 }}>
+            <b>✅ {t('doneQ')}</b><span className="small mute b">{t('doneQSub', { name: r.proName || '' })}</span>
+            <div className="grid2"><button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => setComp(true)}>✕ {t('no')}</button>
+              <button className="btn green" onClick={() => api.clientDone(id)}>✓ {t('yes')}</button></div></div>}
+          {r.status === 'agreed' && !r.proDoneAt && <button className="btn primary" onClick={() => api.clientDone(id)}><Icon n="check" />{t('jobFinished')}</button>}
+          {r.status === 'done' && !r.rating && <div className="card col" style={{ background: '#FFF6D6', gap: 8 }}>
+            <b>⭐ {t('ratePrompt', { name: r.proName || '' })}</b>
+            <div className="row" style={{ justifyContent: 'center', gap: 4 }}>{[1, 2, 3, 4, 5].map(i => <button key={i} style={{ fontSize: 34, background: 'none', border: 0 }} onClick={() => { api.finish(id, i); toast('⭐ ' + t('rateThanks')) }}>☆</button>)}</div>
+            <button className="btn sm light" onClick={() => nav.back()}>{t('later')}</button></div>}
           <button className="btn outline" onClick={() => setComp(true)} style={{ color: 'var(--red)' }}><Icon n="flag" s={18} />{t('complain')}</button>
         </div>
       </div>
     </div>
-    {rate && <RateSheet onClose={() => setRate(false)} onDone={n => { api.finish(id, n); setRate(false); toast('⭐ ' + t('rateThanks')) }} />}
     {comp && <ComplainSheet onClose={() => setComp(false)} onDone={reason => { api.complain(id, r.proId, reason); setComp(false); toast('✅ ' + t('complaintSent')) }} />}
   </>
 }
@@ -353,6 +362,7 @@ export function Activity() {
           return <button key={x.r.id} className="prorow" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.go('request', { id: x.r.id })}>
             <span className="av" style={{ background: catTint(x.r.cat), fontSize: 26 }}>{catIcon(x.r.cat)}</span>
             <div className="grow"><b>{catName(x.r.cat, lang)}</b><div className="meta">{fmtDate(x.ts, lang)} · {st[x.r.status]}</div></div>
+            {x.r.status === 'done' && !x.r.rating && x.r.proName && <span className="badge y">⭐ {t('rate')}</span>}
             {pay && <span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{money(pay.amount)} · {t(pay.status)}</span>}
           </button> }
         if (x.k === 'j') return <div key={x.j.id} className="prorow" style={{ width: '100%' }}>

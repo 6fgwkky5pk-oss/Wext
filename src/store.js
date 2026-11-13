@@ -258,6 +258,8 @@ export const api = {
   proNoDeal(jobId) { const p = { status: 'nodeal', closedAt: now(), outcomeBy: 'pro' }; if (CLOUD) { cloud.updateRequest(jobId, p); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, ...p } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   markArrived(reqId) { api._updReq(reqId, { status: 'arrived', arrivedAt: now() }); api.registerContact(reqId, 'arrived') },
   finish(reqId, rating) { api._updReq(reqId, { status: 'done', rating }) },
+  // client says the work is finished (rating is asked after this, never before)
+  clientDone(reqId) { api._updReq(reqId, { status: 'done', doneAt: now() }) },
 
   sendMsg(threadId, text) {
     if (CLOUD) { cloud.sendMsg(threadId, { text }); return }
@@ -350,7 +352,8 @@ export const api = {
   openSms() { set(s => s.incoming ? { incoming: { ...s.incoming, opened: true, expires: now() + 75000 } } : {}); ping('job') },
   proOnWay(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { onWayAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, onWayAt: now() } : j) })) },
   proArrived(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'arrived', arrivedAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
-  proDone(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'done' }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'done' } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
+  // pro says finished → client is asked "was the work done?"; no answer in 24h = done
+  proDone(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { proDoneAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, proDoneAt: now() } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   // No-show: accepted but no GPS "arrived" within 1h. 3 → automatic block.
   checkNoShows() {
     const late = state.proJobs.filter(j => j.status === 'accepted' && now() - j.acceptedAt > 3600e3)
