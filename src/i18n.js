@@ -74,7 +74,7 @@ const ka = {
   online: 'ხაზზე ხარ', offline: 'ხაზგარეშე ხარ', goOnline: 'შეეხე, რომ ხაზზე გახვიდე', goOffline: 'შეეხე, რომ გახვიდე ხაზიდან', waiting: 'ველოდებით შეკვეთებს…',
   incoming: 'ახალი შეკვეთა!', accept: 'მიღება', decline: 'უარი', secLeft: '{s} წმ', iArrived: 'მოვედი', navigate: 'მარშრუტი', arrivedOk: 'მოსვლა დაფიქსირდა', jobDone: 'სამუშაო დასრულდა',
   today: 'დღეს', myCats: 'ჩემი კატეგორიები', profileType: 'პროფილის ტიპი', teamMembers: 'გუნდის წევრები', noShowRule: 'თუ შეკვეთას მიიღებ და 1 საათში არ მიხვალ — ეს ითვლება გაცდენად. 3 გაცდენა = დაბლოკვა.', noShows: 'გაცდენები', blockedMsg: 'ანგარიში დაბლოკილია გაცდენების გამო. დაუკავშირდი მხარდაჭერას.',
-  welcome: 'მოგესალმებით WEXT-ში', phone: 'ტელეფონის ნომერი', sendCode: 'კოდის მიღება', code: 'SMS კოდი', verify: 'შესვლა', codeSent: 'კოდი გაიგზავნა: {code}', yourName: 'შენი სახელი',
+  welcome: 'მოგესალმებით WEXT-ში', phone: 'ტელეფონის ნომერი', sendCode: 'კოდის მიღება', code: 'SMS კოდი', verify: 'შესვლა', codeSent: 'შენი WEXT კოდი: {code}', yourName: 'შენი სახელი',
   whoAreYou: 'როგორ გამოიყენებ WEXT-ს?', iNeedHelp: 'მჭირდება ხელოსანი ან ხალხი', iAmPro: 'ვეძებ სამუშაოს', iDrive: 'ვარ მძღოლი', continue: 'გაგრძელება', terms: 'გაგრძელებით ეთანხმები წესებს და კონფიდენციალურობას',
   language: 'ენა', proMode: 'ხელოსნის რეჟიმი', clientMode: 'კლიენტის რეჟიმი', reportBug: 'შეცდომის შეტყობინება', bugPh: 'რა არ მუშაობს? რა გააკეთე მანამდე?', sendReport: 'გაგზავნა', thanks: 'მადლობა! მივიღეთ.',
   admin: 'ადმინ პანელი', logout: 'გასვლა', complain: 'საჩივარი', complainWhy: 'რა მოხდა?', complaintSent: 'საჩივარი მიღებულია', rate: 'შეაფასე ხელოსანი', rateThanks: 'მადლობა შეფასებისთვის',
@@ -82,7 +82,7 @@ const ka = {
   prices: 'ფასები', baseFee: 'საბაზო საკომისიო', promoFee: 'აქციის ფასი', promoEnd: 'აქციის დასასრული', surgeCap: 'მაქს. მულტიპლიკატორი', surgeNow: 'მაღალი მოთხოვნა ახლა', rideFee: 'საკომისიო ადგილზე', projFee: 'საკომისიო ადამიანზე',
   complaints: 'საჩივრები', users: 'მომხმარებლები', block: 'დაბლოკვა', unblock: 'განბლოკვა', save: 'შენახვა', saved: 'შენახულია', flagged: 'ხშირი მომჩივანი', bugs: 'შეცდომები', none: 'ჯერ არაფერია', pros: 'ხელოსნები', clients: 'კლიენტები',
   noActivity: 'ჯერ აქტივობა არ გაქვს', noChats: 'ჯერ ჩატი არ გაქვს', status: 'სტატუსი', contacts: 'კონტაქტი', contactsLeft: 'დარჩენილი კონტაქტი: {n}', newRequest: 'ახალი მოთხოვნა',
-  install: 'დააყენე აპი ტელეფონზე', installIos: 'დააჭირე „გაზიარება" ⬆ და შემდეგ „Add to Home Screen"', installAndroid: 'გახსენი ეს ლინკი Chrome-ში, დააჭირე ⋮ (ზემოთ მარჯვნივ) და აირჩიე „აპის დაყენება“ ან „Add to Home screen“', installBtn: 'დაყენება',
+  install: 'დააყენე აპი ტელეფონზე', installIos: 'გახსენი ეს ლინკი Safari-ში, დააჭირე „გაზიარება" ⬆ (ქვემოთ) და აირჩიე „Add to Home Screen" / „მთავარ ეკრანზე დამატება"', installAndroid: 'გახსენი ეს ლინკი Chrome-ში, დააჭირე ⋮ (ზემოთ მარჯვნივ) და აირჩიე „აპის დაყენება“ ან „Add to Home screen“', iosS1: 'ქვემოთ დააჭირე „გაზიარების" ღილაკს', iosS2: 'ჩამოსქროლე და აირჩიე', iosS3: 'ზემოთ მარჯვნივ დააჭირე', andS1: 'ზემოთ მარჯვნივ დააჭირე ⋮ (3 წერტილი)', andS2: 'აირჩიე', andS3: 'დაადასტურე — WEXT გამოჩნდება ეკრანზე', inAppS1: 'ეს ლინკი WhatsApp/Messenger-ში გაიხსნა. დააჭირე', inAppS2ios: 'აირჩიე „Open in Safari" (Safari-ში გახსნა)', inAppS2and: 'აირჩიე „Open in Chrome" (ბრაუზერში გახსნა)', inAppS3: 'იქ კიდევ ერთხელ დააჭირე „დაყენება"', copyLink: 'ლინკის კოპირება', installBtn: 'დაყენება',
   you: 'შენ', client: 'კლიენტი', away: '{d} კმ', allow: 'მდებარეობის ჩართვა',
 }
 
@@ -154,7 +154,7 @@ const en = {
   online: "You're online", offline: "You're offline", goOnline: 'Tap to go online', goOffline: 'Tap to go offline', waiting: 'Waiting for jobs…',
   incoming: 'New job!', accept: 'Accept', decline: 'Decline', secLeft: '{s}s', iArrived: "I've arrived", navigate: 'Navigate', arrivedOk: 'Arrival confirmed', jobDone: 'Job completed',
   today: 'Today', myCats: 'My categories', profileType: 'Profile type', teamMembers: 'Team members', noShowRule: 'If you accept a job and do not arrive within 1 hour it counts as a no-show. 3 no-shows = blocked.', noShows: 'No-shows', blockedMsg: 'Account blocked due to no-shows. Contact support.',
-  welcome: 'Welcome to WEXT', phone: 'Phone number', sendCode: 'Get code', code: 'SMS code', verify: 'Sign in', codeSent: 'Code sent: {code}', yourName: 'Your name',
+  welcome: 'Welcome to WEXT', phone: 'Phone number', sendCode: 'Get code', code: 'SMS code', verify: 'Sign in', codeSent: 'Your WEXT code: {code}', yourName: 'Your name',
   whoAreYou: 'How will you use WEXT?', iNeedHelp: 'I need a pro', iAmPro: "I'm a pro / worker", iDrive: "I'm a driver", continue: 'Continue', terms: 'By continuing you accept the Terms and Privacy Policy',
   language: 'Language', proMode: 'Pro mode', clientMode: 'Client mode', reportBug: 'Report a bug', bugPh: "What doesn't work? What did you do before?", sendReport: 'Send', thanks: 'Thanks! Received.',
   admin: 'Admin panel', logout: 'Log out', complain: 'Complain', complainWhy: 'What happened?', complaintSent: 'Complaint received', rate: 'Rate the pro', rateThanks: 'Thanks for rating',
@@ -162,7 +162,7 @@ const en = {
   prices: 'Prices', baseFee: 'Base fee', promoFee: 'Promo fee', promoEnd: 'Promo ends', surgeCap: 'Max multiplier', surgeNow: 'High demand now', rideFee: 'Fee per seat', projFee: 'Fee per person',
   complaints: 'Complaints', users: 'Users', block: 'Block', unblock: 'Unblock', save: 'Save', saved: 'Saved', flagged: 'Frequent complainer', bugs: 'Bug reports', none: 'Nothing yet', pros: 'Pros', clients: 'Clients',
   noActivity: 'No activity yet', noChats: 'No chats yet', status: 'Status', contacts: 'contacts', contactsLeft: 'Contacts left: {n}', newRequest: 'New request',
-  install: 'Install the app on your phone', installIos: 'Tap “Share” ⬆ then “Add to Home Screen”', installAndroid: 'Open this link in Chrome, tap ⋮ (top right) and choose “Install app” or “Add to Home screen”', installBtn: 'Install',
+  install: 'Install the app on your phone', installIos: 'Tap “Share” ⬆ then “Add to Home Screen”', installAndroid: 'Open this link in Chrome, tap ⋮ (top right) and choose “Install app” or “Add to Home screen”', iosS1: 'Tap the Share button below', iosS2: 'Scroll and choose', iosS3: 'Tap top-right', andS1: 'Tap ⋮ (top right)', andS2: 'Choose', andS3: 'Confirm — WEXT appears on your home screen', inAppS1: 'This link opened inside an app. Tap', inAppS2ios: 'Choose “Open in Safari”', inAppS2and: 'Choose “Open in Chrome / browser”', inAppS3: 'Then tap “Install” again', copyLink: 'Copy link', installBtn: 'Install',
   you: 'You', client: 'Client', away: '{d} km', allow: 'Enable location',
 }
 

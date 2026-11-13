@@ -35,9 +35,31 @@ function useInstall() {
   if (standalone) return null
   const ua = navigator.userAgent
   if (BIP) return { kind: 'android', go: () => { const e = BIP; e.prompt(); e.userChoice && e.userChoice.then(() => { BIP = null; force(x => x + 1) }) } }
-  if (/iPhone|iPad|iPod/.test(ua)) return { kind: 'ios' }
-  if (/Android/.test(ua)) return { kind: 'androidManual' }
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Messenger|Line\/|Viber|Telegram|GSA\//i.test(ua)
+  if (/iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return { kind: inApp ? 'iosInApp' : 'ios' }
+  if (/Android/.test(ua)) return { kind: inApp ? 'androidInApp' : 'androidManual' }
   return null
+}
+
+const ShareIc = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" /><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2" /></svg>
+function InstallGuide({ kind, onClose }) {
+  const { t } = useT()
+  const [copied, setCopied] = useState(false)
+  const url = location.href.split('#')[0].split('?')[0]
+  const copy = () => { try { navigator.clipboard.writeText(url).then(() => setCopied(true)) } catch { } }
+  const Step = ({ n, children }) => <div className="row" style={{ gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--card2, #f4f1ea)', borderRadius: 14 }}><b style={{ width: 28, height: 28, borderRadius: 99, background: '#111', color: '#FFC21A', display: 'grid', placeItems: 'center', flex: 'none' }}>{n}</b><div className="b" style={{ fontSize: 16, lineHeight: 1.35 }}>{children}</div></div>
+  let steps
+  if (kind === 'ios') steps = [<>{t('iosS1')} <span style={{ verticalAlign: 'middle', display: 'inline-block' }}><ShareIc /></span></>, <>{t('iosS2')} <span style={{ whiteSpace: 'nowrap' }}>„Add to Home Screen" <span style={{ border: '2px solid #111', borderRadius: 5, padding: '0 4px' }}>+</span></span></>, <>{t('iosS3')} „Add"</>]
+  else if (kind === 'androidManual') steps = [t('andS1'), <>{t('andS2')} „Install app" / „Add to Home screen"</>, t('andS3')]
+  else steps = [<>{t('inAppS1')} <b>⋯</b> / <b>⋮</b></>, kind === 'iosInApp' ? t('inAppS2ios') : t('inAppS2and'), t('inAppS3')]
+  return <Sheet onClose={onClose}>
+    <div className="center" style={{ fontSize: 44 }}>📲</div>
+    <h2 className="center" style={{ marginBottom: 12 }}>{t('install')}</h2>
+    <div className="col" style={{ gap: 8 }}>{steps.map((s, i) => <Step key={i} n={i + 1}>{s}</Step>)}</div>
+    {kind !== 'ios' && kind !== 'androidManual' && <button className="btn outline" style={{ marginTop: 12 }} onClick={copy}>{copied ? '✓' : '🔗'} {t('copyLink')}</button>}
+    <button className="btn primary" style={{ marginTop: 12 }} onClick={onClose}>{t('done')}</button>
+    {kind === 'ios' && <div className="iosarrow">⬇</div>}
+  </Sheet>
 }
 
 function Shell() {
@@ -69,7 +91,7 @@ function Shell() {
   }), [])
 
   const installFn = inst ? (inst.kind === 'android' ? inst.go : () => setIosHelp(inst.kind)) : null
-  const installSheet = iosHelp && <Sheet onClose={() => setIosHelp(false)}><div className="center" style={{ fontSize: 48 }}>📲</div><h2 className="center">{t('install')}</h2><p className="center b" style={{ fontSize: 17, lineHeight: 1.5 }}>{t(iosHelp === 'androidManual' ? 'installAndroid' : 'installIos')}</p><button className="btn primary" onClick={() => setIosHelp(false)}>{t('done')}</button></Sheet>
+  const installSheet = iosHelp && <InstallGuide kind={iosHelp} onClose={() => setIosHelp(false)} />
 
   if (!user) return <div className="app"><Onboarding install={installFn} />{installSheet}<Toaster /></div>
 
