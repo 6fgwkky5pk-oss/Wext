@@ -213,14 +213,14 @@ function DemandList() {
 
 function AdminPay({ id }) {
   const { t } = useT()
-  const [why, setWhy] = useState(''), [done, setDone] = useState(false)
-  const go = how => { if (done) return; if (!why.trim()) { toast(t('payWhyNeed')); return } if (api.adminPay(id, how, why)) setDone(true) }
+  const [why, setWhy] = useState(''), [done, setDone] = useState(false), [busy, setBusy] = useState(false)
+  const go = async how => { if (done || busy) return; if (!why.trim()) { toast(t('payWhyNeed')); return } setBusy(true); const res = await api.adminPay(id, how, why); setBusy(false); if (res === 'ok') setDone(true); else toast(t(res === 'taken' ? 'payTaken' : 'payFail')) }
   if (done) return <div className="tiny mute b" style={{ marginTop: 4 }}>✓ {why}</div>
   return <>
     <input className="inp" style={{ height: 40, marginTop: 8 }} maxLength={200} placeholder={t('payWhy')} value={why} onChange={e => setWhy(e.target.value)} />
     <div className="grid2" style={{ marginTop: 8 }}>
-      <button className="btn sm light" disabled={!why.trim()} onClick={() => go('refund')}>↩️ {t('refundBtn')}</button>
-      <button className="btn sm outline" disabled={!why.trim()} onClick={() => go('capture')}>💳 {t('chargeBtn')}</button>
+      <button className="btn sm light" disabled={!why.trim() || busy} onClick={() => go('refund')}>↩️ {t('refundBtn')}</button>
+      <button className="btn sm outline" disabled={!why.trim() || busy} onClick={() => go('capture')}>💳 {t('chargeBtn')}</button>
     </div></>
 }
 

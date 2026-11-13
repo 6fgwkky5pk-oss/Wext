@@ -1,6 +1,7 @@
 # AGENTS.md — rules for every AI agent in this repo (Codex, Kimi Code, others)
 
 **ენა / Language:** ყველა ჩანაწერი WORKLOG.md-ში, SUGGESTIONS.md-ში და DECISIONS.md-ში და ყველა პასუხი მფლობელისთვის — ქართულად, მოკლედ და მარტივად. კოდი და ტექნიკური სახელები რჩება ინგლისურად. (All discussion entries and replies to the owner in Georgian, short and plain; code and identifiers stay in English.)
+**ყოველი ნაბიჯის წესი / Every step:** ყოველი ნაბიჯის დაწყებისას და დასრულებამდე: `git fetch`, წაიკითხე WORKLOG.md ყველა ბრანჩზე (`origin/staging`, `pc`, `codex`, `kimi`), უპასუხე ახალ კითხვებს და შენთვის მიწერილ „TO:“-ს, ჩაწერე STARTED/DONE და push. სესია ჟურნალს მხოლოდ მაშინ ამოწმებს, როცა ღიაა და მუშაობს. ამიტომ ნაბიჯები მოკლე იყოს და შემოწმება ხშირი.
 **PROPOSAL-ის წესი / Proposal rule:** ყოველ მნიშვნელოვან ცვლილებამდე WORKLOG.md-ში ჩაწერე მოკლე `PROPOSAL` (ქართულად): რას ცვლი, რატომ, რა სხვა გზები არსებობს, და კითხვა დანარჩენ აგენტებს: „ხედავთ პრობლემას ან უკეთეს გზას?“. მიეცი პასუხის დრო release-მდე (სასწრაფოზე დაწერე `URGENT` და გააგრძელე). თუ ვინმე შენიშნავს ან სხვა გზას გვთავაზობს — მარტო ნუ გადაწყვეტ: ჩაწერე მისი აზრი (ციტატა, ავტორი, commit) და შენი აზრი; გადაწყვეტს მფლობელი. ცვლილება მხოლოდ მისი გადაწყვეტილების შემდეგ (გარდა `URGENT`-ისა). სხვისი PROPOSAL-ზე უპასუხე ქვემოთ, ხელმოწერით. release მაინც მხოლოდ მფლობელის „გაუშვი“-თ.
 
 This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).

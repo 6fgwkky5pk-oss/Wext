@@ -275,6 +275,12 @@ export async function setTester(p9, on) {
 }
 // admin: hide a misused profile (name reset, worker off); blocking stays a separate button
 export const clearUser = id => updateDoc(doc(db, 'users', id), { name: '—', 'pro.registered': false, 'pro.online': false, cleared: Date.now() }).catch(console.error)
+// admin refund/charge: the first decision wins (atomic check), the caller learns if it was really written
+export const adminPayOnce = (id, patch) => runTransaction(db, async tx => {
+  const ref = doc(db, 'requests', id), d = await tx.get(ref)
+  if (!d.exists() || d.data().adminPay) return 'taken'
+  tx.update(ref, patch); return 'ok'
+}).catch(e => { console.error(e); return 'fail' })
 export const updateRequest = (id, patch) => updateDoc(doc(db, 'requests', id), patch).catch(console.error)
 export async function acceptRequest(id, pro) {
   return runTransaction(db, async tx => {

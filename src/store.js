@@ -402,9 +402,9 @@ export const api = {
     set(s => ({ payments: s.payments.map(x => x.id === p.id ? { ...x, status: st } : x), note: { k: r.adminPay === 'refund' ? 'adminRefunded' : 'adminCharged', icon: r.adminPay === 'refund' ? '↩️' : '💳', cat: r.cat, ts: now() } }))
   },
   adminPay(reqId, how, why) {
-    why = clean(why, 200); if (!CLOUD || !why) return false
-    const r = (state.adminReqs || []).find(x => x.id === reqId); if (r?.adminPay) return false // once per order
-    cloud.updateRequest(reqId, { adminPay: how, adminPayAt: now(), adminPayWhy: why }); return true
+    why = clean(why, 200); if (!CLOUD || !why) return 'fail'
+    const r = (state.adminReqs || []).find(x => x.id === reqId); if (r?.adminPay) return 'taken' // once per order
+    return cloud.adminPayOnce(reqId, { adminPay: how, adminPayAt: now(), adminPayWhy: why }) // 'ok' | 'taken' | 'fail'
   },
   clearUser(id) { if (CLOUD) cloud.clearUser(id) },
   async setTester(phone, on) { const p9 = cloud.normPhone(phone); if (p9.length < 9) return false; await cloud.setTester(p9, on); return true },
