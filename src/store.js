@@ -394,6 +394,16 @@ export const api = {
   watchCat(cat) { set({ watchCat: cat }); if (cat && typeof Notification !== 'undefined' && Notification.permission === 'default') Notification.requestPermission().catch(() => {}) },
   setBig(on) { set({ big: !!on }) },
   setConfig(patch) { if (patch.syn) setExtraSyn(patch.syn); if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
+  // admin decided the booking fee of one order (refund or charge); the client's app applies it to its own payment record
+  applyAdminPay(r) {
+    const p = state.payments.find(x => x.id === r.payId); if (!p) return
+    const st = r.adminPay === 'refund' ? 'released' : 'captured'
+    if (p.status === st) return
+    set(s => ({ payments: s.payments.map(x => x.id === p.id ? { ...x, status: st } : x), note: { k: r.adminPay === 'refund' ? 'adminRefunded' : 'adminCharged', icon: r.adminPay === 'refund' ? '↩️' : '💳', cat: r.cat, ts: now() } }))
+  },
+  adminPay(reqId, how) { if (CLOUD) cloud.updateRequest(reqId, { adminPay: how, adminPayAt: now() }) },
+  clearUser(id) { if (CLOUD) cloud.clearUser(id) },
+  async setTester(phone, on) { const p9 = cloud.normPhone(phone); if (p9.length < 9) return false; await cloud.setTester(p9, on); return true },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
   clearRinging() { set({ ringing: null }) },
   setOutgoing(to) { set({ outgoing: to }) },

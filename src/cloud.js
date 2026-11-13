@@ -12,7 +12,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, signInAnonymously, onAuthStateChanged, connectAuthEmulator } from 'firebase/auth'
 import {
   getFirestore, collection, doc, setDoc, addDoc, updateDoc, onSnapshot, query, where, runTransaction,
-  arrayUnion, increment, deleteField, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
+  arrayUnion, increment, deleteField, deleteDoc, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
 } from 'firebase/firestore'
 import firebaseConfig from './firebase-config'
 import { setExtraSyn } from './data'
@@ -159,6 +159,7 @@ function listenUser() {
       if (r.status === 'accepted' && old?.status === 'searching') ctx.ping('soft')
       if (['arrived', 'agreed'].includes(r.status) && !r.contacted) ctx.api.registerContact(r.id, r.status)
       if (bothYes(r)) updateDoc(doc(db, 'requests', r.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
+      if (r.adminPay && r.adminPayAt && r.adminPayAt !== old?.adminPayAt) ctx.api.applyAdminPay(r)
     })
   }))
   // jobs offered to me (online → full screen, offline → SMS-style banner)
@@ -261,6 +262,16 @@ export async function createRequest(r) {
   const ref = await addDoc(collection(db, 'requests'), { ...r, pos: round(r.pos), clientId: uid, createdAt: Date.now() })
   return ref.id
 }
+// closed test: allowed numbers live in testers/{sha256 key} (admin writes, anyone may check one exact key; no numbers stored)
+export async function testerAllowed(p9) {
+  try { return (await getDoc(doc(db, 'testers', await phoneKey(p9)))).exists() } catch (e) { return null } // null = cannot check (rule not published yet)
+}
+export async function setTester(p9, on) {
+  const ref = doc(db, 'testers', await phoneKey(p9))
+  return on ? setDoc(ref, { at: Date.now() }) : deleteDoc(ref)
+}
+// admin: hide a misused profile (name reset, worker off); blocking stays a separate button
+export const clearUser = id => updateDoc(doc(db, 'users', id), { name: '—', 'pro.registered': false, 'pro.online': false, cleared: Date.now() }).catch(console.error)
 export const updateRequest = (id, patch) => updateDoc(doc(db, 'requests', id), patch).catch(console.error)
 export async function acceptRequest(id, pro) {
   return runTransaction(db, async tx => {

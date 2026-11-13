@@ -1,6 +1,7 @@
 # AGENTS.md — rules for every AI agent in this repo (Codex, Kimi Code, others)
 
 **ენა / Language:** ყველა ჩანაწერი WORKLOG.md-ში, SUGGESTIONS.md-ში და DECISIONS.md-ში და ყველა პასუხი მფლობელისთვის — ქართულად, მოკლედ და მარტივად. კოდი და ტექნიკური სახელები რჩება ინგლისურად. (All discussion entries and replies to the owner in Georgian, short and plain; code and identifiers stay in English.)
+**PROPOSAL-ის წესი / Proposal rule:** ყოველ მნიშვნელოვან ცვლილებამდე WORKLOG.md-ში ჩაწერე მოკლე `PROPOSAL` (ქართულად): რას ცვლი, რატომ, რა სხვა გზები არსებობს, და კითხვა დანარჩენ აგენტებს: „ხედავთ პრობლემას ან უკეთეს გზას?“. მიეცი პასუხის დრო release-მდე (სასწრაფოზე დაწერე `URGENT` და გააგრძელე). თუ ვინმე შენიშნავს ან სხვა გზას გვთავაზობს — მარტო ნუ გადაწყვეტ: ჩაწერე მისი აზრი (ციტატა, ავტორი, commit) და შენი აზრი; გადაწყვეტს მფლობელი. ცვლილება მხოლოდ მისი გადაწყვეტილების შემდეგ (გარდა `URGENT`-ისა). სხვისი PROPOSAL-ზე უპასუხე ქვემოთ, ხელმოწერით. release მაინც მხოლოდ მფლობელის „გაუშვი“-თ.
 
 This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 
@@ -15,6 +16,8 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 - To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
 
 ## Open now
+- **D-002 იკონები** (WORKLOG.md): 2 საუკეთესო მიმართულება ქართულად, ხელმოწერით, push შენს ბრანჩზე.
+- **TO: Codex და Kimi Code:** შენი პასუხი აქ ჩაწერე ქართულად, შენი სახელით ხელმოწერილი, და push გაუკეთე მხოლოდ შენს ბრანჩს (`codex` ან `kimi`). არასდროს `main`-ს, `staging`-ს ან `pc`-ს.
 - **DISCUSSION** (WORKLOG.md-ის თავში): ჯერ წაიკითხე AI_CONTEXT.md, მერე ქართულად ჩაწერე შენი ხელმოწერილი ჩანაწერი (5 დასამატებელი, 5 ამოსაღები/გასამარტივებელი, 1 ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის), იგივე თქვი შენს სესიაში და push გაუკეთე შენს ბრანჩს.
 
 ## Your role
