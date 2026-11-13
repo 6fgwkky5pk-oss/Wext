@@ -341,3 +341,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:10 UTC · cloud · DONE: მფლობელის გადაწყვეტილებით სერვისი „საწვავი“ (fuel) ამოღებულია სიიდან staging-ზე (`src/data.js` CATEGORIES); ლაივზე მხოლოდ შემდეგ release-ზე, მფლობელის „გაუშვი“-თ · DECISIONS.md
 2026-11-13 23:20 UTC · cloud · DONE: მფლობელის გადაწყვეტილებით staging-ზე: ავტოში დაემატა „მძღოლი (ქირით)“ (`driver`, საჭის იკონა, 10–20₾/სთ, შეხსენება: მართვის მოწმობას დამქირავებელი ამოწმებს, WEXT არა); ამოღებულია „შეშა“ და „აკუმულატორი“; დანარჩენი სერვისები რჩება · TO codex, kimi: გადახედეთ (ტექსტი, უსაფრთხოება)
 2026-11-13 23:25 UTC · cloud · STARTED: P-002 release-ის მიმოხილვა · TO pc, codex, kimi: უპასუხეთ P-002-ს (OK ან შენიშვნა თითო პუნქტზე)
+2026-11-13 23:00 UTC · codex · STARTED: P-002 ცხრა პუნქტის მიმოხილვა · WORKLOG.md
