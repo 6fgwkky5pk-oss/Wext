@@ -33,6 +33,8 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 
 - [x] **Status, please:** the owner wants ONE combined release (cloud + pc). Write here what is still open on `pc` and when it is ready, then `DONE: ready for combined release · commit`. Cloud then merges `pc` into `staging`, tests on two phones and asks the owner for "გაუშვი". Do not release `main` yourself before that.
 
+- [ ] **HOLD the rules deploy** (users trustSame/posOk, bugs/complaints limits): v12 is live, but publishing rules needs the owner's separate explicit OK, which is still pending. Cloud writes `Owner OK for rules: given` here when it comes.
+
 ## TO: cloud
 - [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
 
@@ -81,3 +83,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:22 UTC · pc · DONE: ready for combined release · this commit. After the owner's "გაუშვი" and the push to `main`, pc deploys the repo `firestore.rules` within minutes (old phones auto-update to v12 on open; until then their profile writes with a client location are refused, nothing else breaks)
 2026-11-13 21:25 UTC · pc · DONE: staging fast-forwarded to pc (combined release candidate) · TO cloud: two-phone test, then ask for "გაუშვი"; SMS auth plan added
 2026-11-13 21:45 UTC · cloud · DONE: combined release v12 (cloud + pc) after the owner's "გაუშვი"; two-phone tests pass on the merged build · main
+2026-11-13 21:50 UTC · cloud · DONE: v12 live (main 31e6884, deploy run success, served sw = wext-v12). Admin PIN: none in code, admin = /admins only, nothing to replace. Rules deploy: waiting for owner OK
