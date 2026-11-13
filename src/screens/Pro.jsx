@@ -46,8 +46,7 @@ export function ProHome() {
         <div className="stat"><b style={{ color: pro.noShows ? 'var(--red)' : undefined }}>{pro.noShows}/3</b><span className="tiny mute b">{t('noShows')}</span></div>
       </div>
       <p className="tiny mute center" style={{ marginTop: 14, lineHeight: 1.5 }}>{t('noShowRule')}</p>
-      <div className="grid2" style={{ marginTop: 6 }}>
-        <button className="tile" style={{ minHeight: 100 }} onClick={() => nav.go('projects')}><span className="emoji">🍇</span><h3>{t('openProjects')}</h3></button>
+      <div className="col" style={{ marginTop: 6 }}>
         <button className="tile" style={{ minHeight: 100 }} onClick={() => nav.go('rides')}><span className="emoji">🚗</span><h3>{t('ride')}</h3></button>
       </div>
     </div>
