@@ -207,3 +207,41 @@ export function initials(name) {
   const p = name.replace(/ს ბრიგადა$/, '').split(' ')
   return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase()
 }
+
+// Optional price questions per service, asked at registration and in "My services".
+// The first question uses the same unit as TYPICAL, so the answer can be compared with the market range.
+export const PRICE_Q = {
+  plumber: [{ ka: 'ონკანის შეცვლა (სამუშაო)', en: 'Replace a tap (labour)', ru: 'Замена крана (работа)' }, { ka: 'გამოძახება', en: 'Call-out', ru: 'Выезд' }],
+  electric: [{ ka: 'როზეტის ან ჩამრთველის შეცვლა', en: 'Replace a socket or switch', ru: 'Замена розетки/выключателя' }, { ka: 'გამოძახება', en: 'Call-out', ru: 'Выезд' }],
+  appliance: [{ ka: 'დიაგნოსტიკა + მცირე შეკეთება', en: 'Diagnosis + small repair', ru: 'Диагностика + мелкий ремонт' }],
+  handyman: [{ ka: 'მცირე სამუშაო (თაროს დაკიდება)', en: 'Small job (hang a shelf)', ru: 'Мелкая работа (повесить полку)' }, { ka: '1 საათი', en: '1 hour', ru: '1 час' }],
+  painter: [{ ka: '1 მ² კედლის შეღებვა', en: 'Paint 1 m² of wall', ru: 'Покраска 1 м² стены' }],
+  tiler: [{ ka: '1 მ² კაფელის დაგება', en: 'Lay 1 m² of tiles', ru: 'Укладка 1 м² плитки' }, { ka: '1 მ² მეტლახი იატაკზე', en: '1 m² floor tiles', ru: '1 м² плитки на пол' }],
+  carpenter: [{ ka: 'კარის ან კარადის შეკეთება', en: 'Fix a door or wardrobe', ru: 'Ремонт двери или шкафа' }],
+  locksmith: [{ ka: 'კარის გაღება', en: 'Open a locked door', ru: 'Вскрытие двери' }, { ka: 'საკეტის შეცვლა', en: 'Replace a lock', ru: 'Замена замка' }],
+  cleaning: [{ ka: '2 ოთახის დალაგება', en: 'Clean 2 rooms', ru: 'Уборка 2 комнат' }],
+  office: [{ ka: '80 მ² ოფისის დალაგება', en: 'Clean an 80 m² office', ru: 'Уборка офиса 80 м²' }],
+  windows: [{ ka: '1 ფანჯრის რეცხვა', en: 'Wash 1 window', ru: 'Мойка 1 окна' }],
+  harvest: [{ ka: '1 დღე, 1 კაცი', en: '1 day, 1 person', ru: '1 день, 1 человек' }],
+  land: [{ ka: '1 დღე, 1 კაცი', en: '1 day, 1 person', ru: '1 день, 1 человек' }],
+  garden: [{ ka: '1 დღე', en: '1 day', ru: '1 день' }],
+  firewood: [{ ka: '1 კუბი შეშა, მოტანით', en: '1 m³ firewood, delivered', ru: '1 куб дров с доставкой' }],
+  movers: [{ ka: '1 საათი, 1 კაცი', en: '1 hour, 1 person', ru: '1 час, 1 человек' }],
+  cartruck: [{ ka: '1 რეისი ქალაქში', en: '1 trip in town', ru: '1 рейс по городу' }, { ka: '1 კმ ქალაქგარეთ', en: '1 km out of town', ru: '1 км за городом' }],
+  tractor: [{ ka: '1 საათი', en: '1 hour', ru: '1 час' }, { ka: '1 ჰა მოხვნა', en: 'Plough 1 ha', ru: 'Вспашка 1 га' }],
+  excavator: [{ ka: '1 საათი', en: '1 hour', ru: '1 час' }],
+  crane: [{ ka: '1 საათი', en: '1 hour', ru: '1 час' }],
+  carwash: [{ ka: 'გარეცხვა გარედან და შიგნით', en: 'Wash outside and inside', ru: 'Мойка снаружи и внутри' }],
+  bodywork: [{ ka: '1 დეტალის გასწორება', en: 'Fix 1 body panel', ru: 'Рихтовка 1 детали' }],
+  mechanic: [{ ka: 'დიაგნოსტიკა', en: 'Diagnosis', ru: 'Диагностика' }],
+  tow: [{ ka: 'ევაკუაცია ქალაქში', en: 'Tow in town', ru: 'Эвакуация по городу' }, { ka: '1 კმ ქალაქგარეთ', en: '1 km out of town', ru: '1 км за городом' }],
+  tire: [{ ka: '1 საბურავის შეკეთება', en: 'Fix 1 tyre', ru: 'Ремонт 1 колеса' }],
+  battery: [{ ka: 'აკუმულატორის დაქოქვა', en: 'Jump start', ru: 'Прикурить' }],
+  fuel: [{ ka: 'მოტანა (საწვავის ფასის გარდა)', en: 'Delivery (fuel not included)', ru: 'Доставка (без топлива)' }],
+}
+// compare a pro's main price with the market range → 'low' | 'mid' | 'high'
+export function priceLevel(v, range) {
+  if (!v || !range || !range[0] || !range[1]) return null
+  const a = range[0], b = range[1], third = (b - a) / 3
+  return v < a + third ? 'low' : v > b - third ? 'high' : 'mid'
+}

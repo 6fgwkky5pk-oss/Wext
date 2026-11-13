@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
-import { CATEGORIES, catName, TYPICAL, searchCats } from '../data'
+import { CATEGORIES, catName, TYPICAL, searchCats, PRICE_Q } from '../data'
 import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
@@ -104,12 +104,7 @@ export function ProSettings() {
       {pro.cats.length > 0 && <>
         <h3 style={{ marginTop: 8 }}>🏷️ {t('myPrice')}</h3>
         <p className="tiny mute b" style={{ margin: 0 }}>{t('myPriceNote')}</p>
-        {pro.cats.map(c => { const d = TYPICAL[c] || [], v = (pro.prices || {})[c] || []
-          const put = (i, x) => { const cur = [...v]; cur[i] = x === '' ? '' : +x; api.updatePro({ prices: { ...(pro.prices || {}), [c]: cur } }) }
-          return <div key={c} className="row" style={{ gap: 6 }}><span className="grow small b ell">{catIcon(c)} {catName(c, lang)}</span>
-            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={d[0] != null ? String(d[0]) : ''} value={v[0] ?? ''} onChange={e => put(0, e.target.value)} />
-            <span>–</span>
-            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={d[1] != null ? String(d[1]) : ''} value={v[1] ?? ''} onChange={e => put(1, e.target.value)} /><span className="small b">₾</span></div> })}
+        <PriceQs cats={pro.cats} prices={pro.prices || {}} onChange={prices => api.updatePro({ prices })} />
       </>}
       <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
       <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
@@ -121,20 +116,35 @@ export function ProSettings() {
   </div>
 }
 
+// Optional price questions per service (one number each, skippable)
+function PriceQs({ cats, prices, onChange }) {
+  const { lang } = useT()
+  return <div className="col" style={{ gap: 10 }}>{cats.map(c => { const qs = PRICE_Q[c] || [], v = prices[c] || [], d = TYPICAL[c]
+    const put = (i, x) => { const cur = [...v]; cur[i] = x === '' ? '' : +x; onChange({ ...prices, [c]: cur }) }
+    return <div key={c} className="card" style={{ padding: 12 }}>
+      <b>{catIcon(c)} {catName(c, lang)}</b>
+      {qs.map((q, i) => <div key={i} className="row" style={{ gap: 8, marginTop: 8 }}>
+        <span className="grow small b">{q[lang] || q.en}</span>
+        <input className="inp" style={{ width: 84, height: 42 }} type="number" inputMode="numeric" placeholder={i === 0 && d ? d[0] + '–' + d[1] : ''} value={v[i] ?? ''} onChange={e => put(i, e.target.value)} />
+        <span className="small b">₾</span></div>)}
+    </div> })}</div>
+}
+
 // First time in "I work" mode: what do you do → solo/crew/company → how it works
 export function ProJoin() {
   const { t, lang } = useT()
   const pro = useStore(s => s.user.pro)
   const [step, setStep] = useState(0), [jq, setJq] = useState('')
+  const [prices, setPrices] = useState(pro.prices || {})
   const [cats, setCats] = useState(pro.cats)
   const [type, setType] = useState(pro.type)
   const [n, setN] = useState(Math.max(pro.members, 3))
   const tog = id => setCats(cats.includes(id) ? cats.filter(c => c !== id) : [...cats, id])
-  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, registered: true, stopped: false }); setTimeout(() => api.setOnline(true), 300) }
+  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, prices, registered: true, stopped: false }); setTimeout(() => api.setOnline(true), 300) }
   return <div className="scroll">
     <div className="fhead"><span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span><RoleSwitch /></div>
     <div className="pad col" style={{ gap: 12 }}>
-      <div className="steps">{[0, 1, 2].map(i => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
+      <div className="steps">{[0, 1, 2, 3].map(i => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
       {step === 0 && pro.stopped && pro.cats?.length > 0 && <div className="card" style={{ background: '#E9F8EF' }}>
         <b>{t('restartTitle')}</b>
         <div className="row" style={{ flexWrap: 'wrap', gap: 6, marginTop: 8 }}>{pro.cats.map(c => <span key={c} className="mc" style={{ background: catTint(c) }}>{catIcon(c)} {catName(c, lang)}</span>)}</div>
@@ -148,13 +158,19 @@ export function ProJoin() {
         <button className="btn primary" style={{ marginTop: 8 }} disabled={!cats.length} onClick={() => setStep(1)}>{t('next')} <Icon n="right" /></button>
       </>}
       {step === 1 && <>
+        <h1 style={{ marginTop: 8 }}>🏷️ {t('priceStepTitle')}</h1>
+        <p className="mute b small" style={{ margin: 0 }}>{t('priceStepSub')}</p>
+        <PriceQs cats={cats} prices={prices} onChange={setPrices} />
+        <div className="grid2" style={{ gridTemplateColumns: '1fr 2fr' }}><button className="btn outline" onClick={() => setStep(0)}>{t('back')}</button><button className="btn primary" onClick={() => setStep(2)}>{Object.values(prices).some(x => x.some(Boolean)) ? t('next') : t('skip')} <Icon n="right" /></button></div>
+      </>}
+      {step === 2 && <>
         <h1 style={{ marginTop: 8 }}>{t('howWork')}</h1>
         {[['individual', '🙋', t('alone'), t('aloneSub')], ['brigade', '👷', t('brigade'), t('crewSub')], ['company', '🏢', t('company'), t('companySub')]].map(([k, e, l, sub]) =>
           <button key={k} className={'rolecard' + (type === k ? ' on' : '')} onClick={() => setType(k)}><span className="e">{e}</span><div><b style={{ fontSize: 18 }}>{l}</b><div className="small mute b">{sub}</div></div></button>)}
         {type !== 'individual' && <div className="card row between"><b>{t('howMany')}</b><Stepper v={n} set={setN} min={2} max={200} /></div>}
-        <div className="grid2" style={{ gridTemplateColumns: '1fr 2fr' }}><button className="btn outline" onClick={() => setStep(0)}>{t('back')}</button><button className="btn primary" onClick={() => setStep(2)}>{t('next')}</button></div>
+        <div className="grid2" style={{ gridTemplateColumns: '1fr 2fr' }}><button className="btn outline" onClick={() => setStep(1)}>{t('back')}</button><button className="btn primary" onClick={() => setStep(3)}>{t('next')}</button></div>
       </>}
-      {step === 2 && <>
+      {step === 3 && <>
         <h1 style={{ marginTop: 8 }}>{t('readyTitle')}</h1>
         <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>{cats.map(c => <span key={c} className="badge y" style={{ fontSize: 13, padding: '6px 10px' }}>{catIcon(c)} {catName(c, lang)}</span>)}</div>
         <div className="card col" style={{ gap: 16 }}>

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
-import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh, priceLevel } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -113,7 +113,7 @@ export function CallNow({ cat: initCat, group }) {
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
-  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: (p.prices || {})[cat] })) : [], [cat, loc, blocked, brig])
+  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: ((p.prices || {})[cat] || [])[0] || null, priceUnit: (TYPICAL[cat] || [])[2], priceLvl: priceLevel(((p.prices || {})[cat] || [])[0], typicalFor(cat)) })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
   const watching = useStore(s => s.watchCat) === cat
   const p = cat ? priceFor(cat, 'instant', brig) : null
