@@ -109,7 +109,7 @@ export function Voice({ threadId, reqId, answerId }) {
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish() }, 12000)
     } else if (answerId) {
       tm = setTimeout(() => { setState('failed'); finish() }, 25000)
-      cloud.answerCall({ callId: answerId, onState, onRemote }).then(c => { call.current = c }).catch(() => { setState('ended'); finish() })
+      cloud.answerCall({ callId: answerId, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(() => { setState('ended'); finish() })
     } else if (cloud.callFrom(getState().ringing, meta.other)) {
       // the other person is already calling me: answer that call instead of starting a second one
       const r = getState().ringing; api.clearRinging(); done.current = true
@@ -117,7 +117,7 @@ export function Voice({ threadId, reqId, answerId }) {
     } else {
       api.setOutgoing(meta.other)
       ring = setInterval(() => ping('ring'), 2200); ping('ring')
-      cloud.startCall({ to: meta.other, threadId, reqId, fromName: getState().user.name, onState, onRemote }).then(c => { call.current = c }).catch(() => { setState('ended'); finish() })
+      cloud.startCall({ to: meta.other, threadId, reqId, fromName: getState().user.name, onState, onRemote }).then(c => { call.current = c; if (done.current) c.end() }).catch(() => { setState('ended'); finish() })
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish('missed') }, 30000)
     }
     const bye = () => { if (!done.current) { done.current = true; call.current?.end() } }

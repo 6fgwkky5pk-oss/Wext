@@ -275,13 +275,16 @@ export async function startCall({ to, threadId, reqId, fromName, onState, onRemo
   pc.onconnectionstatechange = () => onState(pc.connectionState)
   const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
   await setDoc(callRef, { from: uid, fromIds: [uid, ...myIds.filter(x => x !== uid)], fromName, to, threadId, reqId: reqId || null, offer: { type: offer.type, sdp: offer.sdp }, state: 'ringing', ts: Date.now() })
-  const u1 = onSnapshot(callRef, d => {
+  // the callee's ICE candidates can arrive before the answer; addIceCandidate would fail and they were lost: hold them until the answer is applied
+  const pending = []
+  const addCand = x => pc.addIceCandidate(new RTCIceCandidate(x)).catch(() => {})
+  const u1 = onSnapshot(callRef, async d => {
     const c = d.data(); if (!c) return
-    if (c.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(c.answer))
+    if (c.answer && !pc.currentRemoteDescription) { await pc.setRemoteDescription(new RTCSessionDescription(c.answer)).catch(() => {}); pending.splice(0).forEach(addCand) }
     if (c.state === 'answered') onState('answered')
     if (c.state === 'declined' || c.state === 'ended' || c.state === 'busy') onState(c.state === 'busy' ? 'declined' : c.state)
   })
-  const u2 = onSnapshot(collection(callRef, 'ac'), s => s.docChanges().forEach(ch => ch.type === 'added' && pc.addIceCandidate(new RTCIceCandidate(ch.doc.data())).catch(() => {})))
+  const u2 = onSnapshot(collection(callRef, 'ac'), s => s.docChanges().forEach(ch => { if (ch.type !== 'added') return; const x = ch.doc.data(); pc.remoteDescription ? addCand(x) : pending.push(x) }))
   return { id: callRef.id, pc, local, end: (state = 'ended') => { u1(); u2(); updateDoc(callRef, { state }).catch(() => {}); pc.close(); local.getTracks().forEach(t => t.stop()) } }
 }
 export async function answerCall({ callId, onState, onRemote }) {
@@ -298,7 +301,7 @@ export async function answerCall({ callId, onState, onRemote }) {
   const ans = await pc.createAnswer(); await pc.setLocalDescription(ans)
   await updateDoc(callRef, { answer: { type: ans.type, sdp: ans.sdp }, state: 'answered' })
   const u1 = onSnapshot(collection(callRef, 'cc'), s => s.docChanges().forEach(ch => ch.type === 'added' && pc.addIceCandidate(new RTCIceCandidate(ch.doc.data())).catch(() => {})))
-  const u2 = onSnapshot(callRef, d => { const x = d.data(); if (x?.state === 'ended') onState('ended') })
+  const u2 = onSnapshot(callRef, d => { const x = d.data(); if (x?.state === 'ended' || x?.state === 'declined') onState('ended') })
   return { id: callId, call: c, pc, local, end: (state = 'ended') => { u1(); u2(); updateDoc(callRef, { state }).catch(() => {}); pc.close(); local.getTracks().forEach(t => t.stop()) } }
 }
 export const setCallState = (id, state) => updateDoc(doc(db, 'calls', id), { state }).catch(() => {})
