@@ -39,7 +39,9 @@ export function ProHome() {
         {j.status === 'accepted' && !j.onWayAt && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proOnWay(j.id)}>🚗 {t('stepOnWay')}</button>}
         {j.status === 'accepted' && j.onWayAt && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proArrived(j.id)}><Icon n="pin" s={18} />{t('stepArrived')}</button>}
         {j.status === 'agreed' && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proDone(j.id)}><Icon n="check" />{t('stepDone')}</button>}
-        {j.status !== 'agreed' && <div className="grid2 dealrow" style={{ marginTop: 10 }}>
+        {j.status !== 'agreed' && j.clientDeal === 'yes' && <div className="badge g" style={{ marginTop: 10, display: 'block', textAlign: 'center', padding: 8 }}>🤝 {t('clientAgreed')}</div>}
+        {j.status !== 'agreed' && j.proDeal === 'yes' && <p className="center small b mute" style={{ margin: '10px 0 0' }}>{t('waitClientDeal')}</p>}
+        {j.status !== 'agreed' && j.proDeal !== 'yes' && <div className="grid2 dealrow" style={{ marginTop: 10 }}>
           <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.proNoDeal(j.id)}>✕ {t('noDeal')}</button>
           <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
         </div>}

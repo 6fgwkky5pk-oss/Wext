@@ -301,7 +301,9 @@ export function RequestTrack({ id }) {
           <span className="small b">{t('fee')}</span>
           <span className="row" style={{ gap: 8 }}><b>{money(pay.amount)}</b><span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{t(pay.status)}</span></span>
         </div>}
-        {['accepted', 'arrived'].includes(r.status) && <div className="grid2 dealrow" style={{ marginTop: 12 }}>
+        {['accepted', 'arrived'].includes(r.status) && r.proDeal === 'yes' && <div className="badge g" style={{ marginTop: 12, display: 'block', textAlign: 'center', padding: 8 }}>🤝 {t('proAgreed')}</div>}
+        {['accepted', 'arrived'].includes(r.status) && r.clientDeal === 'yes' && <p className="center small b mute" style={{ margin: '12px 0 0' }}>{t('waitProDeal')}</p>}
+        {['accepted', 'arrived'].includes(r.status) && r.clientDeal !== 'yes' && <div className="grid2 dealrow" style={{ marginTop: 12 }}>
           <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.noDeal(id)}>✕ {t('noDeal')}</button>
           <button className="btn green" onClick={() => api.agree(id)}>🤝 {t('agreed')}</button>
         </div>}
