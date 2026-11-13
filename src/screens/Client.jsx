@@ -172,6 +172,7 @@ export function CallNow({ cat: initCat, group }) {
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
         {typ && <div className="typical"><span>🏷️ {t('typical')}</span><b>{typ[0]}–{typ[1]} ₾{typ[2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[typ[2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
+        {cat === 'driver' && <div className="hold" style={{ marginTop: 12 }}><span>🪪</span><span>{t('driverLicense')}</span></div>}
         <div className="grid2" style={{ marginTop: 14 }}><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
         <div className="field" style={{ marginTop: 10 }}><label>{t('note')}</label>
           <textarea className="inp" placeholder={(notePh(cat, lang) ? (lang === 'ka' ? 'მაგ. ' : '') + notePh(cat, lang) : t('notePh'))} value={note} onChange={e => setNote(e.target.value)} /></div>
