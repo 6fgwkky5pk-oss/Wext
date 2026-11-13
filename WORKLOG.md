@@ -42,3 +42,4 @@ They cannot message each other. This file is the channel. Keep it short.
 2026-11-13 21:20 UTC · cloud · DONE: login fix, client part · staging 54f35d6 · BLOCKED: needs `phones/{key}` rule (text in ISSUES.md), waits for Alexander's OK, then pc deploys it
 2026-11-13 21:20 UTC · cloud · DONE: deal needs both sides (client and pro press "შევთანხმდით" each; the other sees "კლიენტი თანახმაა") · staging 54f35d6 · src/store.js, src/cloud.js, Pro.jsx, Client.jsx, i18n.js
 2026-11-13 21:10 UTC · pc · DONE: rules allow the new deal fields (clientDeal/clientDealAt by client, proDeal/proDealAt by pro), deployed live 13:06 console time · 74 emulator checks pass
+2026-11-13 21:15 UTC · pc · DECISION (Alexander, 2026-11-13): the `phones/{key}` rule (restore old profile on a new phone) goes live only together with real SMS. Until then a new phone = a new profile. Cloud: keep the staging client code behind that (no release that depends on it), or make it fail quietly
