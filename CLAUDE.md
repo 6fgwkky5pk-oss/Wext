@@ -43,7 +43,7 @@ iPhone: status bar `black-translucent`, layout uses `--safe-t`. Sound: unlock on
 Auto from phone, change only in Profile → Language (searchable). ka, en, ru, de, tr in `src/i18n.js`; uk, hy, az, es, fr, ar (RTL), zh in `src/locales/*.json`. New keys: add ka/en/ru at least.
 
 ## Admin
-Online: admins are uids listed in Firestore `/admins/{uid}` (added by hand in the console); open by tapping the version line in Profile 5×. The old client-side PIN path is for offline demo only and should be removed; real admin auth is TODO. Tabs: stats + demand, users (block, no-deal flags), complaints, prices, bugs.
+Online: admins are uids listed in Firestore `/admins/{uid}` (added by hand in the console); open by tapping the version line in Profile 5×. There is no PIN (removed 2026-11-13); in the offline demo, admin opens only in a local dev build. Tabs: stats + demand, users (block, no-deal flags), complaints, prices, bugs.
 
 ## Pending / next
 Real SMS login · push notifications (sound when app closed) · real payments (TBC/BOG) · stricter Firestore rules · real admin auth · own TURN server · per-service working hours.

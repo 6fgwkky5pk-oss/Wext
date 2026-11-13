@@ -6,8 +6,6 @@ import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
 import { useNav } from '../nav'
 import * as cloud from '../cloud'
 
-const ADMIN_PIN = '2468'
-
 export function Profile({ install }) {
   const big = useStore(s => s.big)
   const { t, lang } = useT()
@@ -15,10 +13,13 @@ export function Profile({ install }) {
   const user = useStore(s => s.user)
   const [langSheet, setLangSheet] = useState(false)
   const [taps, setTaps] = useState(0)
-  const user0 = useStore(s => s.user)
-  const [pin, setPin] = useState(() => !CLOUD && new URLSearchParams(location.search).has('admin') && !user0?.admin ? '' : null)
-  // online: admin = server-side admin list (rules); the PIN exists only for the offline demo
-  const openAdmin = () => { if (user.admin) return nav.go('admin'); if (!CLOUD) return setPin(''); cloud.isAdmin().then(ok => { if (ok) { api.setAdmin(true); nav.go('admin') } }) }
+  // admin = server-side list /admins/{uid}, enforced by firestore.rules. No PIN in the client.
+  // Offline demo (no Firebase config): admin opens only in a local dev build (npm run dev).
+  const openAdmin = () => {
+    if (user.admin) return nav.go('admin')
+    if (!CLOUD) { if (import.meta.env.DEV) { api.setAdmin(true); nav.go('admin') } return }
+    cloud.isAdmin().then(ok => { if (ok) { api.setAdmin(true); nav.go('admin') } })
+  }
   const Row = ({ ic, label, right, onClick, danger }) => <button className="listrow" onClick={onClick} style={danger ? { color: 'var(--red)' } : null}><span className="ico">{ic}</span><span className="grow">{label}</span>{right}<Icon n="right" s={18} /></button>
   const isPro = user.role === 'pro'
   return <div className="scroll">
@@ -44,8 +45,6 @@ export function Profile({ install }) {
       <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); openAdmin() } }}>WEXT 0.1 · {t('tagline')}</p>
     </div>
     {langSheet && <LangSheet lang={lang} t={t} onClose={() => setLangSheet(false)} />}
-    {pin != null && <Sheet onClose={() => setPin(null)}><h2>{t('admin')}</h2>
-      <input className="inp" style={{ marginTop: 12, textAlign: 'center', fontSize: 24, letterSpacing: 10 }} type="password" inputMode="numeric" autoFocus value={pin} onChange={e => { setPin(e.target.value); if (e.target.value === ADMIN_PIN) { api.setAdmin(true); setPin(null); nav.go('admin') } }} /></Sheet>}
   </div>
 }
 

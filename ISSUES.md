@@ -34,7 +34,7 @@ To check on real phones: two phones in Telavi, compare the km shown with Google 
 ## 3. Other pending
 - Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
 - Firestore rules: strict `firestore.rules` is in the repo; confirm it is deployed in the Firebase console.
-- Admin: remove the old client-side PIN path from `src/screens/Profile.jsx` (public repo); keep only `/admins/{uid}`.
+- ✅ Admin PIN removed from the client (`pc`, 2026-11-13). Admin = only `/admins/{uid}`. ⚠️ Live `main` still has the PIN path and the old rules (any signed-in user can write `config`): fixed only after Alexander creates his `/admins/{uid}` doc, the rules are deployed and `pc` is released.
 - Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
 - My-pros tab: the call button reuses the old request thread; verify after a job is finished.
 - Test isolation: add a `wext-test` Firebase project or the emulator so tests never touch real users.

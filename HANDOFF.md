@@ -94,7 +94,7 @@ The repo is **public**, so it holds no passwords, PINs, keys or real phone numbe
 | GitHub Pages (live site https://6fgwkky5pk-oss.github.io/Wext/) | Open, deployed by `.github/workflows/deploy.yml` on push to `main` | Uses the built-in `GITHUB_TOKEN`; no extra secrets |
 | Firebase project `wext-af650` (Firestore europe-west3, Anonymous Auth) | Open, **Spark (free) plan** | Alexander's Google account. The web config in `src/firebase-config.js` is public by design. |
 | Firestore security rules | `firestore.rules` in the repo is the strict version. Whether it is **deployed** in the Firebase console is **unknown**: it was "any signed-in user can read/write" earlier. Check in console → Firestore → Rules. | Firebase console |
-| Admin list | Server-side: documents in `/admins/{uid}`, created by hand in the Firebase console (on `pc`). The old client-side PIN still exists in the code for offline demo mode; it is weak and in a public repo, so treat it as known and remove it. | Firebase console |
+| Admin list | Server-side: documents in `/admins/{uid}`, created by hand in the Firebase console (on `pc`). The client-side PIN was removed on `pc` (2026-11-13); live `main` still has it until release. | Firebase console |
 | Domain `wext.ge` / `getwext.com` | **Not registered** | — |
 | SMS (login codes) | **Not open.** The login code is simulated (banner auto-fills it). Options: Magti, Silknet, Firebase Phone Auth. | — |
 | Payments (TBC / BOG) | **Not open, no contract.** Mock "test mode" in `src/payments.js`. | — |
@@ -198,7 +198,7 @@ The currency is GEL (₾). USD values are approximate, at about 1₾ ≈ $0.37; 
 - **Half-done:**
   - Calls: work in browsers. Sound on real iPhones and delays on mobile data have not been verified, and nothing rings when the app is closed or locked.
   - Firestore rules: the strict version is in the repo; its deployment is unconfirmed.
-  - Admin auth: server list on `pc`, but the old PIN code path remains.
+  - Admin auth: server list on `pc`, PIN removed on `pc`; live still has the PIN until release.
   - Map tiles provider.
 - **Not started:**
   - real SMS
