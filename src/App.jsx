@@ -25,12 +25,19 @@ function useLocation() {
   }, [])
 }
 
+let BIP = null
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); BIP = e; window.dispatchEvent(new Event('wext-bip')) })
+window.addEventListener('appinstalled', () => { BIP = null; window.dispatchEvent(new Event('wext-bip')) })
 function useInstall() {
-  const [evt, setEvt] = useState(null)
-  useEffect(() => { const h = e => { e.preventDefault(); setEvt(e) }; window.addEventListener('beforeinstallprompt', h); return () => window.removeEventListener('beforeinstallprompt', h) }, [])
+  const [, force] = useState(0)
+  useEffect(() => { const h = () => force(x => x + 1); window.addEventListener('wext-bip', h); return () => window.removeEventListener('wext-bip', h) }, [])
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone
   if (standalone) return null
-  return evt ? { kind: 'android', go: () => evt.prompt() } : { kind: /iPhone|iPad/.test(navigator.userAgent) ? 'ios' : 'other' }
+  const ua = navigator.userAgent
+  if (BIP) return { kind: 'android', go: () => { const e = BIP; e.prompt(); e.userChoice && e.userChoice.then(() => { BIP = null; force(x => x + 1) }) } }
+  if (/iPhone|iPad|iPod/.test(ua)) return { kind: 'ios' }
+  if (/Android/.test(ua)) return { kind: 'androidManual' }
+  return null
 }
 
 function Shell() {
@@ -61,12 +68,14 @@ function Shell() {
     home: () => { setStack([]); setTab('home') },
   }), [])
 
-  if (!user) return <div className="app"><Onboarding /><Toaster /></div>
+  const installFn = inst ? (inst.kind === 'android' ? inst.go : () => setIosHelp(inst.kind)) : null
+  const installSheet = iosHelp && <Sheet onClose={() => setIosHelp(false)}><div className="center" style={{ fontSize: 48 }}>📲</div><h2 className="center">{t('install')}</h2><p className="center b" style={{ fontSize: 17, lineHeight: 1.5 }}>{t(iosHelp === 'androidManual' ? 'installAndroid' : 'installIos')}</p><button className="btn primary" onClick={() => setIosHelp(false)}>{t('done')}</button></Sheet>
+
+  if (!user) return <div className="app"><Onboarding install={installFn} />{installSheet}<Toaster /></div>
 
   const top = stack.slice(-1)[0]
   const Screen = top && SCREENS[top.name]
   const isPro = user.role === 'pro'
-  const installFn = inst ? (inst.kind === 'android' ? inst.go : () => setIosHelp(true)) : null
   const tabs = [['home', 'home', t('home')], ['activity', 'act', t('activity')], ['chats', 'chat', t('chats')], ['profile', 'user', t('profile')]]
 
   return <Nav.Provider value={nav}>
@@ -80,7 +89,7 @@ function Shell() {
       </>}
       {isPro && <Incoming />}
       <IncomingCall />
-      {iosHelp && <Sheet onClose={() => setIosHelp(false)}><div className="center" style={{ fontSize: 48 }}>📲</div><h2 className="center">{t('install')}</h2><p className="center b" style={{ fontSize: 17, lineHeight: 1.5 }}>{t('installIos')}</p><button className="btn primary" onClick={() => setIosHelp(false)}>{t('done')}</button></Sheet>}
+      {installSheet}
       <Toaster />
     </div>
   </Nav.Provider>

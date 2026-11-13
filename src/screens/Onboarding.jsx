@@ -6,7 +6,7 @@ import { regionFor } from '../data'
 
 const CC = { ge: '+995', tr: '+90', de: '+49' }
 
-export default function Onboarding() {
+export default function Onboarding({ install }) {
   const { t, lang } = useT()
   const loc = useStore(s => s.loc)
   const [step, setStep] = useState(0)
@@ -20,11 +20,16 @@ export default function Onboarding() {
 
   const sendCode = () => {
     // SMS provider is plugged in on the backend; in test mode the code is shown on screen
-    const c = String(Math.floor(1000 + Math.random() * 9000))
-    setSent(c); toast('💬 ' + t('codeSent', { code: c })); setStep(2)
+    // test mode: no SMS gateway yet -> go straight to name step (no code needed)
+    setStep(3)
   }
 
   return <div className="splash">
+    {install && <button onClick={install} className="row" style={{ gap: 10, background: '#111', color: '#fff', borderRadius: 16, padding: '10px 12px', marginBottom: 14, width: '100%', textAlign: 'left' }}>
+      <img src="icons/icon-192.png" alt="" style={{ width: 38, height: 38, borderRadius: 10 }} />
+      <b className="grow small">📲 {t('install')}</b>
+      <span className="btn sm yellow" style={{ pointerEvents: 'none' }}>{t('installBtn')}</span>
+    </button>}
     <div className="logo"><img src="icons/icon-192.png" alt="" />WEXT</div>
     <div style={{ marginTop: 28 }}>
       <h1 style={{ fontSize: 34 }}>{t('tagline')}</h1>
@@ -45,7 +50,7 @@ export default function Onboarding() {
           <div className="phone"><div className="inp cc">{cc}</div>
             <input className="inp" type="tel" inputMode="tel" autoFocus placeholder="5XX XX XX XX" value={phone} onChange={e => setPhone(e.target.value)} /></div>
         </div>
-        <button className="btn primary" disabled={digits.length < 7} onClick={sendCode}>{t('sendCode')}</button>
+        <button className="btn primary" disabled={digits.length < 7} onClick={sendCode}>{t('continue')} <Icon n="right" /></button>
         <p className="tiny center" style={{ opacity: .6, margin: 0 }}>{t('terms')}</p>
       </>}
 
