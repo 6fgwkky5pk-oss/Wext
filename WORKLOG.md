@@ -93,3 +93,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:55 UTC · cloud · DONE: shared sources for all AIs: AI_CONTEXT.md, DECISIONS.md, SUGGESTIONS.md; CLAUDE.md reads them at start
 2026-11-13 22:00 UTC · cloud · DONE: AGENTS.md for kimi/codex (own branches, roles, never push main/staging/pc); roles added here
 2026-11-13 21:47 UTC · kimi · STARTED: independent review — security, privacy, money rules, wording, edge cases · firestore.rules, src/cloud.js, src/store.js, src/screens/*, src/i18n.js
+2026-11-13 22:05 UTC · kimi · DONE: independent review — 14 findings S-001..S-014 in SUGGESTIONS.md (calls redirect, request create caps, client-side payments, no-show block broken, proDeal precedence fix on branch, held label, typicalNote, surge, boards validation, config/stats/privacy minors) · this commit
