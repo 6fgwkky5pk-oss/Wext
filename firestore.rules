@@ -28,8 +28,8 @@ service cloud.firestore {
       let n = request.resource.data;
       let ch = n.diff(r).affectedKeys();
       let u = request.auth.uid;
-      return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'notified', 'current', 'windowEnds', 'log', 'radius']))
-        || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt']))
+      return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'clientDeal', 'clientDealAt', 'notified', 'current', 'windowEnds', 'log', 'radius']))
+        || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt', 'proDeal', 'proDealAt']))
         || (u in r.get('notified', []) && r.status == 'searching' && n.status == 'accepted' && n.proId == u && ch.hasOnly(['status', 'proId', 'proName', 'eta', 'acceptedAt', 'threadId']))
         || (u in r.get('notified', []) && ch.hasOnly(['declined']));
     }
