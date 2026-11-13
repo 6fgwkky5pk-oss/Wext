@@ -125,11 +125,16 @@ export function ProJoin() {
   const [type, setType] = useState(pro.type)
   const [n, setN] = useState(Math.max(pro.members, 3))
   const tog = id => setCats(cats.includes(id) ? cats.filter(c => c !== id) : [...cats, id])
-  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, registered: true }); setTimeout(() => api.setOnline(true), 300) }
+  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, registered: true, stopped: false }); setTimeout(() => api.setOnline(true), 300) }
   return <div className="scroll">
     <div className="fhead"><span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span><RoleSwitch /></div>
     <div className="pad col" style={{ gap: 12 }}>
       <div className="steps">{[0, 1, 2].map(i => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
+      {step === 0 && pro.stopped && pro.cats?.length > 0 && <div className="card" style={{ background: '#E9F8EF' }}>
+        <b>{t('restartTitle')}</b>
+        <div className="row" style={{ flexWrap: 'wrap', gap: 6, marginTop: 8 }}>{pro.cats.map(c => <span key={c} className="mc" style={{ background: catTint(c) }}>{catIcon(c)} {catName(c, lang)}</span>)}</div>
+        <button className="btn green" style={{ marginTop: 10 }} onClick={() => api.restartWork()}>▶ {t('restartBtn')}</button>
+      </div>}
       {step === 0 && <>
         <h1 style={{ marginTop: 8 }}>{t('joinTitle')}</h1>
         <p className="mute b small" style={{ margin: 0 }}>{t('joinSub')}</p>
