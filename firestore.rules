@@ -10,17 +10,29 @@ service cloud.firestore {
     // a request is visible only to its client, its accepted pro, pros it was offered to, and admins
     function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || request.auth.uid in r.get('notified', []); }
     // chat ids: t_{requestId} (client + accepted pro), p_{projectId}_{userId} (owner + that user), d_{rideId}_{userId} (driver + that user)
-    function threadSide(tid) {
+    function threadSide(tid) { return sideOf(tid, request.auth.uid); }
+    function sideOf(tid, u) {
       let p = tid.split('_');
-      return (p[0] == 't' && p.size() == 2 && inJob(get(/databases/$(db)/documents/requests/$(p[1])).data))
-        || (p[0] == 'p' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/projects/$(p[1])).data.ownerId))
-        || (p[0] == 'd' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/rides/$(p[1])).data.driverId));
+      return (p[0] == 't' && p.size() == 2 && inJob(get(/databases/$(db)/documents/requests/$(p[1])).data, u))
+        || (p[0] == 'p' && p.size() == 3 && (u == p[2] || u == get(/databases/$(db)/documents/projects/$(p[1])).data.ownerId))
+        || (p[0] == 'd' && p.size() == 3 && (u == p[2] || u == get(/databases/$(db)/documents/rides/$(p[1])).data.driverId));
     }
     function statsOk() {
       let old = resource == null ? {} : resource.data;
       return request.resource.data.keys().hasAll(old.keys()) && request.resource.data.diff(old).affectedKeys().size() <= 3;
     }
-    function inJob(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null); }
+    function inJob(r, u) { return u == r.clientId || u == r.get('proId', null); }
+    // who may change which fields of a request
+    function reqUpdateOk() {
+      let r = resource.data;
+      let n = request.resource.data;
+      let ch = n.diff(r).affectedKeys();
+      let u = request.auth.uid;
+      return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'notified', 'current', 'windowEnds', 'log', 'radius']))
+        || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt']))
+        || (u in r.get('notified', []) && r.status == 'searching' && n.status == 'accepted' && n.proId == u && ch.hasOnly(['status', 'proId', 'proName', 'eta', 'acceptedAt', 'threadId']))
+        || (u in r.get('notified', []) && ch.hasOnly(['declined']));
+    }
 
     match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid) && !(request.resource.data.get('pro', {}).get('verified', false) == true) || isAdmin(); }
     match /private/{uid}  { allow read, write: if me(uid); }
@@ -32,10 +44,8 @@ service cloud.firestore {
       allow write: if isAdmin() || (signedIn() && id in ['cats', 'misses'] && statsOk()); }
     match /requests/{id} {
       allow read: if signedIn() && (reqSide(resource.data) || isAdmin());
-      allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;
-      allow update: if signedIn() && (resource.data.clientId == request.auth.uid
-        || resource.data.proId == request.auth.uid
-        || request.auth.uid in resource.data.notified);
+      allow create: if signedIn() && request.resource.data.clientId == request.auth.uid && request.resource.data.get('proId', null) == null;
+      allow update: if signedIn() && (reqUpdateOk() || isAdmin());
     }
     match /threads/{tid}/msgs/{m} {
       allow read: if signedIn() && (threadSide(tid) || isAdmin());
@@ -45,11 +55,18 @@ service cloud.firestore {
       // only the two sides may read a call (it holds network addresses)
       allow read: if signedIn() && callSide(resource.data);
       allow update: if signedIn() && callSide(resource.data);
-      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+      // a call may only go to someone I share a job, ride or project with
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid && request.resource.data.threadId is string
+        && sideOf(request.resource.data.threadId, request.auth.uid) && sideOf(request.resource.data.threadId, request.resource.data.to);
       match /{sub}/{c} { allow read, write: if signedIn() && callSide(get(/databases/$(db)/documents/calls/$(id)).data); }
     }
-    match /projects/{id}  { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.ownerId == request.auth.uid; }
-    match /rides/{id}     { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
+    // only the owner/driver edits a project/ride; others may only join or book a seat
+    match /projects/{id}  { allow read: if signedIn(); allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if signedIn() && ((resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joins']));
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid; }
+    match /rides/{id}     { allow read: if signedIn(); allow create: if signedIn() && request.resource.data.driverId == request.auth.uid;
+      allow update: if signedIn() && ((resource.data.driverId == request.auth.uid && request.resource.data.driverId == request.auth.uid) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookings']));
+      allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
     match /complaints/{id} { allow create: if signedIn(); allow read: if isAdmin(); }
     match /bugs/{id}       { allow create: if signedIn(); allow read: if isAdmin(); }
   }
