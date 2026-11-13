@@ -55,7 +55,7 @@ export function Home({ install }) {
         {!locReal && <button className="locwarn" onClick={() => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Safari → Location'), { enableHighAccuracy: true, timeout: 15000 })}>📍 <span className="grow">{t('locOffWarn')}</span><Icon n="right" s={16} /></button>}
         {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
           <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
-          <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
+          <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : active.status === 'agreed' ? t('agreedOk') : active.status === 'arrived' ? t('arrivedOk') : t('accepted')}</b><Icon n="right" s={18} />
         </button>}
         {!active && last && <button className="againbar" onClick={() => nav.go('call', { cat: last.cat })}>
           <span className="e">🔁</span><span className="grow col" style={{ textAlign: 'left', gap: 0 }}><b className="ell">{t('again', { name: last.proName })}</b><small>{t('againSub', { cat: catName(last.cat, lang) })}</small></span><Icon n="right" s={18} />

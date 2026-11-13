@@ -28,3 +28,16 @@ To check on real phones: two phones in Telavi, compare the km shown with Google 
 
 ## 3. Other pending
 Real SMS login · real payments (TBC/BOG) · stricter Firestore rules · real admin auth · per-service working hours.
+
+## Order of work for calls (decided with Alexander, 2026-11-13)
+1. **Own TURN server** (instead of the free public openrelay, so calls connect on every network).
+   Alexander does: opens a TURN account or a small VPS (coturn) with the company card and gives the credentials to the server settings only, never into chat or git.
+   Claude does: reads the credentials from a Cloud Function / server setting, switches `ICE` in `src/cloud.js`.
+2. **Web Push** (sound when the app is closed).
+   Alexander does: upgrades Firebase to the Blaze plan (card), creates the VAPID key pair in the Firebase console, confirms the sender (Cloud Functions). Phones: iOS 16.4+ and the app added to the Home Screen.
+   Claude does: service worker `push` handler, token saving, sender function.
+3. **Capacitor** (ring on a locked screen like a normal call: CallKit/PushKit on iOS, ConnectionService/FCM on Android).
+   Alexander does: Apple Developer account ($99/year), Google Play account ($25 once), a Mac or a cloud Mac build service, signing certificates and keys.
+   Claude does: wraps `dist/`, native call plugin, store listings text.
+
+Status 2026-11-13 on `pc`: early-ICE-candidate fix, call release on early end, decline ends the callee; real-device tests (delay, sound, simultaneous call, closing the app) are still to be done by Alexander on two phones.

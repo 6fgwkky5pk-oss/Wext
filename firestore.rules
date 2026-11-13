@@ -4,10 +4,14 @@ service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn() { return request.auth != null; }
     function me(id) { return signedIn() && request.auth.uid == id; }
+    function callSide(c) { return request.auth.uid == c.from || request.auth.uid == c.to || c.to in get(/databases/$(db)/documents/users/$(request.auth.uid)).data.get('aliases', []); }
+    function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
 
-    match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid); }
+    match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid) && !(request.resource.data.get('pro', {}).get('verified', false) == true) || isAdmin(); }
     match /private/{uid}  { allow read, write: if me(uid); }
-    match /config/{id}    { allow read: if true; allow write: if signedIn(); } // TODO: restrict to admin uids
+    match /config/{id}    { allow read: if true; allow write: if isAdmin(); } // admin uids = documents in /admins/{uid} (create them by hand in the Firebase console)
+    match /admins/{uid}   { allow read: if me(uid); }
+    match /stats/{id}     { allow read: if signedIn(); allow write: if signedIn(); }
     match /requests/{id} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;
@@ -20,13 +24,15 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.from == request.auth.uid;
     }
     match /calls/{id} {
-      allow read, update: if signedIn() && (resource == null || request.auth.uid in [resource.data.from, resource.data.to]);
+      // the listener asks for calls addressed to any of my merged ids (where 'to' in [...]), which rules cannot prove for a list query, so reading is open to signed-in users; changing a call and its candidates is limited to the two sides (incl. merged ids)
+      allow read: if signedIn();
+      allow update: if signedIn() && callSide(resource.data);
       allow create: if signedIn() && request.resource.data.from == request.auth.uid;
-      match /{sub}/{c} { allow read, write: if signedIn(); }
+      match /{sub}/{c} { allow read, write: if signedIn() && callSide(get(/databases/$(db)/documents/calls/$(id)).data); }
     }
     match /projects/{id}  { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.ownerId == request.auth.uid; }
     match /rides/{id}     { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
-    match /complaints/{id} { allow create: if signedIn(); allow read: if signedIn(); }
-    match /bugs/{id}       { allow create: if signedIn(); allow read: if signedIn(); }
+    match /complaints/{id} { allow create: if signedIn(); allow read: if isAdmin(); }
+    match /bugs/{id}       { allow create: if signedIn(); allow read: if isAdmin(); }
   }
 }

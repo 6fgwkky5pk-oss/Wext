@@ -257,6 +257,8 @@ export async function slotTx(col, id, fn) {
     const patch = fn(d.data()); if (patch) tx.update(ref, patch)
   })
 }
+// admin = a document /admins/{uid} created by hand in the Firebase console (the rules enforce it on the server)
+export async function isAdmin() { try { return !!uid && (await getDoc(doc(db, 'admins', uid))).exists() } catch { return false } }
 export const setConfig = patch => setDoc(doc(db, 'config', 'main'), patch, { merge: true })
 
 // ---------- WebRTC internet calls (Firestore signaling) ----------
@@ -271,10 +273,14 @@ export async function startCall({ to, threadId, reqId, fromName, onState, onRemo
   local.getTracks().forEach(t => pc.addTrack(t, local))
   pc.ontrack = e => onRemote(e.streams[0])
   const callRef = doc(collection(db, 'calls'))
-  pc.onicecandidate = e => e.candidate && addDoc(collection(callRef, 'cc'), e.candidate.toJSON())
+  // candidates are written only after the call document exists (the rules check its participants)
+  let docReady = false; const early = []
+  const putCand = c => addDoc(collection(callRef, 'cc'), c).catch(() => {})
+  pc.onicecandidate = e => { if (!e.candidate) return; const c = e.candidate.toJSON(); docReady ? putCand(c) : early.push(c) }
   pc.onconnectionstatechange = () => onState(pc.connectionState)
   const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
   await setDoc(callRef, { from: uid, fromIds: [uid, ...myIds.filter(x => x !== uid)], fromName, to, threadId, reqId: reqId || null, offer: { type: offer.type, sdp: offer.sdp }, state: 'ringing', ts: Date.now() })
+  docReady = true; early.splice(0).forEach(putCand)
   // the callee's ICE candidates can arrive before the answer; addIceCandidate would fail and they were lost: hold them until the answer is applied
   const pending = []
   const addCand = x => pc.addIceCandidate(new RTCIceCandidate(x)).catch(() => {})

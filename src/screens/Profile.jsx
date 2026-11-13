@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { api, useStore, money, promoActive, getState, groupOrder } from '../store'
+import { api, CLOUD, useStore, money, promoActive, getState, groupOrder } from '../store'
 import { LANGS } from '../i18n'
 import { catName, CATEGORIES, GROUPS, groupName } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
 import { useNav } from '../nav'
+import * as cloud from '../cloud'
 
 const ADMIN_PIN = '2468'
 
@@ -15,7 +16,9 @@ export function Profile({ install }) {
   const [langSheet, setLangSheet] = useState(false)
   const [taps, setTaps] = useState(0)
   const user0 = useStore(s => s.user)
-  const [pin, setPin] = useState(() => new URLSearchParams(location.search).has('admin') && !user0?.admin ? '' : null)
+  const [pin, setPin] = useState(() => !CLOUD && new URLSearchParams(location.search).has('admin') && !user0?.admin ? '' : null)
+  // online: admin = server-side admin list (rules); the PIN exists only for the offline demo
+  const openAdmin = () => { if (user.admin) return nav.go('admin'); if (!CLOUD) return setPin(''); cloud.isAdmin().then(ok => { if (ok) { api.setAdmin(true); nav.go('admin') } }) }
   const Row = ({ ic, label, right, onClick, danger }) => <button className="listrow" onClick={onClick} style={danger ? { color: 'var(--red)' } : null}><span className="ico">{ic}</span><span className="grow">{label}</span>{right}<Icon n="right" s={18} /></button>
   const isPro = user.role === 'pro'
   return <div className="scroll">
@@ -38,7 +41,7 @@ export function Profile({ install }) {
         {user.admin && <Row ic={<Icon n="shield" s={20} />} label={t('admin')} onClick={() => nav.go('admin')} />}
         <Row ic={<Icon n="logout" s={20} />} label={t('logout')} danger onClick={() => api.logout()} />
       </div>
-      <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); user.admin ? nav.go('admin') : setPin('') } }}>WEXT 0.1 · {t('tagline')}</p>
+      <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); openAdmin() } }}>WEXT 0.1 · {t('tagline')}</p>
     </div>
     {langSheet && <LangSheet lang={lang} t={t} onClose={() => setLangSheet(false)} />}
     {pin != null && <Sheet onClose={() => setPin(null)}><h2>{t('admin')}</h2>

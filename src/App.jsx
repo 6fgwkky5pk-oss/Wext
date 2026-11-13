@@ -52,8 +52,8 @@ function InstallGuide({ kind, onClose }) {
   const copy = () => { try { navigator.clipboard.writeText(url).then(() => setCopied(true)) } catch { } }
   const Step = ({ n, children }) => <div className="row" style={{ gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--card2, #f4f1ea)', borderRadius: 14 }}><b style={{ width: 28, height: 28, borderRadius: 99, background: '#111', color: '#FFC21A', display: 'grid', placeItems: 'center', flex: 'none' }}>{n}</b><div className="b" style={{ fontSize: 16, lineHeight: 1.35 }}>{children}</div></div>
   let steps
-  if (kind === 'ios') steps = [<>{t('iosS1')} <span style={{ verticalAlign: 'middle', display: 'inline-block' }}><ShareIc /></span></>, <>{t('iosS2')} <span style={{ whiteSpace: 'nowrap' }}>„Add to Home Screen" <span style={{ border: '2px solid #111', borderRadius: 5, padding: '0 4px' }}>+</span></span></>, <>{t('iosS3')} „Add"</>]
-  else if (kind === 'androidManual') steps = [t('andS1'), <>{t('andS2')} „Install app" / „Add to Home screen"</>, t('andS3')]
+  if (kind === 'ios') steps = [<>{t('iosS1')} <span style={{ verticalAlign: 'middle', display: 'inline-block' }}><ShareIc /></span></>, <>{t('iosS2')} <span style={{ whiteSpace: 'nowrap' }}>“Add to Home Screen” <span style={{ border: '2px solid #111', borderRadius: 5, padding: '0 4px' }}>+</span></span></>, <>{t('iosS3')} “Add”</>]
+  else if (kind === 'androidManual') steps = [t('andS1'), <>{t('andS2')} “Install app” / “Add to Home screen”</>, t('andS3')]
   else steps = [<>{t('inAppS1')} <b>⋯</b> / <b>⋮</b></>, kind === 'iosInApp' ? t('inAppS2ios') : t('inAppS2and'), t('inAppS3')]
   return <Sheet onClose={onClose}>
     <div className="center" style={{ fontSize: 44 }}>📲</div>

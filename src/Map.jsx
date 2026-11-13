@@ -6,8 +6,9 @@ import 'leaflet/dist/leaflet.css'
 export default function Map({ center, pros = [], focus, onPick, zoom = 14 }) {
   const el = useRef(), map = useRef(), layer = useRef()
   useEffect(() => {
-    map.current = L.map(el.current, { zoomControl: false, attributionControl: false }).setView(center, zoom)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd' }).addTo(map.current)
+    map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView(center, zoom)
+    map.current.attributionControl.setPrefix(false)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map.current)
     layer.current = L.layerGroup().addTo(map.current)
     return () => map.current.remove()
   }, [])
