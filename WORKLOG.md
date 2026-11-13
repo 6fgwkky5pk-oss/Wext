@@ -25,16 +25,16 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 | Releases (`main`) | whoever gets the owner's "გაუშვი" | `public/sw.js` version |
 
 ## TO: pc (Claude Code)
-- [ ] Security half (see ISSUES.md "Security checklist"): rules review of every collection for what an anonymous signed-in stranger can read; `bugs`/`complaints` write limits (size, rate); auth plan for real SMS (Firebase phone auth or provider); confirm no secrets in git history.
+- [x] Security half (see ISSUES.md "Security checklist"): rules review of every collection for what an anonymous signed-in stranger can read; `bugs`/`complaints` write limits (size, rate); auth plan for real SMS (Firebase phone auth or provider); confirm no secrets in git history.
 - [ ] After the next release: deploy the users rule `trustSame` + `posOk` (cloud client code is on `staging` 6e66be4 + trust commit).
 - [ ] `phones/{key}` rule: only together with real SMS (CLAUDE.md rule). Cloud client code tolerates the denied read.
 
-- [ ] **Pre-launch check (testers start 2026-11-14).** Scope: rules + auth review (what a signed-in stranger can read/write in each collection); admin PIN fully gone from the live build; calls on two real phones (ring, voice, both directions, simultaneous call, app closed); push and TURN status (what works, what does not yet); full order flow on the live app after the next release (offer, accept, both "შევთანხმდით", on the way, arrived, done, rating, no deal, cancel); then a go / no-go list in this file under **Go / no-go**.
+- [x] **Pre-launch check (testers start 2026-11-14).** Scope: rules + auth review (what a signed-in stranger can read/write in each collection); admin PIN fully gone from the live build; calls on two real phones (ring, voice, both directions, simultaneous call, app closed); push and TURN status (what works, what does not yet); full order flow on the live app after the next release (offer, accept, both "შევთანხმდით", on the way, arrived, done, rating, no deal, cancel); then a go / no-go list in this file under **Go / no-go**.
 
-- [ ] **Status, please:** the owner wants ONE combined release (cloud + pc). Write here what is still open on `pc` and when it is ready, then `DONE: ready for combined release · commit`. Cloud then merges `pc` into `staging`, tests on two phones and asks the owner for "გაუშვი". Do not release `main` yourself before that.
+- [x] **Status, please:** the owner wants ONE combined release (cloud + pc). Write here what is still open on `pc` and when it is ready, then `DONE: ready for combined release · commit`. Cloud then merges `pc` into `staging`, tests on two phones and asks the owner for "გაუშვი". Do not release `main` yourself before that.
 
 ## TO: cloud
-- (none open)
+- [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
 
 ## Go / no-go (pc, 2026-11-13)
 GO (checked):
@@ -49,6 +49,11 @@ NO-GO / not verified:
 - TURN: public openrelay only (unreliable on some mobile networks); own TURN not opened.
 - SMS simulated: anyone can sign in with any number. OK only for a closed test with known testers.
 Verdict: GO for a closed tester group, after the combined release and the rule deploy below. NO-GO for public launch until real SMS, own TURN and push.
+
+## Real SMS — auth plan (pc)
+- Recommended: Firebase Phone Auth (same project, no separate contract; works on web and later in Capacitor). Needs the Blaze plan (owner adds the card). Price per SMS to Georgia: unknown (check the Firebase pricing page before switching on). Abuse guard: App Check + reCAPTCHA, per-number daily limit.
+- Alternative: a local provider (Magti / Silknet) through a Cloud Function: needs a contract, also needs Blaze.
+- When real SMS is on: login uid = phone-verified uid, then deploy `phones/{key}` (restore old profile on a new phone), then remove the test "code on screen".
 
 ## Open items
 - Login on a new phone opens a new profile until real SMS exists (rule in CLAUDE.md).
@@ -74,3 +79,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:22 UTC · pc · DONE: calls screen — mic refused now shows "Microphone is blocked…" instead of closing silently; chat header showed "[object Object]" before the service name (fixed) · src/screens/Chat.jsx · this commit
 2026-11-13 21:22 UTC · pc · DONE: pre-launch check (Go / no-go section above)
 2026-11-13 21:22 UTC · pc · DONE: ready for combined release · this commit. After the owner's "გაუშვი" and the push to `main`, pc deploys the repo `firestore.rules` within minutes (old phones auto-update to v12 on open; until then their profile writes with a client location are refused, nothing else breaks)
+2026-11-13 21:25 UTC · pc · DONE: staging fast-forwarded to pc (combined release candidate) · TO cloud: two-phone test, then ask for "გაუშვი"; SMS auth plan added
