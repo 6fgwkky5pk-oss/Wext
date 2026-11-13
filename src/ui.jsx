@@ -138,10 +138,13 @@ export function fmtTime(ts) { const d = new Date(ts); return d.getHours().toStri
 export function RoleSwitch() {
   const { t } = useT()
   const role = useStore(s => s.user.role)
+  // a dot on the other mode when something waits there
+  const proNews = useStore(s => !!s.incoming || (s.proJobs || []).some(j => ['accepted', 'arrived'].includes(j.status)))
+  const clientNews = useStore(s => (s.requests || []).some(r => ['accepted', 'arrived'].includes(r.status)))
   const set = r => { if (r === role) return; api.updateUser({ role: r }) }
   return <div className="roleswitch">
-    <button className={role === 'client' ? 'on' : ''} onClick={() => set('client')}>🙋 {t('roleClient')}</button>
-    <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>💼 {t('rolePro')}</button>
+    <button className={role === 'client' ? 'on' : ''} onClick={() => set('client')}>🙋 {t('roleClient')}{role !== 'client' && clientNews && <i className="rsdot" />}</button>
+    <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>💼 {t('rolePro')}{role !== 'pro' && proNews && <i className="rsdot" />}</button>
   </div>
 }
 

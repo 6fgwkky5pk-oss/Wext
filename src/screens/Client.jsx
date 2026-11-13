@@ -336,7 +336,7 @@ export function Activity() {
   ].sort((a, b) => b.ts - a.ts)
   const st = { searching: t('searching'), accepted: t('accepted'), arrived: t('arrivedOk'), agreed: t('agreedOk'), nodeal: t('noDeal'), replaced: '—', done: t('jobDone'), cancelled: t('cancel'), nopros: t('noPros'), expired: '—' }
   return <div className="scroll">
-    <Top title={t('activity')} />
+    <Top title={t('activity')} onBack={nav.back} />
     <div className="pad list">
       {!mine.length && <div className="empty"><div className="e">🗂️</div>{t('noActivity')}</div>}
       {mine.map(x => {

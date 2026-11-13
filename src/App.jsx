@@ -10,9 +10,10 @@ import { ChatList, Chat, Voice, IncomingCall } from './screens/Chat'
 import { Projects, Rides, seedBoards } from './screens/Projects'
 import { ProHome, Incoming, ProSettings } from './screens/Pro'
 import { Profile, BugReport, Admin } from './screens/Profile'
+import { MyPros, ProStats } from './screens/Tabs'
 
 const THEME = new URLSearchParams(location.search).get('theme') || 'a'
-const SCREENS = { call: CallNow, request: RequestTrack, chat: Chat, voice: Voice, projects: Projects, rides: Rides, proSettings: ProSettings, bug: BugReport, admin: Admin }
+const SCREENS = { activity: Activity, call: CallNow, request: RequestTrack, chat: Chat, voice: Voice, projects: Projects, rides: Rides, proSettings: ProSettings, bug: BugReport, admin: Admin }
 
 function useLocation() {
   useEffect(() => {
@@ -101,13 +102,14 @@ function Shell() {
   const top = stack.slice(-1)[0]
   const Screen = top && SCREENS[top.name]
   const isPro = user.role === 'pro'
-  const tabs = [['home', 'home', t('home')], ['activity', 'act', t('activity')], ['chats', 'chat', t('chats')], ['profile', 'user', t('profile')]]
+  const tabs = [['home', 'home', t('home')], isPro ? ['stats', 'star', t('stats')] : ['mypros', 'users', t('myProsTab')], ['chats', 'chat', t('inbox')], ['profile', 'user', t('profile')]]
 
   return <Nav.Provider value={nav}>
     <div className={'app' + (big ? ' big' : '')} data-theme={THEME}>
       {Screen ? <Screen key={top.k} {...top.params} /> : <>
         {tab === 'home' && (isPro ? <ProHome /> : <Home install={installFn} />)}
-        {tab === 'activity' && <Activity />}
+        {tab === 'mypros' && <MyPros />}
+        {tab === 'stats' && <ProStats />}
         {tab === 'chats' && <ChatList />}
         {tab === 'profile' && <Profile install={installFn} />}
         <div className="tabbar">{tabs.map(([k, ic, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon n={ic} s={24} />{l}{k === 'chats' && unread > 0 && <span className="dotn">{unread}</span>}</button>)}</div>

@@ -27,6 +27,7 @@ export function Profile({ install }) {
           <span className="badge y" style={{ marginTop: 6 }}>{isPro ? '🧰 ' + t('proMode') : '🙋 ' + t('clientMode')}</span></div>
       </div>
       <div className="card" style={{ marginTop: 12, padding: '4px 14px' }}>
+        <Row ic={<Icon n="act" s={20} />} label={t('activity') + ' · ' + t('payHist')} onClick={() => nav.go('activity')} />
         <Row ic={<span style={{ fontSize: 18, fontWeight: 900 }}>Aa</span>} label={t('bigText')} right={<span className={'tgl' + (big ? ' on' : '')}><i /></span>} onClick={() => api.setBig(!big)} />
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
         <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); nav.home() }} />
