@@ -4,8 +4,19 @@ service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn() { return request.auth != null; }
     function me(id) { return signedIn() && request.auth.uid == id; }
-    function callSide(c) { return request.auth.uid == c.from || request.auth.uid == c.to || c.to in get(/databases/$(db)/documents/users/$(request.auth.uid)).data.get('aliases', []); }
+    // merged ids ("aliases") are written by the client itself, so the rules do not trust them
+    function callSide(c) { return request.auth.uid == c.from || request.auth.uid == c.to; }
     function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
+    // a request is visible only to its client, its accepted pro, pros it was offered to, and admins
+    function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || request.auth.uid in r.get('notified', []); }
+    // chat ids: t_{requestId} (client + accepted pro), p_{projectId}_{userId} (owner + that user), d_{rideId}_{userId} (driver + that user)
+    function threadSide(tid) {
+      let p = tid.split('_');
+      return (p[0] == 't' && p.size() == 2 && inJob(get(/databases/$(db)/documents/requests/$(p[1])).data))
+        || (p[0] == 'p' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/projects/$(p[1])).data.ownerId))
+        || (p[0] == 'd' && p.size() == 3 && (request.auth.uid == p[2] || request.auth.uid == get(/databases/$(db)/documents/rides/$(p[1])).data.driverId));
+    }
+    function inJob(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null); }
 
     match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid) && !(request.resource.data.get('pro', {}).get('verified', false) == true) || isAdmin(); }
     match /private/{uid}  { allow read, write: if me(uid); }
@@ -13,19 +24,19 @@ service cloud.firestore {
     match /admins/{uid}   { allow read: if me(uid); }
     match /stats/{id}     { allow read: if signedIn(); allow write: if signedIn(); }
     match /requests/{id} {
-      allow read: if signedIn();
+      allow read: if signedIn() && (reqSide(resource.data) || isAdmin());
       allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;
       allow update: if signedIn() && (resource.data.clientId == request.auth.uid
         || resource.data.proId == request.auth.uid
         || request.auth.uid in resource.data.notified);
     }
     match /threads/{tid}/msgs/{m} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+      allow read: if signedIn() && (threadSide(tid) || isAdmin());
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid && threadSide(tid);
     }
     match /calls/{id} {
-      // the listener asks for calls addressed to any of my merged ids (where 'to' in [...]), which rules cannot prove for a list query, so reading is open to signed-in users; changing a call and its candidates is limited to the two sides (incl. merged ids)
-      allow read: if signedIn();
+      // only the two sides may read a call (it holds network addresses)
+      allow read: if signedIn() && callSide(resource.data);
       allow update: if signedIn() && callSide(resource.data);
       allow create: if signedIn() && request.resource.data.from == request.auth.uid;
       match /{sub}/{c} { allow read, write: if signedIn() && callSide(get(/databases/$(db)/documents/calls/$(id)).data); }

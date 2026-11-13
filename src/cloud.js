@@ -136,7 +136,7 @@ function listenUser() {
     ctx.set({ pros })
   }))
   // my requests as a client
-  sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', 'in', myIds.length ? myIds : [uid])), snap => {
+  sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', '==', uid)), snap => {
     const prev = ctx.get().requests
     const reqs = []
     snap.forEach(d => reqs.push({ id: d.id, ...d.data() }))
@@ -170,7 +170,7 @@ function listenUser() {
     ctx.ping(viaSms ? 'soft' : 'job')
   }))
   // jobs I accepted as a pro
-  sub('myJobs', onSnapshot(query(collection(db, 'requests'), where('proId', 'in', myIds.length ? myIds : [uid])), snap => {
+  sub('myJobs', onSnapshot(query(collection(db, 'requests'), where('proId', '==', uid)), snap => {
     const s = ctx.get(), loc = s.loc
     const jobs = []
     snap.forEach(d => {
@@ -194,7 +194,7 @@ function listenUser() {
     a.forEach(r => (r.bookings || []).forEach(b => { if (isMe(r.driverId) || isMe(b.userId)) listenThread(`d_${r.id}_${b.userId}`, null, 'board') }))
   }))
   // incoming internet calls
-  sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', 'in', myIds.length ? myIds : [uid])), snap => {
+  sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', '==', uid)), snap => {
     let ring = null
     snap.forEach(d => { const c = d.data(); if (c.state === 'ringing' && Date.now() - c.ts < 35000) ring = { id: d.id, ...c } })
     const cur = ctx.get().ringing

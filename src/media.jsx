@@ -50,14 +50,26 @@ export function VoiceBtn({ value, onChange, max = 30 }) {
 const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
 const LOC = { ka: 'ka-GE', en: 'en-US', ru: 'ru-RU', de: 'de-DE', tr: 'tr-TR', uk: 'uk-UA', hy: 'hy-AM', az: 'az-AZ', es: 'es-ES', fr: 'fr-FR', ar: 'ar-SA', zh: 'zh-CN' }
 export function MicSearch({ onText }) {
-  const { lang } = useT()
+  const { lang, t } = useT()
   const [on, setOn] = useState(false)
   if (!SR) return null
   const go = () => {
-    const r = new SR(); r.lang = LOC[lang] || lang; r.interimResults = false; r.maxAlternatives = 1
-    r.onresult = e => onText(e.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, ''))
-    r.onend = () => setOn(false); r.onerror = () => setOn(false)
-    setOn(true); try { r.start() } catch { setOn(false) }
+    if (on) return
+    const r = new SR(); r.lang = LOC[lang] || lang; r.interimResults = false; r.maxAlternatives = 1; r.continuous = false
+    let got = false, failed = false
+    r.onresult = e => {
+      const text = (e.results?.[0]?.[0]?.transcript || '').toLowerCase().replace(/[.,!?]/g, '').trim()
+      if (text) { got = true; onText(text) }
+    }
+    // say why it failed instead of failing silently
+    r.onerror = e => {
+      failed = true
+      const k = { 'not-allowed': 'voiceBlocked', 'service-not-allowed': 'voiceBlocked', 'audio-capture': 'voiceBlocked', 'language-not-supported': 'voiceLang', 'no-speech': 'voiceNoHear', aborted: null }[e.error]
+      if (k !== null) toast(t(k || 'voiceFail'))
+    }
+    r.onend = () => { setOn(false); if (!got && !failed) toast(t('voiceNoHear')) }
+    setOn(true); toast('🎤 ' + t('voiceListen'))
+    try { r.start() } catch { setOn(false); toast(t('voiceFail')) }
   }
   return <button className={'micbtn' + (on ? ' on' : '')} onClick={go} aria-label="voice"><span>🎤</span></button>
 }
