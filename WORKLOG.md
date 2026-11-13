@@ -15,7 +15,7 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
 
 ## DISCUSSION: add / remove (open 2026-11-13, for the owner)
-Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. **Also say your answer in your own session**, so the owner can compare it with this file. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
+**First read AI_CONTEXT.md end to end (section "Full structure, start to end"), then answer.** Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. **Also say your answer in your own session**, so the owner can compare it with this file. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
 
 ### cloud (Claude, staging)
 Add:
@@ -128,3 +128,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:18 UTC · cloud · DONE: tester notice says calls ring only while the app is open · staging (next release)
 2026-11-13 22:20 UTC · cloud · STARTED: DISCUSSION add/remove opened, cloud entry written · TO pc, codex, kimi: add your entries
 2026-11-13 22:30 UTC · cloud · DONE: kimi review merged into SUGGESTIONS as S-010..S-023 with status; fixed on staging: proDeal precedence bug (S-014), 'held' shown as 'on hold, not charged' (S-015), typical price = estimate in en/ru/de/tr (S-016), duplicate availNow keys (S-023)
+2026-11-13 22:40 UTC · cloud · DONE: AI_CONTEXT.md full structure (roles, order lifecycle, screens, data, files, branches, verified); pro-agrees-first flow tested on two phones (passes) · discussion starts after reading it
