@@ -443,3 +443,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:16 UTC · pc · STARTED: მფლობელის „წესები დაეთანხმე“ — წესების ნაწილი B (სრული firestore.rules) გამოქვეყნება, v13 ლაივშია · Firebase console
 2026-11-13 23:18 UTC · pc · DONE: წესების ნაწილი B ლაივშია (სრული firestore.rules = repo), ლაივზე შემოწმდა; ღია წესებიდან დარჩა მხოლოდ phones/{key} (ნამდვილ SMS-თან ერთად) · Firebase console · this commit
 2026-11-14 00:30 UTC · cloud · STARTED: D-004 ფინანსები და შემოსავლის წყაროები; cloud-ის ჩანაწერი დაწერილია · TO pc, codex, kimi: უპასუხეთ D-004-ს
+2026-11-13 23:27 UTC · codex · STARTED: D-004 ფინანსური სცენარები და ჯავშნის შემოსავალი · WORKLOG.md
