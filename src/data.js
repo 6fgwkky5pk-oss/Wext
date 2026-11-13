@@ -67,6 +67,11 @@ export const GROUPS = [
 ]
 export const groupName = (g, lang) => { const x = GROUPS.find(y => y.id === g); return x ? (x.n[lang] || x.n.en) : g }
 
+// typical job price (paid directly to the pro), GEL. u: '' per job, h hour, d day, m2, pc
+export const TYPICAL = { plumber: [20, 60], electric: [20, 60], appliance: [30, 100], handyman: [30, 80], painter: [8, 15, 'm2'], tiler: [20, 35, 'm2'], carpenter: [40, 150], locksmith: [30, 80],
+  cleaning: [60, 150], office: [80, 200], windows: [5, 10, 'pc'], harvest: [50, 70, 'd'], land: [60, 100, 'd'], garden: [50, 80, 'd'], firewood: [150, 220, 'm3'],
+  movers: [20, 40, 'h'], cartruck: [50, 150], tractor: [60, 120, 'h'], excavator: [70, 120, 'h'], crane: [100, 200, 'h'],
+  carwash: [15, 30], bodywork: [50, 300], mechanic: [30, 150], tow: [50, 150], tire: [10, 30], battery: [15, 30], fuel: [10, 20] }
 export const catById = id => CATEGORIES.find(c => c.id === id)
 export const catName = (id, lang) => { const c = catById(id); return c ? (c.n[lang] || c.n.en) : id }
 

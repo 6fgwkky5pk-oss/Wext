@@ -31,6 +31,8 @@ export function ProHome() {
 
       {active.map(j => <div key={j.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--ink)' }}>
         <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{t('away', { d: j.dist })}{j.note ? ' · ' + j.note : ''}</div></div></div>
+        {j.photo && <img src={j.photo} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 14, marginTop: 8 }} />}
+        {j.voice && <audio src={j.voice} controls style={{ width: '100%', marginTop: 8 }} />}
         <div className="grid2" style={{ marginTop: 12 }}>
           <a className="btn light sm" style={{ width: '100%', textDecoration: 'none' }} href={`https://www.google.com/maps/dir/?api=1&destination=${j.pos[0]},${j.pos[1]}`} target="_blank" rel="noreferrer"><Icon n="nav" s={18} />{t('navigate')}</a>
           <button className="btn yellow sm" style={{ width: '100%' }} onClick={() => nav.go('chat', { threadId: j.threadId })}><Icon n="chat" s={18} />{t('chat')}</button>
@@ -72,6 +74,10 @@ export function Incoming() {
     <h1 className="center" style={{ fontSize: 30 }}>{catName(inc.cat, lang)}</h1>
     <p className="center b" style={{ fontSize: 18, margin: '8px 0 0' }}>📍 {t('away', { d: inc.dist })} · {inc.client}</p>
     {inc.note && <div className="card center b" style={{ marginTop: 16 }}>“{inc.note}”</div>}
+    {(inc.photo || inc.voice) && <div className="col" style={{ marginTop: 12, gap: 8 }}>
+      {inc.photo && <img src={inc.photo} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 16 }} />}
+      {inc.voice && <audio src={inc.voice} controls style={{ width: '100%' }} />}
+    </div>}
     <div style={{ marginTop: 24 }}><Ring left={left} total={75} /></div>
     <div className="bigbtns">
       <button className="btn red" onClick={() => api.respondIncoming(false)}>{t('decline')}</button>

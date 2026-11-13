@@ -148,7 +148,7 @@ export const api = {
     return state.payments.find(p => p.cat === cat && p.status !== 'released' && now() - p.createdAt < DAY && p.contacts < 3)
   },
 
-  async createRequest({ cat, note, brigade }) {
+  async createRequest({ cat, note, brigade, photo, voice }) {
     brigade = !!brigade
     api.bump(cat, null, 3)
     let bundle = api.activeBundle(cat)
@@ -160,12 +160,12 @@ export const api = {
       set(s => ({ payments: [bundle, ...s.payments] }))
     }
     if (CLOUD) {
-      const id = await cloud.createRequest({ cat, note: note || '', status: 'searching', brigade, payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
-      set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
+      const id = await cloud.createRequest({ cat, note: note || '', photo: photo || null, voice: voice || null, status: 'searching', brigade, payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
+      set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, photo, voice, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
       api._dispatch(id)
       return id
     }
-    const req = { id: 'r_' + uid(), cat, note, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], proId: null, log: [] }
+    const req = { id: 'r_' + uid(), cat, note, photo, voice, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], proId: null, log: [] }
     set(s => ({ requests: [req, ...s.requests] }))
     api._dispatch(req.id)
     return req.id
@@ -330,6 +330,7 @@ export const api = {
   _seed(b) { set(s => ({ seeded: true, projects: [...s.projects, ...b.projects], rides: [...s.rides, ...b.rides] })) },
 
   // admin
+  setBig(on) { set({ big: !!on }) },
   setConfig(patch) { if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
   clearRinging() { set({ ringing: null }) },

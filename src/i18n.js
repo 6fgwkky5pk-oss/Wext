@@ -7,6 +7,7 @@ export const LANGS = [
 ]
 
 const ka = {
+  addPhoto: 'ფოტო', sayIt: 'თქვი ხმით', recStop: 'ჩაწერა… შეჩერება ({s})', noMic: 'მიკროფონი არ ჩაირთო', typical: 'საშუალო ფასი', typicalNote: 'ამას ხელოსანს პირდაპირ უხდი', perH: 'საათი', perD: 'დღე', perM2: 'მ²', perPc: 'ცალი', perM3: 'მ³', again: 'ისევ {name}', againSub: '{cat} · ერთი შეხებით', bigText: 'დიდი ასოები', callBig: 'დარეკე', orChat: 'ან მიწერე', voiceNote: 'ხმოვანი', photo: 'ფოტო', 
   smsSent: 'SMS გაეგზავნა კიდევ {n} ხელოსანს, ვინც ახლა ხაზგარეშეა',
   smsJob: 'ახალი სამუშაო: {cat}, {d} კმ-ში. აიღებ?',
   open: 'ნახვა',
@@ -87,6 +88,7 @@ const ka = {
 }
 
 const en = {
+  addPhoto: 'Photo', sayIt: 'Say it', recStop: 'Recording… stop ({s})', noMic: 'Microphone is not available', typical: 'Typical price', typicalNote: 'you pay this to the pro directly', perH: 'hour', perD: 'day', perM2: 'm²', perPc: 'pc', perM3: 'm³', again: '{name} again', againSub: '{cat} · one tap', bigText: 'Large text', callBig: 'Call', orChat: 'or write', voiceNote: 'Voice', photo: 'Photo', 
   smsSent: 'SMS sent to {n} more pros who are offline',
   smsJob: 'New job: {cat}, {d} km away. Take it?',
   open: 'Open',
@@ -167,6 +169,7 @@ const en = {
 }
 
 const ru = {
+  addPhoto: 'Фото', sayIt: 'Скажи голосом', recStop: 'Запись… стоп ({s})', noMic: 'Микрофон недоступен', typical: 'Обычная цена', typicalNote: 'платите мастеру напрямую', perH: 'час', perD: 'день', perM2: 'м²', perPc: 'шт', perM3: 'м³', again: 'Снова {name}', againSub: '{cat} · одно касание', bigText: 'Крупный текст', callBig: 'Позвонить', orChat: 'или написать', voiceNote: 'Голос', photo: 'Фото', 
   smsSent: 'SMS отправлено ещё {n} мастерам не на линии',
   smsJob: 'Новая работа: {cat}, {d} км. Возьмёте?',
   open: 'Открыть',

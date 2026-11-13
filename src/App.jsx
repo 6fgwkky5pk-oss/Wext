@@ -65,6 +65,7 @@ function InstallGuide({ kind, onClose }) {
 function Shell() {
   const { t } = useT()
   const user = useStore(s => s.user)
+  const big = useStore(s => s.big)
   const unread = useStore(s => Object.values(s.chats).reduce((a, c) => a + (c.unread || 0), 0))
   const [tab, setTab] = useState(() => new URLSearchParams(location.search).has('admin') ? 'profile' : 'home')
   const [stack, setStack] = useState([])
@@ -101,7 +102,7 @@ function Shell() {
   const tabs = [['home', 'home', t('home')], ['activity', 'act', t('activity')], ['chats', 'chat', t('chats')], ['profile', 'user', t('profile')]]
 
   return <Nav.Provider value={nav}>
-    <div className="app" data-theme={THEME}>
+    <div className={'app' + (big ? ' big' : '')} data-theme={THEME}>
       {Screen ? <Screen key={top.k} {...top.params} /> : <>
         {tab === 'home' && (isPro ? <ProHome /> : <Home install={installFn} />)}
         {tab === 'activity' && <Activity />}

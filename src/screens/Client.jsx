@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
-import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL } from '../data'
+import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
 import { TEST_MODE } from '../payments'
@@ -30,6 +31,7 @@ export function Home({ install }) {
   const G = id => GROUPS.find(g => g.id === id)
   const SUB = { handy: 'groupHandySub', clean: 'groupCleanSub', ride: 'groupRideSub', land: 'groupLandSub', machine: 'groupMachineSub', move: 'groupMoveSub', road: 'groupRoadSub' }
   const stats = useStore(s => s.catStats)
+  const last = useStore(s => s.requests.find(r => r.proName && ['accepted', 'arrived', 'done'].includes(r.status)))
   const order = useMemo(() => groupOrder(stats || {}), [stats])
   const top = order[0], rest = order.slice(1)
   const open = id => { api.bump(null, id); id === 'ride' ? nav.go('rides') : nav.go('call', { group: id }) }
@@ -43,7 +45,7 @@ export function Home({ install }) {
       <RoleSwitch />
     </div>
     <div className="pad col" style={{ gap: 12, marginTop: 6 }}>
-      <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+      <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q ? <button onClick={() => setQ('')}><Icon n="close" s={18} /></button> : <MicSearch onText={setQ} />}</div>
       {q ? <div className="list">
         {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => nav.go('call', { cat: c.id })}>
           <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
@@ -56,6 +58,9 @@ export function Home({ install }) {
         {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
           <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
           <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
+        </button>}
+        {!active && last && <button className="againbar" onClick={() => nav.go('call', { cat: last.cat })}>
+          <span className="e">🔁</span><span className="grow col" style={{ textAlign: 'left', gap: 0 }}><b className="ell">{t('again', { name: last.proName })}</b><small>{t('againSub', { cat: catName(last.cat, lang) })}</small></span><Icon n="right" s={18} />
         </button>}
         <button className="h7hero" onClick={() => open(top)}>
           <span className="hc">{G(top).icon}</span>
@@ -98,6 +103,7 @@ export function CallNow({ cat: initCat, group }) {
   const [brig, setBrig] = useState(false)
   const [q, setQ] = useState('')
   const [note, setNote] = useState('')
+  const [photo, setPhoto] = useState(null), [voice, setVoice] = useState(null)
   const [pay, setPay] = useState(false)
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
@@ -127,7 +133,7 @@ export function CallNow({ cat: initCat, group }) {
 
   const send = async () => {
     if ((!bundle || brig) && !user.card) { setPay(true); return }
-    const id = await api.createRequest({ cat, note, brigade: brig })
+    const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
     nav.replace('request', { id })
   }
 
@@ -151,7 +157,9 @@ export function CallNow({ cat: initCat, group }) {
           {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}</div>}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
-        <div className="field" style={{ marginTop: 16 }}><label>{t('note')}</label>
+        {TYPICAL[cat] && <div className="typical"><span>🏷️ {t('typical')}</span><b>{TYPICAL[cat][0]}–{TYPICAL[cat][1]} ₾{TYPICAL[cat][2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[TYPICAL[cat][2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
+        <div className="grid2" style={{ marginTop: 14 }}><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
+        <div className="field" style={{ marginTop: 10 }}><label>{t('note')}</label>
           <textarea className="inp" placeholder={t('notePh')} value={note} onChange={e => setNote(e.target.value)} /></div>
         <div className="hold" style={{ marginTop: 12 }}><span>🔒</span><span>{t('holdNote')}<br /><b>{t('oneFee3')}</b></span></div>
       </div>
@@ -161,7 +169,7 @@ export function CallNow({ cat: initCat, group }) {
         <Icon n="bolt" />{bundle && !brig ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
       </button>
     </div>
-    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig }); nav.replace('request', { id }) }} />}
+    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig, photo, voice }); nav.replace('request', { id }) }} />}
   </>
 }
 
@@ -258,10 +266,8 @@ export function RequestTrack({ id }) {
             <div className="meta"><span className="stars">★ {pro.rating}</span><span>· {pro.jobs} {t('jobs')}</span></div>
             <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={pro} /></div></div>
         </div>
-        <div className="grid2" style={{ marginTop: 16 }}>
-          <button className="btn yellow" onClick={() => nav.go('chat', { threadId: r.threadId, reqId: r.id })}><Icon n="chat" />{t('chat')}</button>
-          <button className="btn primary" onClick={() => nav.go('voice', { threadId: r.threadId, reqId: r.id })}><Icon n="phone" />{t('call')}</button>
-        </div>
+        <button className="btn primary bigcall" style={{ marginTop: 16 }} onClick={() => nav.go('voice', { threadId: r.threadId, reqId: r.id })}><Icon n="phone" />{t('callBig')}</button>
+        <button className="btn light" style={{ marginTop: 8 }} onClick={() => nav.go('chat', { threadId: r.threadId, reqId: r.id })}><Icon n="chat" s={18} />{t('orChat')}</button>
         {pay && <div className="card row between" style={{ marginTop: 14 }}>
           <span className="small b">{t('fee')}</span>
           <span className="row" style={{ gap: 8 }}><b>{money(pay.amount)}</b><span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{t(pay.status)}</span></span>

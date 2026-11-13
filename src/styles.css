@@ -376,3 +376,24 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .workchip.on { background: #111; color: #fff; }
 .workchip.on .sw { background: var(--green); }
 .workchip.on .sw i { left: 21px; }
+
+/* simplifications: media, voice search, repeat, large text */
+.mediabtn{display:flex;align-items:center;justify-content:center;gap:8px;height:58px;border-radius:16px;background:#FFF4CF;border:2px dashed #E9C760;font-size:15px;cursor:pointer;color:#111}
+.mediabtn .e{font-size:22px}
+.mediabtn.rec{background:#FFE1E1;border-color:#E5484D;animation:pulse 1s infinite}
+.mediabox{position:relative;border-radius:16px;overflow:hidden;background:#f3f3f3;min-height:58px;display:flex;align-items:center}
+.mediabox img{width:100%;height:96px;object-fit:cover;display:block}
+.mediabox.voice audio{width:100%;height:46px}
+.mediabox .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center}
+.micbtn{width:40px;height:40px;border-radius:50%;background:#FFC21A;display:grid;place-items:center;font-size:18px;flex:none}
+.micbtn.on{background:#E5484D;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.againbar{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 4px 12px rgba(150,90,0,.12)}
+.againbar .e{font-size:24px}.againbar small{color:#666;font-weight:700;font-size:12px}
+.typical{margin-top:14px;display:grid;grid-template-columns:1fr auto;gap:2px 8px;background:#F1FBF4;border:1.5px solid #BFE8CC;border-radius:16px;padding:12px 14px}
+.typical span{font-weight:700;font-size:14px}.typical b{font-size:17px}.typical small{grid-column:1/-1;color:#4a7a5a;font-weight:600;font-size:12px}
+.bigcall{height:66px;font-size:20px;background:var(--green)!important}
+.tgl{width:46px;height:28px;border-radius:14px;background:#ddd;position:relative;display:inline-block;transition:.2s}
+.tgl i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl.on{background:var(--green)}.tgl.on i{left:21px}
+.app.big{zoom:1.15}

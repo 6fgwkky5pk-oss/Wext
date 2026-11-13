@@ -121,7 +121,7 @@ function listenUser() {
     const loc = s.loc || best.pos
     const dist = ctx.dist(loc, best.pos)
     const viaSms = !s.user.pro.online
-    ctx.set({ incoming: { id: best.id, cat: best.cat, dist: +dist.toFixed(1), note: best.note, client: best.clientName, pos: best.pos, viaSms, opened: !viaSms, expires: Date.now() + (viaSms ? 300000 : 75000) } })
+    ctx.set({ incoming: { id: best.id, cat: best.cat, dist: +dist.toFixed(1), note: best.note, photo: best.photo || null, voice: best.voice || null, client: best.clientName, pos: best.pos, viaSms, opened: !viaSms, expires: Date.now() + (viaSms ? 300000 : 75000) } })
     ctx.ping(viaSms ? 'soft' : 'job')
   }))
   // jobs I accepted as a pro
@@ -130,7 +130,7 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: +(loc ? ctx.dist(loc, r.pos) : 0).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: +(loc ? ctx.dist(loc, r.pos) : 0).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)
