@@ -41,3 +41,10 @@ Real SMS login · real payments (TBC/BOG) · stricter Firestore rules · real ad
    Claude does: wraps `dist/`, native call plugin, store listings text.
 
 Status 2026-11-13 on `pc`: early-ICE-candidate fix, call release on early end, decline ends the callee; real-device tests (delay, sound, simultaneous call, closing the app) are still to be done by Alexander on two phones.
+
+### Prices (USD, checked 2026-11-13 on the official pages; unknown = "unknown")
+- TURN: Cloudflare Realtime TURN $0.05 per GB, first 1,000 GB free (https://developers.cloudflare.com/realtime/turn/faq/). Own coturn VPS monthly price: unknown (not checked).
+- Firebase: deploying Cloud Functions requires the Blaze plan (https://firebase.google.com/docs/functions/get-started); Blaze is pay-as-you-go with a no-cost usage level (https://firebase.google.com/support/faq). Exact Blaze monthly cost and push-sender cost: unknown.
+- Apple Developer Program: $99 per year (https://developer.apple.com/programs/).
+- Google Play developer account: $25 one-time (https://support.google.com/googleplay/android-developer/answer/6112435).
+Rules: Alexander opens every account and enters the card himself; keys/secrets only in server or environment variables, never in chat or in git.
