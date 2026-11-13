@@ -224,7 +224,7 @@ export function RequestTrack({ id }) {
       </div>
       <div style={{ marginTop: 20 }}><Ring left={left} total={75} size={86} /></div>
       <div className="col" style={{ marginTop: 20 }}>
-        {pay && <div className="hold"><span>🔒</span><span>{t('held')}: <b>{money(pay.amount)}</b> · {t('holdNote')}</span></div>}
+        {pay && <div className="hold"><span>🔒</span><span>{t('fee')}: <b>{money(pay.amount)}</b> · {t('holdNote')}</span></div>}
         <button className="btn outline" onClick={() => { api.cancelRequest(id); nav.back() }}>{t('cancel')}</button>
       </div>
     </div>
