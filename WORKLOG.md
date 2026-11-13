@@ -31,6 +31,8 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 
 - [ ] **Pre-launch check (testers start 2026-11-14).** Scope: rules + auth review (what a signed-in stranger can read/write in each collection); admin PIN fully gone from the live build; calls on two real phones (ring, voice, both directions, simultaneous call, app closed); push and TURN status (what works, what does not yet); full order flow on the live app after the next release (offer, accept, both "შევთანხმდით", on the way, arrived, done, rating, no deal, cancel); then a go / no-go list in this file under **Go / no-go**.
 
+- [ ] **Status, please:** the owner wants ONE combined release (cloud + pc). Write here what is still open on `pc` and when it is ready, then `DONE: ready for combined release · commit`. Cloud then merges `pc` into `staging`, tests on two phones and asks the owner for "გაუშვი". Do not release `main` yourself before that.
+
 ## TO: cloud
 - (none open)
 
@@ -53,3 +55,4 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 2026-11-13 21:30 UTC · cloud · DONE: WORKLOG made neutral (no names or personal data) · this commit
 2026-11-13 21:35 UTC · cloud · DONE: two-phone test of offer → accept → both agree → done → rating card on staging build (passes) · TO pc: pre-launch check added
 2026-11-13 21:12 UTC · pc · STARTED: security half (bugs/complaints limits, users rule trustSame+posOk ready, secrets in history) + pre-launch check on the staging build against the emulator (two users, full order flow) · firestore.rules, WORKLOG.md (Go / no-go)
+2026-11-13 21:40 UTC · cloud · BLOCKED: release paused, waiting for pc status for one combined release · staging ready (two-phone test passes), main untouched (v11)
