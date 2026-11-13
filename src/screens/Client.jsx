@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { api, useStore, priceFor, money, promoActive, getState, CLOUD } from '../store'
+import { api, useStore, priceFor, money, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
 import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById } from '../data'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -29,7 +29,10 @@ export function Home({ install }) {
 
   const G = id => GROUPS.find(g => g.id === id)
   const SUB = { handy: 'groupHandySub', clean: 'groupCleanSub', ride: 'groupRideSub', land: 'groupLandSub', machine: 'groupMachineSub', move: 'groupMoveSub', road: 'groupRoadSub' }
-  const open = id => id === 'ride' ? nav.go('rides') : nav.go('call', { group: id })
+  const stats = useStore(s => s.catStats)
+  const order = useMemo(() => groupOrder(stats || {}), [stats])
+  const top = order[0], rest = order.slice(1)
+  const open = id => { api.bump(null, id); id === 'ride' ? nav.go('rides') : nav.go('call', { group: id }) }
   const onlineIn = id => near.filter(x => (x.cats || [x.cat]).some(c => (catById(c) || {}).g === id)).length
 
   return <div className="scroll home7" style={{ paddingTop: 0 }}>
@@ -54,16 +57,16 @@ export function Home({ install }) {
           <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
           <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
         </button>}
-        <button className="h7hero" onClick={() => open('handy')}>
-          <span className="hc">🔧</span>
+        <button className="h7hero" onClick={() => open(top)}>
+          <span className="hc">{G(top).icon}</span>
           <span className="grow col" style={{ gap: 2, textAlign: 'left', minWidth: 0 }}>
-            <b>{groupName('handy', lang)}</b><small>{t(SUB.handy)}</small>
-            <span className="h7price">{money(p.amount)}{p.old && <s>{money(p.old)}</s>}{near.length > 0 && <em><span className="livedot" />{onlineIn('handy')}</em>}</span>
+            <b>{groupName(top, lang)}</b><small>{t(SUB[top])}</small>
+            <span className="h7price">{money(p.amount)}{p.old && <s>{money(p.old)}</s>}{near.length > 0 && <em><span className="livedot" />{onlineIn(top)}</em>}</span>
           </span>
           <Icon n="right" s={26} />
         </button>
         <div className="h7grid">
-          {['clean', 'ride', 'land', 'machine', 'move', 'road'].map(id => <button key={id} className={'h7t' + (id === 'ride' ? ' dark' : '')} onClick={() => open(id)}>
+          {rest.map(id => <button key={id} className="h7t" onClick={() => open(id)}>
             <span className="e">{G(id).icon}</span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
           </button>)}
         </div>
@@ -88,6 +91,7 @@ function InstallCard({ onClick }) {
 }
 
 export function CallNow({ cat: initCat, group }) {
+  const stats = useStore(s => s.catStats)
   const { t, lang } = useT()
   const nav = useNav()
   const [cat, setCat] = useState(initCat || null)
@@ -105,13 +109,14 @@ export function CallNow({ cat: initCat, group }) {
   const user = useStore(s => s.user)
 
   if (!cat) {
-    const res = searchCats(q, lang).filter(c => !group || q || c.g === group)
+    const res0 = searchCats(q, lang).filter(c => !group || q || c.g === group)
+    const res = q ? res0 : catRank(res0, stats || {})
     return <div className="scroll nopad">
       <Top title={group ? groupName(group, lang) : t('pickService')} onBack={nav.back} />
       <div className="pad col">
         <div className="search"><Icon n="search" s={20} /><input autoFocus={!group} placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} /></div>
         <div className="list" style={{ marginTop: 6 }}>
-          {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => setCat(c.id)}>
+          {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => { api.bump(c.id, c.g); setCat(c.id) }}>
             <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
             <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b>
             <span className="mute small b">{api.nearbyPros(c.id, 6).filter(x => x.online).length} ●</span><Icon n="right" s={18} /></button>)}

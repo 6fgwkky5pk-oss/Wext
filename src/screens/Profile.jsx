@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { api, useStore, money, promoActive, getState } from '../store'
+import { api, useStore, money, promoActive, getState, groupOrder } from '../store'
 import { LANGS } from '../i18n'
-import { catName } from '../data'
+import { catName, CATEGORIES, GROUPS, groupName } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
 import { useNav } from '../nav'
 
@@ -99,6 +99,7 @@ export function Admin() {
         <Stat e="🧰" n={proUsers.length} l={t('pros')} />
         <Stat e="⚑" n={complaints.length} l={t('complaints')} />
       </div>}
+      {tab === 'stats' && <DemandList />}
 
       {tab === 'prices' && <div className="card col">
         <div className="grid2"><div className="field"><label>{t('baseFee')}</label>{N('baseFee')}</div><div className="field"><label>{t('promoFee')}</label>{N('promoFee')}</div></div>
@@ -134,5 +135,19 @@ export function Admin() {
         {bugs.map(b => <div key={b.id} className="card"><div className="row between"><b>{b.by}</b><span className="tiny mute">{fmtDate(b.ts, lang)}</span></div><p style={{ margin: '6px 0 0' }}>{b.text}</p><div className="tiny mute">{b.screen}</div></div>)}
       </div>}
     </div>
+  </div>
+}
+
+function DemandList() {
+  const { lang } = useT()
+  const st = useStore(s => s.catStats) || {}
+  return <div className="card col" style={{ gap: 6, marginTop: 12 }}>
+    <b>📊 მოთხოვნა</b>
+    {groupOrder(st).map((g, i) => { const G = GROUPS.find(x => x.id === g); const cats = CATEGORIES.filter(c => c.g === g).sort((a, b) => (st[b.id] || 0) - (st[a.id] || 0))
+      return <div key={g} className="col" style={{ gap: 2, padding: '6px 0', borderTop: i ? '1px solid #eee' : 0 }}>
+        <div className="row"><b className="grow">{i + 1}. {G.icon} {groupName(g, lang)}</b><b>{st['g_' + g] || 0}</b></div>
+        {cats.filter(c => st[c.id]).map(c => <div key={c.id} className="row tiny mute"><span className="grow">{catName(c.id, lang)}</span><span>{st[c.id]}</span></div>)}
+      </div> })}
+    <span className="tiny mute">შეკვეთა = 3 ქულა, გახსნა = 1</span>
   </div>
 }

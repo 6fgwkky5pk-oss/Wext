@@ -12,7 +12,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, signInAnonymously, onAuthStateChanged, connectAuthEmulator } from 'firebase/auth'
 import {
   getFirestore, collection, doc, setDoc, addDoc, updateDoc, onSnapshot, query, where, runTransaction,
-  arrayUnion, getDoc, orderBy, limit, connectFirestoreEmulator,
+  arrayUnion, increment, getDoc, orderBy, limit, connectFirestoreEmulator,
 } from 'firebase/firestore'
 import firebaseConfig from './firebase-config'
 
@@ -70,7 +70,9 @@ function listenGlobal() {
     const { blockedIds = [], ...cfg } = c
     ctx.set(s => ({ config: { ...s.config, ...cfg }, blockedIds }))
   }))
+  sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { ctx.set({ catStats: d.data() || {} }) }, () => {}))
 }
+export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), Object.fromEntries(keys.map(k => [k, increment(n)])), { merge: true }).catch(() => {})
 
 function listenUser() {
   const region = ctx.get().region || 'ge'

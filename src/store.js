@@ -1,7 +1,7 @@
 // WEXT data layer. All app screens talk to `api` only, so the local adapter below can be
 // swapped for a realtime backend (Firebase/Supabase) without touching UI code.
 import { useSyncExternalStore } from 'react'
-import { seedPros, distKm, catName, regionFor } from './data'
+import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS } from './data'
 import { payments } from './payments'
 import * as cloud from './cloud'
 export const CLOUD = cloud.CLOUD
@@ -96,7 +96,26 @@ const REPLIES = {
 }
 
 // ---------- API ----------
+// demand ranking: request = 3 points, opening a group/service = 1 point
+const PRIOR = { handy: 70, road: 60, ride: 50, clean: 40, move: 30, land: 20, machine: 10 }
+export function groupOrder(st = state.catStats || {}) {
+  const score = g => PRIOR[g] + (st['g_' + g] || 0)
+  const o = GROUPS.map(g => g.id).sort((a, b) => score(b) - score(a))
+  if (o[0] === 'ride') { o.shift(); o.splice(1, 0, 'ride') }
+  const i = o.indexOf('ride'); if (i > 2) { o.splice(i, 1); o.splice(2, 0, 'ride') }
+  return o
+}
+export function catRank(cats, st = state.catStats || {}) {
+  const idx = id => CATEGORIES.findIndex(c => c.id === id)
+  return [...cats].sort((a, b) => ((st[b.id] || 0) - (st[a.id] || 0)) || (idx(a.id) - idx(b.id)))
+}
 export const api = {
+  bump(cat, group, n = 1) {
+    const g = group || (catById(cat) || {}).g
+    const keys = [cat, g && 'g_' + g].filter(Boolean)
+    if (CLOUD) cloud.bumpStat(keys, n)
+    set(s => { const st = { ...(s.catStats || {}) }; keys.forEach(k => st[k] = (st[k] || 0) + n); return { catStats: st } })
+  },
   setLang(lang) { set({ lang }); document.documentElement.lang = lang },
   me() { return CLOUD ? cloud.myId() : 'me' },
   setLoc(loc, real) {
@@ -131,6 +150,7 @@ export const api = {
 
   async createRequest({ cat, note, brigade }) {
     brigade = !!brigade
+    api.bump(cat, null, 3)
     let bundle = api.activeBundle(cat)
     if (bundle && !!bundle.brigade !== brigade) bundle = null
     const price = priceFor(cat, 'instant', brigade)
