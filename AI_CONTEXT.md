@@ -36,4 +36,6 @@ React 18 + Vite 5 PWA. Firebase (Firestore + anonymous auth) for data, strict se
 ## How to give feedback
 Write suggestions as short numbered points: **what**, **why**, **how to check it worked**. Do not invent facts about the code. Say when you are guessing. The owner pastes your answer into `SUGGESTIONS.md`; the developer AIs review each one and mark it accepted or rejected with a reason.
 
+AI agents with repo access (Codex, Kimi Code): follow **AGENTS.md**.
+
 Also read: `DECISIONS.md` (settled decisions; do not re-open them without a new reason) and `SUGGESTIONS.md`.

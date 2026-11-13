@@ -1,0 +1,28 @@
+# AGENTS.md — rules for every AI agent in this repo (Codex, Kimi Code, others)
+
+This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
+
+## At the start of every session
+1. `git fetch`
+2. Read, in this order: **AI_CONTEXT.md** (what the app is), **DECISIONS.md** (settled, do not re-open without a new reason), **WORKLOG.md** on `origin/staging` (who does what now, open TO: items), **SUGGESTIONS.md**, then **CLAUDE.md** and **ISSUES.md** for technical detail.
+3. Add one line to WORKLOG.md on your own branch: `YYYY-MM-DD HH:MM UTC · <kimi|codex> · STARTED: what · files`. When finished: `DONE: what · commit`. If stuck: `BLOCKED: why`.
+
+## Branches (strict)
+- Work **only** on your own branch: Kimi → `kimi`, Codex → `codex` (create it from `origin/staging`).
+- **Never push** to `main` (live app), `staging` or `pc`. Never force-push.
+- To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
+
+## Your role
+- **Kimi**: independent review and risk finding (security, privacy, money rules, wording, edge cases). Prefer findings over large rewrites.
+- **Codex**: second code reviewer and tests (unit tests, two-user flow checks, build checks).
+- **Cloud Claude** (`staging`) and **Claude Code** (`pc`) own the app code and decide what is merged.
+- Your output is a suggestion until one of the owners has checked it.
+
+## Never
+- Write secrets, keys, passwords, PINs, phone numbers, user ids or real people's names anywhere (code, docs, WORKLOG, commits). WORKLOG holds neutral work status only.
+- Change Firebase rules or the live database, or run anything against live data.
+- Send requests, calls or messages to real users. Test only with the rules in CLAUDE.md ("Testing on live Firebase"), or better with the Firebase emulator.
+- Re-open a decision from DECISIONS.md without a new reason written in SUGGESTIONS.md.
+
+## Good finding format
+Numbered points: **what** (file:line), **why it matters**, **how to check it is fixed**. Say when you are guessing.

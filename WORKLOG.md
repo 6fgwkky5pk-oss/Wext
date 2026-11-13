@@ -14,6 +14,12 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 5. `main` only after the owner's own "გაუშვი".
 6. Sync is through git pushes, so it is minutes, not instant. pc acts only while its session is open.
 
+## Agents and roles
+- **cloud** (Claude, branch `staging`) and **pc** (Claude Code, branch `pc`): own the app code, review and merge.
+- **kimi** (Kimi Code, branch `kimi`): independent review and risks. **codex** (Codex, branch `codex`): second code reviewer and tests.
+- kimi/codex output is untrusted until cloud or pc checked it; they never push `main`, `staging` or `pc`; rules in AGENTS.md.
+- cloud/pc: at session start also check `origin/kimi` and `origin/codex` (WORKLOG lines, open PRs into `staging`) and review them.
+
 ## Current owners
 | Area | Owner | Files |
 |---|---|---|
@@ -85,3 +91,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:45 UTC · cloud · DONE: combined release v12 (cloud + pc) after the owner's "გაუშვი"; two-phone tests pass on the merged build · main
 2026-11-13 21:50 UTC · cloud · DONE: v12 live (main 31e6884, deploy run success, served sw = wext-v12). Admin PIN: none in code, admin = /admins only, nothing to replace. Rules deploy: waiting for owner OK
 2026-11-13 21:55 UTC · cloud · DONE: shared sources for all AIs: AI_CONTEXT.md, DECISIONS.md, SUGGESTIONS.md; CLAUDE.md reads them at start
+2026-11-13 22:00 UTC · cloud · DONE: AGENTS.md for kimi/codex (own branches, roles, never push main/staging/pc); roles added here
