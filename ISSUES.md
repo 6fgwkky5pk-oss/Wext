@@ -1,4 +1,9 @@
-# Open issues — hand-off between cloud Claude and Claude Code
+# Open issues — technical work list
+
+Updated 2026-11-13 at hand-off. Full context: HANDOFF.md.
+
+## 0. Waiting for release (on `staging`/`pc`, not live)
+Green toggle only in work mode (1ec0b69) · role fixes (4d53c26) · new bottom menu + stats + top-switch dot (e6264ac) · call fixes c094015 and texts/OSM tiles/admin list/rules bc70c15 (pc only). Merge `pc` → `staging`, bump sw to `wext-v8`, release only on Alexander's "გაუშვი".
 
 Read CLAUDE.md first. Work on branch `pc`, merge into `staging`, never push `main` without Alexander's "გაუშვი".
 Test only far from Telavi (geo 10,10 or -20,-20) with fresh fake numbers (5550004xx). Never call or send requests to real users.
@@ -27,7 +32,13 @@ Fixed in v7: a request made without real GPS shows "? კმ" to the pro; pros w
 To check on real phones: two phones in Telavi, compare the km shown with Google Maps straight-line distance. Pro positions update on 50 m moves and every 5 min while green.
 
 ## 3. Other pending
-Real SMS login · real payments (TBC/BOG) · stricter Firestore rules · real admin auth · per-service working hours.
+- Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
+- Firestore rules: strict `firestore.rules` is in the repo; confirm it is deployed in the Firebase console.
+- Admin: remove the old client-side PIN path from `src/screens/Profile.jsx` (public repo); keep only `/admins/{uid}`.
+- Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
+- My-pros tab: the call button reuses the old request thread; verify after a job is finished.
+- Test isolation: add a `wext-test` Firebase project or the emulator so tests never touch real users.
+- Data cleanup: junk test ride "fd → hxbd"; test users are in region `test`.
 
 ## Order of work for calls (decided with Alexander, 2026-11-13)
 1. **Own TURN server** (instead of the free public openrelay, so calls connect on every network).
