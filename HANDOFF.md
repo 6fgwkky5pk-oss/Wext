@@ -71,18 +71,10 @@ The repo is **public**, so it holds no passwords, PINs, keys or real phone numbe
   | `staging` | Shared work. |
   | `pc` | Claude Code. `pc` contains everything on `staging` plus Claude Code's own commits. |
 
-- **Live (`main`) = b568622, service worker `wext-v7`.** It includes the gray-button fix, call glare fix, distance "?", Georgian wording fixes and `ISSUES.md`.
-- **On `staging`/`pc`, NOT live, waiting for Alexander's "გაუშვი":**
-  - 1ec0b69: green toggle hidden on client home.
-  - 4d53c26: role fixes. Work-mode Activity shows the worker's jobs; job status is shown from the worker's side; the worker-settings row appears only for registered workers; agreed/no-deal statuses are shown.
-  - e6264ac: new bottom menu, `src/screens/Tabs.jsx` (MyPros, ProStats), red dot on the top switch.
-  - On `pc` only (Claude Code):
-    - c094015: early ICE candidates kept, call released if it ended early, decline ends the callee.
-    - bc70c15: texts in 5 languages, OpenStreetMap tiles, admin door via the server-side `admins` list, stricter `firestore.rules`.
-    - e6ec955: verified prices in `ISSUES.md`.
+- **Live version and published rules:** see WORKLOG.md → RELEASE STATUS (kept up to date there only).
 - **Release steps:**
   1. Merge `pc` into `staging`.
-  2. Bump `const V` in `public/sw.js` (next is `wext-v8`).
+  2. Bump `const V` in `public/sw.js` (next version: see CLAUDE.md).
   3. `npm run build`.
   4. After the go, run `git checkout main && git merge --ff-only staging && git push`.
 
@@ -198,7 +190,7 @@ The currency is GEL (₾). USD values are approximate, at about 1₾ ≈ $0.37; 
 - **Half-done:**
   - Calls: work in browsers. Sound on real iPhones and delays on mobile data have not been verified, and nothing rings when the app is closed or locked.
   - Firestore rules: the strict version is in the repo; its deployment is unconfirmed.
-  - Admin auth: server list on `pc`, PIN removed on `pc`; live still has the PIN until release.
+  - Admin auth: server list only, no PIN (live since v11).
   - Map tiles provider.
 - **Not started:**
   - real SMS

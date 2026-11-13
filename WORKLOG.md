@@ -6,6 +6,14 @@ Two agents work on WEXT at the same time:
 
 This file is their only channel. **Neutral work status only**: STARTED / DONE / BLOCKED / TO, file names, commit ids, open technical items. Never write here: anyone's words or names, phone numbers, user ids, PINs, keys, passwords, account details. The repo is public and git keeps history. Owner decisions that the other agent needs go into CLAUDE.md as short neutral rules.
 
+## RELEASE STATUS (single source of truth — update on every release or rules change)
+- **Live app:** v12 · `main` 31e6884 · deployed 2026-11-13 21:28 UTC (deploy run success, served `sw.js` = `wext-v12`).
+- **Next on `staging` (not live):** language chip on the first screen, "kran" search order, name label "no surname needed".
+- **Firebase rules published (live):** strict base rules (private phone doc owner-only; requests only to their sides; stats/misses admin-only, stats counters limited); calls only between people who share a job/ride/project; rides/projects edited only by owner; request fields per role incl. deal fields (clientDeal/proDeal).
+- **Firebase rules waiting for the owner's explicit OK:** users `trustSame` + `posOk` + name ≤ 80; bugs/complaints size limits; `phones/{key}` (only with real SMS). **pc: confirm here whether any of these was already published after v12.**
+- **Verified:** order flow offer → accept → both agree → done → rating card, and client no-deal → note to the worker: two headless browser phones on the v12 build against live Firebase (test location far from Georgia, fake numbers); the same flow plus rules in the emulator (pc, 86 checks).
+- **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
+
 ## Rule (both agents, every step)
 1. Before every step: `git fetch`, read this file on **both** `origin/staging` and `origin/pc`, act on open **TO:** items for you.
 2. Starting: add `YYYY-MM-DD HH:MM UTC · who · STARTED: what · files`, commit, push right away. Finished: `DONE: what · commit`. Stuck: `BLOCKED: why`.
@@ -56,7 +64,7 @@ NO-GO / not verified:
 - Locked screen / closed app: nothing rings (needs push + Capacitor; push needs Blaze).
 - TURN: public openrelay only (unreliable on some mobile networks); own TURN not opened.
 - SMS simulated: anyone can sign in with any number. OK only for a closed test with known testers.
-Verdict: GO for a closed tester group, after the combined release and the rule deploy below. NO-GO for public launch until real SMS, own TURN and push.
+Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-GO for public launch until real SMS, own TURN and push.
 
 ## Real SMS — auth plan (pc)
 - Recommended: Firebase Phone Auth (same project, no separate contract; works on web and later in Capacitor). Needs the Blaze plan (owner adds the card). Price per SMS to Georgia: unknown (check the Firebase pricing page before switching on). Abuse guard: App Check + reCAPTCHA, per-number daily limit.
@@ -65,7 +73,6 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 
 ## Open items
 - Login on a new phone opens a new profile until real SMS exists (rule in CLAUDE.md).
-- Release waiting on `staging` (sw `wext-v12`).
 
 ## Log
 2026-11-13 21:00 UTC · cloud · DONE: v11 live (b8bcd66 is on staging only, not live)
@@ -95,3 +102,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 22:05 UTC · cloud · DONE: language chip on the first screen (opens the language list), 'kran' search shows plumber then crane · staging (next release)
 2026-11-13 22:10 UTC · cloud · DONE: DECISIONS (identity before payment, own concept first), SUGGESTIONS S-001..S-007 with status
 2026-11-13 22:12 UTC · cloud · DONE: name label says no surname needed (ka/en/ru/de/tr) · staging (next release)
+2026-11-13 22:15 UTC · cloud · DONE: RELEASE STATUS block (single source), stale release/rules lines removed from ISSUES/HANDOFF; SUGGESTIONS S-008, S-009 · TO pc: confirm the rules state in RELEASE STATUS

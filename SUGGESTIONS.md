@@ -42,3 +42,12 @@ Template:
 - Source: Kimi · Date: 2026-11-13
 - Status: already exists (live v12)
 
+### S-008 · Scale-up metric before opening the next city
+- Source: Codex · Date: 2026-11-13
+- Idea: per category, the share of requests in the launch city that got a worker response (accepted) within a set time. Measured from neutral event counts only (request created / accepted / time to accept), no personal data. Decide the threshold before the test, then measure.
+- Status: needs owner decision (the threshold and the time limit)
+
+### S-009 · Tell testers that calls do not ring on a locked screen; test calls on two real phones (Wi-Fi and mobile data)
+- Source: Codex · Date: 2026-11-13
+- Status: accepted — the tester notice will say it; real-phone call test is in RELEASE STATUS "not verified"
+
