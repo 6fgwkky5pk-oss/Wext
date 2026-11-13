@@ -118,13 +118,15 @@ function listenGlobal() {
     setExtraSyn(cfg.syn)
     ctx.set(s => ({ config: { ...s.config, ...cfg }, blockedIds }))
   }))
-  sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { ctx.set({ catStats: d.data() || {} }) }, () => {}))
+  sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { const { _k, ...st } = d.data() || {}; ctx.set({ catStats: st }) }, () => {}))
 }
 // searches that found nothing: admin links them to a service (stats/misses: { term: count })
 export const missSearch = term => setDoc(doc(db, 'stats', 'misses'), { [term]: increment(1) }, { merge: true }).catch(() => {})
 export const clearMiss = term => setDoc(doc(db, 'stats', 'misses'), { [term]: deleteField() }, { merge: true }).catch(() => {})
 export function listenMisses(cb) { return onSnapshot(doc(db, 'stats', 'misses'), d => cb(d.data() || {}), () => cb({})) }
-export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), Object.fromEntries(keys.map(k => [k, increment(n)])), { merge: true }).catch(() => {})
+// admin: block / unblock = users/{id}.pro.blocked on the account and its merged ids (S-019; the user cannot clear it)
+export const setBlocked = (ids, on) => Promise.all(ids.map(id => updateDoc(doc(db, 'users', id), on ? { 'pro.blocked': true, 'pro.online': false } : { 'pro.blocked': false }).catch(console.error)))
+export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), { ...Object.fromEntries(keys.map(k => [k, increment(n)])), _k: keys }, { merge: true }).catch(() => {})
 
 function listenUser() {
   const region = ctx.get().region || 'ge'
@@ -134,7 +136,8 @@ function listenUser() {
     const pros = []
     // (aliases of other accounts are NOT trusted here: anyone could list a real pro's id and hide him)
     snap.forEach(d => {
-      const u = d.data(); if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos) return
+      const u = d.data(); if (d.id === uid && !!u.pro?.blocked !== !!ctx.get().adminBlocked) ctx.set({ adminBlocked: !!u.pro?.blocked })
+      if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || u.pro.blocked) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
@@ -163,7 +166,7 @@ function listenUser() {
     })
   }))
   // jobs offered to me (online → full screen, offline → SMS-style banner)
-  sub('offers', onSnapshot(query(collection(db, 'requests'), where('notified', 'array-contains', uid)), snap => {
+  sub('offers', onSnapshot(query(collection(db, 'requests'), where('notified', 'array-contains', uid), where('status', '==', 'searching')), snap => {
     const s = ctx.get()
     if (!s.user?.pro?.registered || s.user.pro.blocked) return
     const declined = s.declined || []

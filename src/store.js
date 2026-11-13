@@ -408,7 +408,7 @@ export const api = {
   },
   clearUser(id) { if (CLOUD) cloud.clearUser(id) },
   async setTester(phone, on) { const p9 = cloud.normPhone(phone); if (p9.length < 9) return false; await cloud.setTester(p9, on); return true },
-  toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
+  toggleBlock(id) { if (CLOUD) { const u = (state.adminUsers || []).find(x => x.id === id); cloud.setBlocked([id, ...(u?.aliases || [])].slice(0, 10), !u?.pro?.blocked); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
   clearRinging() { set({ ringing: null }) },
   setOutgoing(to) { set({ outgoing: to }) },
   setAdmin(on) { set(s => ({ user: { ...s.user, admin: on } })); if (CLOUD && on) cloud.listenAdmin() },
@@ -429,8 +429,8 @@ state.requests.filter(r => r.status === 'searching').forEach(r => setTimeout(() 
 if (CLOUD) {
   set({ pros: [], requests: state.requests.filter(r => r.id && !r.id.startsWith('r_')), incoming: null })
   cloud.initCloud({ set, get: () => state, api, ping, dist: distKm })
-  // pros: own blocked flag comes from admin block list
-  subs.add(() => { const u = state.user; if (!u?.pro) return; const bl = [u.id, ...(u.aliases || [])].some(x => state.blockedIds.includes(x)); if (bl !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: bl, online: false } } })) })
+  // pros: own blocked flag = admin block (users/{me}.pro.blocked) or 3 no-shows
+  subs.add(() => { const u = state.user; if (!u?.pro) return; const bl = !!state.adminBlocked || (u.pro.noShows || 0) >= 3; if (bl !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: bl, online: false } } })) })
   // keep "online" fresh so stale pros drop off
   setInterval(() => { if (state.user?.pro?.online) cloud.pushProfile() }, 5 * 60e3)
 }

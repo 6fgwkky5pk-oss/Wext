@@ -97,6 +97,7 @@ export function Admin() {
   const [misses, setMisses] = useState({})
   useEffect(() => CLOUD && tab === 'words' ? cloud.listenMisses(setMisses) : undefined, [tab])
   const adminUsers = useStore(s => s.adminUsers) || []
+  const isB = id => CLOUD && adminUsers.length ? !!adminUsers.find(u => u.id === id)?.pro?.blocked : blocked.includes(id)
   const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
   const adminReqs = adminReqsCloud || myReqs
   const live = adminUsers.filter(u => !u.movedTo)
@@ -147,7 +148,7 @@ export function Admin() {
             <div className="row between"><b>{c.reason}</b><span className="tiny mute">{fmtDate(c.ts, lang)}</span></div>
             <div className="small" style={{ marginTop: 6 }}>{t('client')}: <b>{c.byName}</b> {byUser[c.byId] >= 3 && <span className="badge r">⚑ {t('flagged')} ({byUser[c.byId]})</span>}</div>
             {p && <div className="row between" style={{ marginTop: 8 }}><span className="small">{p.name} · {catName(p.cat, lang)}</span>
-              <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'red')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>}
+              <button className={'btn sm ' + (isB(p.id) ? 'outline' : 'red')} onClick={() => api.toggleBlock(p.id)}>{isB(p.id) ? t('unblock') : t('block')}</button></div>}
           </div> })}
       </div>}
 
@@ -166,11 +167,11 @@ export function Admin() {
         <h3>{t('pros')} · {proUsers.length}</h3>
         {proUsers.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{(p.cats?.length ? p.cats : [p.cat || p.pro?.cats?.[0]]).filter(Boolean).map(c => catName(c, lang)).join(', ') || (p.pro?.cats || []).map(c => catName(c, lang)).join(', ')} · ★{p.rating || '—'} · {p.online ? '🟢' : '⚪'}{p.noShows ? ' · ⚠️' + p.noShows : ''}{complaints.filter(c => c.proId === p.id).length ? ' · ⚑' + complaints.filter(c => c.proId === p.id).length : ''}{nd(r => r.proId === p.id) ? ' · ✕' + nd(r => r.proId === p.id) : ''}</span></div>
           <button className="btn sm outline" onClick={() => api.clearUser(p.id)}>{t('clearUser')}</button>
-          <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>)}
+          <button className={'btn sm ' + (isB(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{isB(p.id) ? t('unblock') : t('block')}</button></div>)}
         {clientUsers.length > 0 && <h3 style={{ marginTop: 14 }}>{t('clients')} · {clientUsers.length}</h3>}
         {clientUsers.map(u => <div key={u.id} className="prorow"><Avatar p={{ name: u.name || '?', hue: 38, type: 'individual' }} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{u.name || '—'}</b>{nd(r => r.clientId === u.id) > 0 && <span className={'tiny b ' + (nd(r => r.clientId === u.id) >= 3 ? 'badge r' : 'mute')}>✕ {t('noDeal')}: {nd(r => r.clientId === u.id)}</span>}</div>
           <button className="btn sm outline" onClick={() => api.clearUser(u.id)}>{t('clearUser')}</button>
-          <button className={'btn sm ' + (blocked.includes(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{blocked.includes(u.id) ? t('unblock') : t('block')}</button></div>)}
+          <button className={'btn sm ' + (isB(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{isB(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
       {tab === 'words' && <div className="card col">
