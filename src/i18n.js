@@ -406,7 +406,18 @@ const tr = {
   you: 'Sen', client: 'Müşteri', away: '{d} km', allow: 'Konumu aç',
 }
 
+import { CATEGORIES } from './data'
+const LOCALES = import.meta.glob('./locales/*.json', { eager: true })
 export const DICTS = { ka, en, ru, de, tr }
+export const RTL = new Set()
+for (const path in LOCALES) {
+  const code = path.match(/(\w+)\.json$/)[1]
+  const L = LOCALES[path].default || LOCALES[path]
+  DICTS[code] = L.dict
+  if (L.rtl) RTL.add(code)
+  if (!LANGS.find(l => l.code === code)) LANGS.push({ code, label: L.label })
+  for (const c of CATEGORIES) if (L.cats && L.cats[c.id] && !c.n[code]) c.n[code] = L.cats[c.id]
+}
 
 export function makeT(lang) {
   const d = DICTS[lang] || ka
@@ -418,6 +429,7 @@ export function makeT(lang) {
 }
 
 export function detectLang() {
-  const l = (navigator.language || 'ka').slice(0, 2)
-  return DICTS[l] ? l : 'ka'
+  const list = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'ka'])
+  for (const x of list) { const l = String(x).toLowerCase().slice(0, 2); if (DICTS[l]) return l }
+  return 'ka'
 }

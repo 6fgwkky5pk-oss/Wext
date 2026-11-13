@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { api, useStore } from '../store'
-import { LANGS } from '../i18n'
 import { useT, Icon, toast } from '../ui'
 import { regionFor } from '../data'
 
@@ -47,9 +46,6 @@ export default function Onboarding({ install }) {
     {step === 0 && <div className="obgrid">{['🚰', '⚡', '🔧', '🍇', '🎨', '🔑', '🧽', '🚗', '📦'].map((e, i) => <span key={i} style={{ animationDelay: i * 0.08 + 's' }}>{e}</span>)}</div>}
     <div style={{ marginTop: 'auto', paddingTop: 24 }} className="col">
       {step === 0 && <>
-        <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-          {LANGS.map(l => <button key={l.code} className={'chip' + (lang === l.code ? ' on' : '')} onClick={() => api.setLang(l.code)}>{l.label}</button>)}
-        </div>
         <button className="btn primary" style={{ marginTop: 10 }} onClick={() => setStep(1)}>{t('continue')} <Icon n="right" /></button>
       </>}
 

@@ -36,11 +36,20 @@ export function Profile({ install }) {
       </div>
       <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); user.admin ? nav.go('admin') : setPin('') } }}>WEXT 0.1 · {t('tagline')}</p>
     </div>
-    {langSheet && <Sheet onClose={() => setLangSheet(false)}><h2>{t('language')}</h2><div className="col" style={{ marginTop: 12 }}>
-      {LANGS.map(l => <button key={l.code} className={'paym' + (l.code === lang ? ' on' : '')} onClick={() => { api.setLang(l.code); setLangSheet(false) }}>{l.label}</button>)}</div></Sheet>}
+    {langSheet && <LangSheet lang={lang} t={t} onClose={() => setLangSheet(false)} />}
     {pin != null && <Sheet onClose={() => setPin(null)}><h2>{t('admin')}</h2>
       <input className="inp" style={{ marginTop: 12, textAlign: 'center', fontSize: 24, letterSpacing: 10 }} type="password" inputMode="numeric" autoFocus value={pin} onChange={e => { setPin(e.target.value); if (e.target.value === ADMIN_PIN) { api.setAdmin(true); setPin(null); nav.go('admin') } }} /></Sheet>}
   </div>
+}
+
+const EN_NAMES = { ka: 'Georgian', en: 'English', ru: 'Russian', de: 'German', tr: 'Turkish', uk: 'Ukrainian', hy: 'Armenian', az: 'Azerbaijani', es: 'Spanish', fr: 'French', ar: 'Arabic', zh: 'Chinese' }
+function LangSheet({ lang, t, onClose }) {
+  const [q, setQ] = useState('')
+  const list = LANGS.filter(l => !q || (l.label + ' ' + l.code + ' ' + (EN_NAMES[l.code] || '')).toLowerCase().includes(q.toLowerCase()))
+  return <Sheet onClose={onClose}><h2>{t('language')}</h2>
+    <div className="search" style={{ marginTop: 12 }}><Icon n="search" s={20} /><input placeholder="🔍" value={q} onChange={e => setQ(e.target.value)} /></div>
+    <div className="col" style={{ marginTop: 12, maxHeight: '55vh', overflowY: 'auto' }}>
+      {list.map(l => <button key={l.code} className={'paym' + (l.code === lang ? ' on' : '')} onClick={() => { api.setLang(l.code); onClose() }}>{l.label}{l.code === lang && ' ✓'}</button>)}</div></Sheet>
 }
 
 export function BugReport({ from }) {

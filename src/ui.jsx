@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { initials, catById } from './data'
 import { useStore, api } from './store'
-import { makeT } from './i18n'
+import { makeT, RTL } from './i18n'
 
 const P = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
@@ -45,6 +45,7 @@ export function Bolt(props) {
 const I18n = createContext(makeT('ka'))
 export function I18nProvider({ children }) {
   const lang = useStore(s => s.lang) || 'ka'
+  useEffect(() => { const h = document.documentElement; h.lang = lang; h.dir = RTL.has(lang) ? 'rtl' : 'ltr' }, [lang])
   return <I18n.Provider value={{ t: makeT(lang), lang }}>{children}</I18n.Provider>
 }
 export const useT = () => useContext(I18n)
