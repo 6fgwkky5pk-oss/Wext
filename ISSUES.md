@@ -41,6 +41,23 @@ match /phones/{key} {
 ```
 Limits: while SMS is simulated, anyone who types a number can open that profile anyway (real SMS fixes it). Someone who knows a number could also write a wrong id into its phones doc; real SMS + a Cloud Function should own this doc later.
 
+## Security checklist (before testers, 2026-11-13)
+pc (rules, live DB, auth, secrets):
+- [x] Strict rules deployed: private phone doc only to its owner; requests only to their sides; calls only between people who share a job; stats/misses admin-only.
+- [ ] Review every collection for what an anonymous signed-in stranger can read (`users` is readable by all: name, worker data, position of workers on a 50 m grid).
+- [ ] `bugs` / `complaints`: size and rate limits in rules.
+- [ ] Users rule `trustSame` + `posOk` after the release.
+- [ ] Real SMS auth plan; `phones/{key}` rule only with it.
+- [x] Admin PIN removed from the code; admin = `/admins/{uid}` only. Old PIN is still in git history but no longer opens anything.
+cloud (app code):
+- [x] Text caps (name 40, note 500, chat 1000, complaint 1000, bug 2000), control chars stripped.
+- [x] Max 5 new requests and 8 outgoing calls per 10 min (client side; a server limit needs Cloud Functions).
+- [x] Clients' location not published; workers' on a 50 m grid; request position on the grid.
+- [x] Rating / jobs / no-shows / blocked / verified never sent from the phone.
+- [x] Test mode: no card number fields; SMS banner says it is a test.
+- [x] No phone numbers or personal data in console logs.
+Honest limits: SMS is simulated, so anyone who types a number gets a new profile under that name; client-side limits can be bypassed by a modified app; positions of green workers are visible to signed-in users (50 m).
+
 ## 2. Distance accuracy
 Fixed in v7: a request made without real GPS shows "? კმ" to the pro; pros without real GPS are not drawn on the map. Positions are rounded to ~100 m (`round` in cloud.js).
 To check on real phones: two phones in Telavi, compare the km shown with Google Maps straight-line distance. Pro positions update on 50 m moves and every 5 min while green.
@@ -76,4 +93,4 @@ Rules: Alexander opens every account and enters the card himself; keys/secrets o
 
 ## Repo privacy (decided with Alexander, 2026-11-13)
 The repo stays **public for now**. Next stage: make it private. Two ways: GitHub Pro (~$4/month, Alexander opens it with the company card), or move hosting to Firebase Hosting and then make the repo private. Until then, keep the rule: no secrets, PINs, keys or real phone numbers in git.
-Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `main` (v10) were **deployed on 2026-11-13** and checked live: strangers cannot list requests, chats or calls, or change prices; own requests and config still load.
+Admin: one `/admins/{uid}` doc was created by hand in the Firebase console on 2026-11-13.

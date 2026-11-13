@@ -1,5 +1,7 @@
 # WEXT — notes for every Claude working on this repo
 
+**FIRST, every session and before every step:** `git fetch`, read **WORKLOG.md** on `origin/staging` and `origin/pc`, do any open "TO:" item for you, log STARTED/DONE/BLOCKED and push.
+
 Main work is now in a Claude Code session (since 2026-11-13). Read this first, then **HANDOFF.md** (full context, decisions, money rules, open questions) and **ISSUES.md** (open technical work).
 Owner: Alexander. Talk to him in **Georgian**, very short and simple. Show design choices as pictures.
 
@@ -12,8 +14,11 @@ Owner: Alexander. Talk to him in **Georgian**, very short and simple. Show desig
 - Bump `const V` in `public/sw.js` on each release. Open apps reload themselves (`version.json` check in `src/main.jsx`).
 - Repo is **public**: never commit secrets, real phone numbers or admin PINs. (Firebase web config in `src/firebase-config.js` is public by design.)
 
-## Two agents: sync through WORKLOG.md (rule from Alexander, 2026-11-13)
-Cloud Claude (`staging`) and Claude Code (`pc`) work at the same time. Before every task: `git fetch`, read **WORKLOG.md** on both branches, add a `STARTED:` line (what, files) and push it. When done add `DONE:` (commit), when stuck `BLOCKED:`. Don't edit files or areas the other agent has STARTED and not finished. Owners of each area are in WORKLOG.md.
+## Two agents: sync through WORKLOG.md
+**Every session, before anything else and before every step:** `git fetch`, read WORKLOG.md on both `origin/staging` and `origin/pc`, act on open "TO:" items for you, then log STARTED / DONE / BLOCKED and push. WORKLOG.md holds neutral work status only, never names, words of people, numbers, ids, PINs or keys.
+Owner decisions (neutral rules):
+- Restoring an old profile on a new phone (`phones/{key}` rule) goes live only together with real SMS. Until then a new phone = a new profile.
+- Security is split: pc = rules, live DB, admin access, auth, secrets; cloud = app code (input limits, anti-abuse, phone/location handling, no personal data in logs).
 
 ## Stack
 React 18 + Vite 5 PWA (`base: './'`). State: `src/store.js` (useSyncExternalStore, `api` facade). Firebase (project `wext-af650`, Firestore europe-west3, Spark plan, anonymous auth) in `src/cloud.js`; `CLOUD` mode when config exists. Calls: WebRTC with Firestore signalling, STUN + public TURN.
