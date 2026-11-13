@@ -53,9 +53,6 @@ export function Home({ install }) {
         {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
       </div> : <>
         {!locReal && <button className="locwarn" onClick={() => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Safari → Location'), { enableHighAccuracy: true, timeout: 15000 })}>📍 <span className="grow">{t('locOffWarn')}</span><Icon n="right" s={16} /></button>}
-        {user.pro?.registered && <button className={'workchip' + (user.pro.online ? ' on' : '')} onClick={() => api.setOnline(!user.pro.online)}>
-          <span className="sw"><i /></span><b className="grow">{user.pro.online ? t('workOn') : t('workOff')}</b>
-        </button>}
         {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
           <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
           <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
