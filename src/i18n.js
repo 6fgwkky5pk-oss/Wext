@@ -82,7 +82,7 @@ const ka = {
   prices: 'ფასები', baseFee: 'საბაზო საკომისიო', promoFee: 'აქციის ფასი', promoEnd: 'აქციის დასასრული', surgeCap: 'მაქს. მულტიპლიკატორი', surgeNow: 'მაღალი მოთხოვნა ახლა', rideFee: 'საკომისიო ადგილზე', projFee: 'საკომისიო ადამიანზე',
   complaints: 'საჩივრები', users: 'მომხმარებლები', block: 'დაბლოკვა', unblock: 'განბლოკვა', save: 'შენახვა', saved: 'შენახულია', flagged: 'ხშირი მომჩივანი', bugs: 'შეცდომები', none: 'ჯერ არაფერია', pros: 'ხელოსნები', clients: 'კლიენტები',
   noActivity: 'ჯერ აქტივობა არ გაქვს', noChats: 'ჯერ ჩატი არ გაქვს', status: 'სტატუსი', contacts: 'კონტაქტი', contactsLeft: 'დარჩენილი კონტაქტი: {n}', newRequest: 'ახალი მოთხოვნა',
-  install: 'დააყენე აპი ტელეფონზე', installIos: 'გახსენი ეს ლინკი Safari-ში, დააჭირე „გაზიარება" ⬆ (ქვემოთ) და აირჩიე „Add to Home Screen" / „მთავარ ეკრანზე დამატება"', installAndroid: 'გახსენი ეს ლინკი Chrome-ში, დააჭირე ⋮ (ზემოთ მარჯვნივ) და აირჩიე „აპის დაყენება“ ან „Add to Home screen“', iosS1: 'ქვემოთ დააჭირე „გაზიარების" ღილაკს', iosS2: 'ჩამოსქროლე და აირჩიე', iosS3: 'ზემოთ მარჯვნივ დააჭირე', andS1: 'ზემოთ მარჯვნივ დააჭირე ⋮ (3 წერტილი)', andS2: 'აირჩიე', andS3: 'დაადასტურე — WEXT გამოჩნდება ეკრანზე', inAppS1: 'ეს ლინკი WhatsApp/Messenger-ში გაიხსნა. დააჭირე', inAppS2ios: 'აირჩიე „Open in Safari" (Safari-ში გახსნა)', inAppS2and: 'აირჩიე „Open in Chrome" (ბრაუზერში გახსნა)', inAppS3: 'იქ კიდევ ერთხელ დააჭირე „დაყენება"', copyLink: 'ლინკის კოპირება', installBtn: 'დაყენება',
+  install: 'დააყენე აპი ტელეფონზე', installIos: 'გახსენი ეს ლინკი Safari-ში, დააჭირე „გაზიარება" ⬆ (ქვემოთ) და აირჩიე „Add to Home Screen" / „მთავარ ეკრანზე დამატება"', installAndroid: 'გახსენი ეს ლინკი Chrome-ში, დააჭირე ⋮ (ზემოთ მარჯვნივ) და აირჩიე „აპის დაყენება“ ან „Add to Home screen“', iosS1: 'ქვემოთ დააჭირე „გაზიარების" ღილაკს', iosS2: 'ჩამოსქროლე და აირჩიე', iosS3: 'ზემოთ მარჯვნივ დააჭირე', andS1: 'ზემოთ მარჯვნივ დააჭირე ⋮ (3 წერტილი)', andS2: 'აირჩიე', andS3: 'დაადასტურე — WEXT გამოჩნდება ეკრანზე', inAppS1: 'ეს ლინკი WhatsApp/Messenger-ში გაიხსნა. დააჭირე', inAppS2ios: 'აირჩიე „Open in Safari" (Safari-ში გახსნა)', inAppS2and: 'აირჩიე „Open in Chrome" (ბრაუზერში გახსნა)', inAppS3: 'იქ კიდევ ერთხელ დააჭირე „დაყენება"', copyLink: 'ლინკის კოპირება', myLoc: 'ჩემთან', findLoc: 'ლოკაცია', forYou: '{name}, შენთვის', installBtn: 'დაყენება',
   you: 'შენ', client: 'კლიენტი', away: '{d} კმ', allow: 'მდებარეობის ჩართვა',
 }
 
@@ -162,7 +162,7 @@ const en = {
   prices: 'Prices', baseFee: 'Base fee', promoFee: 'Promo fee', promoEnd: 'Promo ends', surgeCap: 'Max multiplier', surgeNow: 'High demand now', rideFee: 'Fee per seat', projFee: 'Fee per person',
   complaints: 'Complaints', users: 'Users', block: 'Block', unblock: 'Unblock', save: 'Save', saved: 'Saved', flagged: 'Frequent complainer', bugs: 'Bug reports', none: 'Nothing yet', pros: 'Pros', clients: 'Clients',
   noActivity: 'No activity yet', noChats: 'No chats yet', status: 'Status', contacts: 'contacts', contactsLeft: 'Contacts left: {n}', newRequest: 'New request',
-  install: 'Install the app on your phone', installIos: 'Tap “Share” ⬆ then “Add to Home Screen”', installAndroid: 'Open this link in Chrome, tap ⋮ (top right) and choose “Install app” or “Add to Home screen”', iosS1: 'Tap the Share button below', iosS2: 'Scroll and choose', iosS3: 'Tap top-right', andS1: 'Tap ⋮ (top right)', andS2: 'Choose', andS3: 'Confirm — WEXT appears on your home screen', inAppS1: 'This link opened inside an app. Tap', inAppS2ios: 'Choose “Open in Safari”', inAppS2and: 'Choose “Open in Chrome / browser”', inAppS3: 'Then tap “Install” again', copyLink: 'Copy link', installBtn: 'Install',
+  install: 'Install the app on your phone', installIos: 'Tap “Share” ⬆ then “Add to Home Screen”', installAndroid: 'Open this link in Chrome, tap ⋮ (top right) and choose “Install app” or “Add to Home screen”', iosS1: 'Tap the Share button below', iosS2: 'Scroll and choose', iosS3: 'Tap top-right', andS1: 'Tap ⋮ (top right)', andS2: 'Choose', andS3: 'Confirm — WEXT appears on your home screen', inAppS1: 'This link opened inside an app. Tap', inAppS2ios: 'Choose “Open in Safari”', inAppS2and: 'Choose “Open in Chrome / browser”', inAppS3: 'Then tap “Install” again', copyLink: 'Copy link', myLoc: 'My location', findLoc: 'Turn on location', forYou: '{name}, for you', installBtn: 'Install',
   you: 'You', client: 'Client', away: '{d} km', allow: 'Enable location',
 }
 
@@ -242,7 +242,7 @@ const ru = {
   prices: 'Цены', baseFee: 'Базовый сбор', promoFee: 'Цена по акции', promoEnd: 'Конец акции', surgeCap: 'Макс. множитель', surgeNow: 'Высокий спрос сейчас', rideFee: 'Сбор за место', projFee: 'Сбор за человека',
   complaints: 'Жалобы', users: 'Пользователи', block: 'Заблокировать', unblock: 'Разблокировать', save: 'Сохранить', saved: 'Сохранено', flagged: 'Частые жалобы', bugs: 'Ошибки', none: 'Пока пусто', pros: 'Мастера', clients: 'Клиенты',
   noActivity: 'Пока нет активности', noChats: 'Пока нет чатов', status: 'Статус', contacts: 'контактов', contactsLeft: 'Осталось контактов: {n}', newRequest: 'Новый запрос',
-  install: 'Установите приложение на телефон', installIos: 'Нажмите «Поделиться» ⬆ и «На экран Домой»', installAndroid: 'Откройте ссылку в Chrome, нажмите ⋮ и выберите «Установить приложение»', installBtn: 'Установить',
+  install: 'Установите приложение на телефон', installIos: 'Нажмите «Поделиться» ⬆ и «На экран Домой»', installAndroid: 'Откройте ссылку в Chrome, нажмите ⋮ и выберите «Установить приложение»', myLoc: 'Моё местоположение', findLoc: 'Включить геолокацию', forYou: '{name}, для вас', installBtn: 'Установить',
   you: 'Вы', client: 'Клиент', away: '{d} км', allow: 'Включить геолокацию',
 }
 
@@ -322,7 +322,7 @@ const de = {
   prices: 'Preise', baseFee: 'Grundgebühr', promoFee: 'Aktionspreis', promoEnd: 'Aktionsende', surgeCap: 'Max. Multiplikator', surgeNow: 'Jetzt hohe Nachfrage', rideFee: 'Gebühr pro Platz', projFee: 'Gebühr pro Person',
   complaints: 'Beschwerden', users: 'Nutzer', block: 'Sperren', unblock: 'Entsperren', save: 'Speichern', saved: 'Gespeichert', flagged: 'Häufiger Beschwerdeführer', bugs: 'Fehlermeldungen', none: 'Noch nichts', pros: 'Profis', clients: 'Kunden',
   noActivity: 'Noch keine Aktivität', noChats: 'Noch keine Chats', status: 'Status', contacts: 'Kontakte', contactsLeft: 'Verbleibende Kontakte: {n}', newRequest: 'Neue Anfrage',
-  install: 'App auf dem Handy installieren', installIos: '„Teilen“ ⬆ und dann „Zum Home-Bildschirm“', installAndroid: 'Link in Chrome öffnen, ⋮ tippen und „App installieren“ wählen', installBtn: 'Installieren',
+  install: 'App auf dem Handy installieren', installIos: '„Teilen“ ⬆ und dann „Zum Home-Bildschirm“', installAndroid: 'Link in Chrome öffnen, ⋮ tippen und „App installieren“ wählen', myLoc: 'Mein Standort', findLoc: 'Standort aktivieren', forYou: '{name}, für dich', installBtn: 'Installieren',
   you: 'Du', client: 'Kunde', away: '{d} km', allow: 'Standort aktivieren',
 }
 
@@ -402,7 +402,7 @@ const tr = {
   prices: 'Fiyatlar', baseFee: 'Temel ücret', promoFee: 'Kampanya ücreti', promoEnd: 'Kampanya bitişi', surgeCap: 'Maks. çarpan', surgeNow: 'Şu an yüksek talep', rideFee: 'Koltuk başı ücret', projFee: 'Kişi başı ücret',
   complaints: 'Şikâyetler', users: 'Kullanıcılar', block: 'Engelle', unblock: 'Engeli kaldır', save: 'Kaydet', saved: 'Kaydedildi', flagged: 'Sık şikâyetçi', bugs: 'Hata bildirimleri', none: 'Henüz yok', pros: 'Ustalar', clients: 'Müşteriler',
   noActivity: 'Henüz etkinlik yok', noChats: 'Henüz sohbet yok', status: 'Durum', contacts: 'temas', contactsLeft: 'Kalan temas: {n}', newRequest: 'Yeni talep',
-  install: 'Uygulamayı telefonuna kur', installIos: '“Paylaş” ⬆ ve ardından “Ana Ekrana Ekle”', installAndroid: 'Bağlantıyı Chrome’da aç, ⋮ simgesine dokun ve “Uygulamayı yükle”yi seç', installBtn: 'Kur',
+  install: 'Uygulamayı telefonuna kur', installIos: '“Paylaş” ⬆ ve ardından “Ana Ekrana Ekle”', installAndroid: 'Bağlantıyı Chrome’da aç, ⋮ simgesine dokun ve “Uygulamayı yükle”yi seç', myLoc: 'Konumum', findLoc: 'Konumu aç', forYou: '{name}, senin için', installBtn: 'Kur',
   you: 'Sen', client: 'Müşteri', away: '{d} km', allow: 'Konumu aç',
 }
 

@@ -300,3 +300,46 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 @keyframes smsIn{from{transform:translateY(-120%);opacity:0}to{transform:none;opacity:1}}
 .iosarrow{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:34px;color:#0A84FF;animation:iosb 1s ease-in-out infinite;pointer-events:none;z-index:99}
 @keyframes iosb{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* Home G — bubbles */
+.ghead { background: var(--y, #FFC21A); padding: calc(12px + var(--safe-t)) 16px 0; position: relative; }
+.gtop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.locpill { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.55); border-radius: 999px; height: 40px; padding: 0 14px; font-weight: 800; font-size: 14px; color: #111; min-width: 0; max-width: 55%; }
+.activebar { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 12px; background: #111; color: #fff; border-radius: 16px; padding: 10px 14px; text-align: left; }
+.bubs { display: grid; justify-items: center; }
+.bubs.r2 { grid-template-columns: 1fr 1fr; padding: 26px 6% 0; }
+.bubs.r3 { grid-template-columns: 1fr 1fr 1fr; padding: 18px 0 8px; }
+.gb { display: flex; flex-direction: column; align-items: center; position: relative; transition: transform .12s; }
+.gb:active { transform: scale(.94); }
+.gb .bc { width: 96px; height: 96px; border-radius: 50%; background: #fff; display: grid; place-items: center; position: relative; box-shadow: 0 0 0 9px rgba(255,255,255,.28), 0 8px 18px rgba(160,90,0,.18); }
+.gb.big .bc { width: 124px; height: 124px; }
+.gb .be { font-size: 46px; line-height: 1; }
+.gb.big .be { font-size: 60px; }
+.gb .bl { margin-top: -12px; position: relative; background: #fff; border: 2px solid #111; border-radius: 999px; padding: 5px 12px; font-weight: 800; font-size: 13px; color: #111; line-height: 1.2; text-align: center; max-width: 120px; }
+.gb.big .bl { font-size: 14.5px; max-width: 150px; background: #111; color: #fff; }
+.bbadge { position: absolute; top: 2px; right: -4px; background: #fff; color: #111; border: 2px solid #111; border-radius: 999px; font-size: 12px; font-weight: 900; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
+.bbadge.dark { background: #111; color: var(--y, #FFC21A); }
+.gwave { display: block; width: calc(100% + 32px); margin: 0 -16px; height: 34px; fill: var(--bg); }
+.gbody { background: var(--bg); padding: 4px 16px calc(110px + var(--safe-b)); }
+.gh2 { font-size: 22px; font-weight: 900; margin: 18px 0 10px; }
+.poprow { display: grid; grid-auto-flow: column; grid-auto-columns: 84px; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 6px; scrollbar-width: none; }
+.poprow::-webkit-scrollbar { display: none; }
+.popc { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.popc .pi { width: 84px; height: 84px; border-radius: 22px; display: grid; place-items: center; font-size: 40px; }
+.popc .pl { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.2; }
+.promo { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin-top: 14px; background: var(--card); border-radius: 22px; padding: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.promo b { font-size: 17px; }
+.promo .pp { font-size: 26px; font-weight: 900; margin: 2px 0; }
+.promo .pp s { font-size: 15px; opacity: .45; font-weight: 700; }
+.promo .pe { font-size: 58px; width: 92px; height: 92px; border-radius: 22px; background: linear-gradient(135deg,#FFD95A,#FFA51F); display: grid; place-items: center; flex: none; }
+@media (max-width: 360px) { .gb .bc { width: 82px; height: 82px; } .gb.big .bc { width: 106px; height: 106px; } .gb.big .be { font-size: 50px; } .locpill { max-width: 48%; } }
+
+.roleswitch button { white-space: nowrap; }
+.locpill { flex: none; max-width: none; padding: 0 12px; }
+.gtop .roleswitch { flex-shrink: 1; min-width: 0; }
+.gtop .roleswitch button { padding: 0 11px; }
+.poprow { grid-auto-columns: 92px; gap: 8px; }
+.popc .pi { width: 80px; height: 80px; }
+.popc .pl { width: 92px; overflow-wrap: anywhere; hyphens: auto; }
+.promo b { color: var(--ink); }
+@media (max-width: 380px) { .locpill span { display: none; } .locpill { padding: 0 10px; } .gtop .roleswitch button { padding: 0 9px; font-size: 12.5px; } }

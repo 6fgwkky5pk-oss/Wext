@@ -27,51 +27,56 @@ export function Home({ install }) {
 
   const openJobs = useStore(s => s.projects.filter(p => p.date >= new Date().toISOString().slice(0, 10)).length)
 
-  return <div className="scroll" style={{ paddingTop: 0 }}>
-    <div className="fhead">
-      <span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span>
-      <RoleSwitch />
-    </div>
-    <div className="pad" style={{ marginTop: 6 }}>
-      <div className="search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
-    </div>
+  const B = ({ e, label, onClick, big, badge }) => <button className={'gb' + (big ? ' big' : '')} onClick={onClick}>
+    <span className="bc"><span className="be">{e}</span>{badge}</span>
+    <span className="bl">{label}</span>
+  </button>
+  const POP = ['plumber', 'electric', 'locksmith', 'appliance', 'cleaning', 'handyman', 'painter', 'movers'].map(catById).filter(Boolean)
 
-    {q ? <div className="pad list" style={{ marginTop: 14 }}>
-      {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => go(nav, c)}>
-        <span className="av" style={{ background: TINT[c.id], fontSize: 24 }}>{c.icon}</span>
-        <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
-      {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
-    </div> : <div className="pad col" style={{ gap: 12, marginTop: 12 }}>
-      {active && <button className="card row" onClick={() => nav.go('request', { id: active.id })} style={{ textAlign: 'left', border: '2px solid var(--ink)' }}>
-        <span style={{ fontSize: 26 }}>{catIcon(active.cat)}</span>
-        <div className="grow"><b>{catName(active.cat, lang)}</b><div className="small b" style={{ color: 'var(--green)' }}>{active.status === 'searching' ? t('searching') : t('accepted')}</div></div>
-        <Icon n="right" />
+  return <div className="scroll" style={{ paddingTop: 0, paddingBottom: 0 }}>
+    <div className="ghead">
+      <div className="gtop">
+        <button className="locpill" onClick={() => api.setLoc && navigator.geolocation && navigator.geolocation.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true))}>
+          <Icon n="pin" s={18} /><span className="ell">{locReal ? t('myLoc') : t('findLoc')}</span><Icon n="down" s={16} />
+        </button>
+        <RoleSwitch />
+      </div>
+      {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
+        <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
+        <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
       </button>}
+      <div className="bubs r2">
+        <B big e="⚡" label={t('proNow')} onClick={() => nav.go('call')} badge={near.length ? <span className="bbadge"><span className="livedot" />{near.length}</span> : null} />
+        <B big e="👷" label={t('peopleNeed')} onClick={() => nav.go('projects')} badge={openJobs ? <span className="bbadge dark">{openJobs}</span> : null} />
+      </div>
+      <div className="bubs r3">
+        <B e="🚗" label={t('ride')} onClick={() => nav.go('rides')} />
+        <B e="🍇" label={catName('harvest', lang)} onClick={() => go(nav, catById('harvest'))} />
+        <B e="📦" label={catName('movers', lang)} onClick={() => go(nav, catById('movers'))} />
+      </div>
+      <svg className="gwave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 22 C 90 2, 170 2, 240 16 S 360 34, 400 10 L400 40 L0 40Z" /></svg>
+    </div>
 
-      <button className="blk blk-a" onClick={() => nav.go('call')}>
-        <span className="pill dark">{near.length ? <><span className="livedot" /> {t('onlineN', { n: near.length })}</> : '⚡'}</span>
-        {p.promo && <span className="pill dark" style={{ marginLeft: 6 }}>🔥 {promoText(t, cfg.promoEnd, lang)}</span>}
-        <h2>{t('proNow')}</h2>
-        {eta && <p>{t('arrives', { m: eta })}</p>}
-        <span className="tag dark">{money(p.amount)}{p.old && <s>{money(p.old)}</s>} <Icon n="right" s={18} /></span>
-        {p.surge > 1 && <span className="badge r" style={{ marginLeft: 8 }}>⚡ {t('highDemand')}</span>}
-        <span className="e">⚡</span>
-      </button>
-
-      <button className="blk blk-b" onClick={() => nav.go('projects')}>
-        <h2>{t('peopleNeed')}</h2><p>{t('peopleNeedSub')}</p>
-        <span className="tag yellow">{t('openJobs', { n: openJobs })}</span>
-        <span className="e">🍇</span>
-      </button>
-
-      <button className="blk blk-c" onClick={() => nav.go('rides')}>
-        <h2>{t('ride')}</h2><p>{t('rideSub2')}</p>
-        <span className="e" style={{ fontSize: 64 }}>🚗</span>
-      </button>
-
-      <div className="trust">🔒 <span>{t('trustLine')}</span></div>
-      {install && <InstallCard onClick={install} />}
-    </div>}
+    <div className="gbody">
+      <div className="search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+      {q ? <div className="list" style={{ marginTop: 12 }}>
+        {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => go(nav, c)}>
+          <span className="av" style={{ background: TINT[c.id], fontSize: 24 }}>{c.icon}</span>
+          <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
+        {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
+      </div> : <>
+        <h2 className="gh2">{t('forYou', { name: (user.name || '').split(' ')[0] })}</h2>
+        <div className="poprow">{POP.map(c => <button key={c.id} className="popc" onClick={() => go(nav, c)}>
+          <span className="pi" style={{ background: TINT[c.id] }}>{c.icon}</span><span className="pl">{c.n[lang] || c.n.en}</span></button>)}</div>
+        <button className="promo" onClick={() => nav.go('call')}>
+          <div className="grow"><b>{t('proNow')}</b><div className="pp">{money(p.amount)} {p.old && <s>{money(p.old)}</s>}</div>
+            {p.promo && <span className="tiny b mute">🔥 {promoText(t, cfg.promoEnd, lang)}</span>}</div>
+          <span className="pe">🧰</span>
+        </button>
+        <div className="trust">🔒 <span>{t('trustLine')}</span></div>
+        {install && <InstallCard onClick={install} />}
+      </>}
+    </div>
   </div>
 }
 
