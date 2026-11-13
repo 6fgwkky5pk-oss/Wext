@@ -26,13 +26,6 @@ export function ProHome() {
         <span className="row" style={{ flexWrap: 'wrap', gap: 6, flex: 1 }}>{pro.cats.map(c => <span key={c} className="mc" style={{ background: catTint(c) }}>{catIcon(c)} {catName(c, lang)}</span>)}</span>
         <b className="small" style={{ whiteSpace: 'nowrap' }}>＋ {t('editCats')}</b>
       </button>}
-      <button className={'toggle ' + (pro.online ? 'on' : 'off')} onClick={() => api.setOnline(!pro.online)}>
-        <div><div style={{ fontSize: 46 }}>{pro.online ? '●' : '○'}</div>{pro.online ? t('online') : t('offline')}</div>
-      </button>
-      <p className="center b mute small" style={{ margin: '6px 0 18px' }}>{pro.online ? t('goOffline') : t('goOnline')}</p>
-      {pro.online && !active.length && <p className="center b" style={{ marginTop: -6 }}>⏳ {t('waiting')}</p>}
-      {!pro.online && <p className="center small b mute" style={{ marginTop: -6 }}>💬 {t('offlineSms')}</p>}
-
       {active.map(j => <div key={j.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--ink)' }}>
         <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{fmtKm(j.dist, t)}{j.note ? ' · ' + j.note : ''}</div></div></div>
         {j.photo && <img src={j.photo} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 14, marginTop: 8 }} />}
@@ -51,6 +44,13 @@ export function ProHome() {
           <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
         </div>}
       </div>)}
+      <button className={'toggle ' + (pro.online ? 'on' : 'off')} onClick={() => api.setOnline(!pro.online)}>
+        <div><div style={{ fontSize: 46 }}>{pro.online ? '●' : '○'}</div>{pro.online ? t('online') : t('offline')}</div>
+      </button>
+      <p className="center b mute small" style={{ margin: '6px 0 18px' }}>{pro.online ? t('goOffline') : t('goOnline')}</p>
+      {pro.online && !active.length && <p className="center b" style={{ marginTop: -6 }}>⏳ {t('waiting')}</p>}
+      {!pro.online && <p className="center small b mute" style={{ marginTop: -6 }}>💬 {t('offlineSms')}</p>}
+
 
       <p className="tiny mute center" style={{ marginTop: 14, lineHeight: 1.5 }}>{t('noShowRule')}</p>
     </div>
@@ -100,10 +100,6 @@ export function ProSettings() {
       <div className="seg">{['individual', 'brigade', 'company'].map(k => <button key={k} className={pro.type === k ? 'on' : ''} onClick={() => api.updatePro({ type: k, members: k === 'individual' ? 1 : Math.max(pro.members, 3) })}>{t(k)}</button>)}</div>
       {pro.type !== 'individual' && <div className="row between card"><b>{t('teamMembers')}</b><Stepper v={pro.members} set={v => api.updatePro({ members: v })} min={2} max={200} /></div>}
       {pro.type === 'company' && <span className="badge g" style={{ alignSelf: 'flex-start' }}>✓ {t('verified')}</span>}
-      <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
-      <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-        {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
-      </div>
       {pro.cats.length > 0 && <>
         <h3 style={{ marginTop: 8 }}>🏷️ {t('myPrice')}</h3>
         <p className="tiny mute b" style={{ margin: 0 }}>{t('myPriceNote')}</p>
@@ -114,6 +110,10 @@ export function ProSettings() {
             <span>–</span>
             <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={d[1] != null ? String(d[1]) : ''} value={v[1] ?? ''} onChange={e => put(1, e.target.value)} /><span className="small b">₾</span></div> })}
       </>}
+      <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
+      <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+        {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
+      </div>
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
     </div>
   </div>
