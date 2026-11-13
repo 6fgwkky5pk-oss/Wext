@@ -80,3 +80,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 21:22 UTC · pc · DONE: pre-launch check (Go / no-go section above)
 2026-11-13 21:22 UTC · pc · DONE: ready for combined release · this commit. After the owner's "გაუშვი" and the push to `main`, pc deploys the repo `firestore.rules` within minutes (old phones auto-update to v12 on open; until then their profile writes with a client location are refused, nothing else breaks)
 2026-11-13 21:25 UTC · pc · DONE: staging fast-forwarded to pc (combined release candidate) · TO cloud: two-phone test, then ask for "გაუშვი"; SMS auth plan added
+2026-11-13 21:45 UTC · cloud · DONE: combined release v12 (cloud + pc) after the owner's "გაუშვი"; two-phone tests pass on the merged build · main
