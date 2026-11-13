@@ -111,7 +111,7 @@ export function Admin() {
   return <div className="scroll nopad">
     <Top title={t('admin')} onBack={nav.back} />
     <div className="pad col">
-      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['words', t('words')], ['bugs', t('bugs')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
+      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['words', t('words')], ['bugs', t('bugs')], ['orders', t('orders')], ['testers', t('testers')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
 
       {tab === 'stats' && <div className="grid2">
         <Stat e="👥" n={adminUsers.length || '—'} l={t('statUsers')} />
@@ -151,12 +151,28 @@ export function Admin() {
           </div> })}
       </div>}
 
+      {tab === 'orders' && <div className="list">
+        {!adminReqs.length && <div className="empty">{t('none')}</div>}
+        {[...adminReqs].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 60).map(r => <div key={r.id} className="card">
+          <div className="row between"><b>{catName(r.cat, lang)} · {r.clientName || '—'}</b><span className="tiny mute">{fmtDate(r.createdAt, lang)}</span></div>
+          <div className="small" style={{ marginTop: 4 }}>{r.status}{r.proName ? ' · ' + r.proName : ''}{r.adminPay ? ' · ' + (r.adminPay === 'refund' ? '↩️ ' + t('refundBtn') : '💳 ' + t('chargeBtn')) : ''}</div>
+          <div className="grid2" style={{ marginTop: 8 }}>
+            <button className="btn sm light" onClick={() => api.adminPay(r.id, 'refund')}>↩️ {t('refundBtn')}</button>
+            <button className="btn sm outline" onClick={() => api.adminPay(r.id, 'capture')}>💳 {t('chargeBtn')}</button>
+          </div>
+        </div>)}
+      </div>}
+
+      {tab === 'testers' && <TestersAdmin cfg={cfg} />}
+
       {tab === 'users' && <div className="list">
         <h3>{t('pros')} · {proUsers.length}</h3>
         {proUsers.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{(p.cats?.length ? p.cats : [p.cat || p.pro?.cats?.[0]]).filter(Boolean).map(c => catName(c, lang)).join(', ') || (p.pro?.cats || []).map(c => catName(c, lang)).join(', ')} · ★{p.rating || '—'} · {p.online ? '🟢' : '⚪'}{p.noShows ? ' · ⚠️' + p.noShows : ''}{complaints.filter(c => c.proId === p.id).length ? ' · ⚑' + complaints.filter(c => c.proId === p.id).length : ''}{nd(r => r.proId === p.id) ? ' · ✕' + nd(r => r.proId === p.id) : ''}</span></div>
+          <button className="btn sm outline" onClick={() => api.clearUser(p.id)}>{t('clearUser')}</button>
           <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>)}
         {clientUsers.length > 0 && <h3 style={{ marginTop: 14 }}>{t('clients')} · {clientUsers.length}</h3>}
         {clientUsers.map(u => <div key={u.id} className="prorow"><Avatar p={{ name: u.name || '?', hue: 38, type: 'individual' }} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{u.name || '—'}</b>{nd(r => r.clientId === u.id) > 0 && <span className={'tiny b ' + (nd(r => r.clientId === u.id) >= 3 ? 'badge r' : 'mute')}>✕ {t('noDeal')}: {nd(r => r.clientId === u.id)}</span>}</div>
+          <button className="btn sm outline" onClick={() => api.clearUser(u.id)}>{t('clearUser')}</button>
           <button className={'btn sm ' + (blocked.includes(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{blocked.includes(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
@@ -194,5 +210,19 @@ function DemandList() {
         {cats.filter(c => st[c.id]).map(c => <div key={c.id} className="row tiny mute"><span className="grow">{catName(c.id, lang)}</span><span>{st[c.id]}</span></div>)}
       </div> })}
     <span className="tiny mute">შეკვეთა = 3 ქულა, გახსნა = 1</span>
+  </div>
+}
+
+function TestersAdmin({ cfg }) {
+  const { t } = useT()
+  const [ph, setPh] = useState('')
+  const on = !!cfg.testersOnly
+  const act = async add => { const ok = await api.setTester(ph, add); toast(ok ? '✓ ' + (add ? t('testerAdded') : t('testerRemoved')) : t('testerBad')); if (ok) setPh('') }
+  return <div className="card col">
+    <h3>🧪 {t('testers')}</h3>
+    <p className="tiny mute b" style={{ margin: 0 }}>{t('testersNote')}</p>
+    <button className={'btn ' + (on ? 'green' : 'outline')} onClick={() => api.setConfig({ testersOnly: !on })}>{on ? t('testersOn') : t('testersOff')}</button>
+    <input className="inp" type="tel" inputMode="tel" placeholder="5XX XX XX XX" value={ph} onChange={e => setPh(e.target.value)} />
+    <div className="grid2"><button className="btn light" onClick={() => act(false)}>{t('testerRemove')}</button><button className="btn primary" onClick={() => act(true)}>{t('testerAdd')}</button></div>
   </div>
 }

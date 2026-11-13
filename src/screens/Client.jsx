@@ -145,7 +145,7 @@ export function CallNow({ cat: initCat, group }) {
   const send = async () => {
     const live = getState().requests.find(r => r.cat === cat && ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status))
     if (live) { nav.replace('request', { id: live.id }); return }
-    if ((!bundle || brig) && !user.card) { setPay(true); return }
+    if ((!bundle || brig) && !user.card) { if (TEST_MODE) api.updateUser({ card: { brand: '🧪', label: t('testPay') } }); else { setPay(true); return } }
     const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
     if (id) nav.replace('request', { id })
   }
@@ -261,6 +261,10 @@ export function RequestTrack({ id }) {
       <div style={{ marginTop: 20 }}><Ring left={left} total={75} size={86} /></div>
       <div className="col" style={{ marginTop: 20 }}>
         {pay && <div className="hold"><span>🔒</span><span>{t('fee')}: <b>{money(pay.amount)}</b> · {t('holdNote')}</span></div>}
+        {now - (r.createdAt || now) > 120000 && <div className="card col" style={{ gap: 8 }}>
+          <b>{t('nobodyAnswered')}</b>
+          <div className="grid2"><button className="btn light" onClick={() => nav.go('bug')}>{t('reportProblem')}</button><button className="btn primary" onClick={() => { api.cancelRequest(id); nav.back() }}>{t('cancel')}</button></div>
+        </div>}
         <button className="btn outline" onClick={() => { api.cancelRequest(id); nav.back() }}>{t('cancel')}</button>
       </div>
     </div>
