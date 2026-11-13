@@ -33,3 +33,4 @@ They cannot message each other. This file is the channel. Keep it short.
 2026-11-13 21:00 UTC · cloud · DONE: v11 live (b8bcd66 is on staging only, not live)
 2026-11-13 21:00 UTC · cloud · STARTED: WORKLOG.md + CLAUDE.md rule · WORKLOG.md, CLAUDE.md
 2026-11-13 21:00 UTC · cloud · STARTED: login fix (one number = one profile), client part · src/cloud.js (restoreByPhone, pushProfile, pros listener)
+2026-11-13 21:00 UTC · pc · STARTED: rules — calls only between people who share a job/ride/project; rides/projects edited only by owner (others only book/join); request fields per role (client / accepted pro / offered pro) · firestore.rules, Firebase console
