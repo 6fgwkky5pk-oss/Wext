@@ -12,7 +12,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, signInAnonymously, onAuthStateChanged, connectAuthEmulator } from 'firebase/auth'
 import {
   getFirestore, collection, doc, setDoc, addDoc, updateDoc, onSnapshot, query, where, runTransaction,
-  arrayUnion, increment, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
+  arrayUnion, increment, deleteField, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
 } from 'firebase/firestore'
 import firebaseConfig from './firebase-config'
 import { setExtraSyn } from './data'
@@ -110,6 +110,10 @@ function listenGlobal() {
   }))
   sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { ctx.set({ catStats: d.data() || {} }) }, () => {}))
 }
+// searches that found nothing: admin links them to a service (stats/misses: { term: count })
+export const missSearch = term => setDoc(doc(db, 'stats', 'misses'), { [term]: increment(1) }, { merge: true }).catch(() => {})
+export const clearMiss = term => setDoc(doc(db, 'stats', 'misses'), { [term]: deleteField() }, { merge: true }).catch(() => {})
+export function listenMisses(cb) { return onSnapshot(doc(db, 'stats', 'misses'), d => cb(d.data() || {}), () => cb({})) }
 export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), Object.fromEntries(keys.map(k => [k, increment(n)])), { merge: true }).catch(() => {})
 
 function listenUser() {

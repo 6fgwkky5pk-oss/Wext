@@ -127,6 +127,11 @@ export function catRank(cats, st = state.catStats || {}) {
   return [...cats].sort((a, b) => ((st[b.id] || 0) - (st[a.id] || 0)) || (idx(a.id) - idx(b.id)))
 }
 export const api = {
+  missSearch(q) {
+    const term = String(q || '').trim().toLowerCase().replace(/[.\/#$\[\]~*`]/g, '').slice(0, 30)
+    if (term.length < 3 || !CLOUD) return
+    cloud.missSearch(term)
+  },
   bump(cat, group, n = 1) {
     const g = group || (catById(cat) || {}).g
     const keys = [cat, g && 'g_' + g].filter(Boolean)

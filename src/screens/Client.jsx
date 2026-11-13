@@ -20,6 +20,8 @@ export function Home({ install }) {
   const blocked = useStore(s => s.blockedIds)
   const [q, setQ] = useState('')
   const res = useMemo(() => searchCats(q, lang), [q, lang])
+  // remember searches that found nothing (after the user stops typing), so admin can teach the dictionary
+  useEffect(() => { if (q.trim().length < 3 || res.length) return; const id = setTimeout(() => api.missSearch(q), 2500); return () => clearTimeout(id) }, [q, res.length])
   const p = priceFor('handyman')
   const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status)))
   const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, blocked])

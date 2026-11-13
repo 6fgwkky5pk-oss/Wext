@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { api, CLOUD, useStore, money, promoActive, getState, groupOrder } from '../store'
 import { LANGS } from '../i18n'
 import { catName, CATEGORIES, GROUPS, groupName, TYPICAL, SLANG } from '../data'
@@ -94,6 +94,8 @@ export function Admin() {
   const pros = useStore(s => s.pros) || []
   const blocked = useStore(s => s.blockedIds)
   const [tab, setTab] = useState('stats')
+  const [misses, setMisses] = useState({})
+  useEffect(() => CLOUD && tab === 'words' ? cloud.listenMisses(setMisses) : undefined, [tab])
   const adminUsers = useStore(s => s.adminUsers) || []
   const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
   const adminReqs = adminReqsCloud || myReqs
@@ -159,6 +161,15 @@ export function Admin() {
       </div>}
 
       {tab === 'words' && <div className="card col">
+        <h3>🔍 {t('missTitle')}</h3>
+        <p className="tiny mute b" style={{ margin: 0 }}>{t('missNote')}</p>
+        {!Object.keys(misses).length && <div className="small mute">{t('none')}</div>}
+        {Object.entries(misses).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([term, n]) => <div key={term} className="row" style={{ gap: 6 }}>
+          <b className="grow ell">„{term}“ <span className="mute small">×{n}</span></b>
+          <select className="inp" style={{ width: 150, height: 40 }} value="" onChange={e => { const id = e.target.value; if (!id) return; const syn = { ...(f.syn || {}), [id]: (((f.syn || {})[id] || '') + ' ' + term).trim() }; setF({ ...f, syn }); api.setConfig({ syn }); cloud.clearMiss(term); toast('✓ ' + term + ' → ' + catName(id, lang)) }}>
+            <option value="">{t('linkTo')}</option>{CATEGORIES.map(c => <option key={c.id} value={c.id}>{catName(c.id, lang)}</option>)}</select>
+          <button className="btn sm outline" onClick={() => cloud.clearMiss(term)}>✕</button></div>)}
+        <h3 style={{ marginTop: 10 }}>📚 {t('words')}</h3>
         <p className="tiny mute b" style={{ margin: 0 }}>{t('wordsAdmin')}</p>
         {CATEGORIES.map(c => <div key={c.id} className="field"><label>{catName(c.id, lang)}</label>
           <input className="inp" style={{ height: 42 }} placeholder={(SLANG[c.id] || '').split(' ').slice(0, 3).join(', ') + '…'} value={(f.syn || {})[c.id] || ''} onChange={e => setF({ ...f, syn: { ...(f.syn || {}), [c.id]: e.target.value } })} /></div>)}
