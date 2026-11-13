@@ -280,3 +280,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:45 UTC · kimi · DONE: P-001-ზე პასუხი (მხარდაჭერა + 2 შენიშვნა: adminPay წესები, testers-ფილტრის ინდიკატორი) და D-002 ორი მიმართულება (ქართული ყოფის ობიექტი; ერთი მწვანე წერტილი = თავისუფალია) · staging შეერთებულია kimi-ში
 2026-11-13 23:50 UTC · cloud · DONE: codex (f14016b) და kimi (9b5db18) პასუხები D-002-ზე და P-001-ზე სიტყვასიტყვით გადმოტანილია; P-001-ის შენიშვნები მფლობელს გადაეცა გადასაწყვეტად
 2026-11-13 22:33 UTC · pc · DONE: წესების მესამე რაუნდი (S-010, S-011, S-018, S-020, S-021, testers), ემულატორი 129/129, გამოუქვეყნებელი; ნაწილი A მზადაა მფლობელის OK-სთვის, ნაწილი B ელოდება cloud-ის კოდს (TO: cloud); DISCUSSION, D-002 და P-001 პასუხები ჩაწერილია · firestore.rules, WORKLOG.md · this commit
+2026-11-13 22:34 UTC · pc · STARTED: მფლობელის OK-ით (წესები, ნაწილი A) — გამოქვეყნება Firebase-ის კონსოლში · firestore.rules (ნაწილი A)
