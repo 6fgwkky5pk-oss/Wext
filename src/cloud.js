@@ -50,7 +50,7 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, aliases: u.aliases || [], ...(s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
   }, 400)
@@ -188,11 +188,16 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, outcomeBy: r.outcomeBy || null, doneAt: r.doneAt || null, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
       if (bothYes(r)) updateDoc(doc(db, 'requests', d.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)
+    // tell the pro what the client did (the card would otherwise just disappear)
+    const before = ctx.get().proJobs || []
+    jobs.forEach(j => { const o = before.find(x => x.id === j.id); if (!o || !['accepted', 'arrived', 'agreed'].includes(o.status) || o.status === j.status) return
+      const k = j.status === 'nodeal' && j.outcomeBy === 'client' ? 'clientNoDeal' : j.status === 'cancelled' ? 'clientCancelled' : j.status === 'done' && !o.proDoneAt ? 'clientMarkedDone' : j.status === 'agreed' ? 'dealBoth' : null
+      if (k) { ctx.set({ note: { k, icon: k === 'dealBoth' ? '🤝' : k === 'clientMarkedDone' ? '✅' : '✕', name: j.client, cat: j.cat, ts: Date.now() } }); ctx.ping('soft') } })
     // one live card per client+service: a newer request from the same client replaces the older one
     const seen = new Set()
     jobs.forEach(j => { if (!['accepted', 'arrived', 'agreed'].includes(j.status)) return; const k = j.clientId + j.cat; if (seen.has(k)) { j.status = 'replaced'; updateDoc(doc(db, 'requests', j.id), { status: 'replaced' }).catch(() => {}) } else seen.add(k) })
@@ -287,7 +292,12 @@ const ICE = { iceCandidatePoolSize: 4, iceServers: [
   { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
   { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
 ] }
+// anti-abuse: max 8 outgoing calls in 10 minutes
+let callTimes = []
 export async function startCall({ to, threadId, reqId, fromName, onState, onRemote }) {
+  callTimes = callTimes.filter(x => Date.now() - x < 10 * 60e3)
+  if (callTimes.length >= 8) { ctx.set({ note: { k: 'tooManyCalls', icon: '⏳', ts: Date.now() } }); throw new Error('rate') }
+  callTimes.push(Date.now())
   const pc = new RTCPeerConnection(ICE)
   const local = await navigator.mediaDevices.getUserMedia({ audio: true })
   local.getTracks().forEach(t => pc.addTrack(t, local))

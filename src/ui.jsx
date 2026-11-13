@@ -112,10 +112,10 @@ export function useNow(ms = 1000) {
 }
 
 let toastFn = () => {}
-export const toast = (msg) => toastFn(msg)
+export const toast = (msg, ms) => toastFn(msg, ms)
 export function Toaster() {
   const [m, setM] = useState(null)
-  useEffect(() => { toastFn = (x) => { setM(x); clearTimeout(toastFn.t); toastFn.t = setTimeout(() => setM(null), 2600) } }, [])
+  useEffect(() => { toastFn = (x, ms = 2600) => { setM(x); clearTimeout(toastFn.t); toastFn.t = setTimeout(() => setM(null), ms) } }, [])
   return m ? <div className="toast" onClick={() => setM(null)}>{m}</div> : null
 }
 

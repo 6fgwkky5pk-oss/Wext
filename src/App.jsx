@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { api, useStore, getState, CLOUD } from './store'
 import { regionFor, REGIONS } from './data'
+import { TEST_MODE } from './payments'
 import { detectLang } from './i18n'
-import { I18nProvider, useT, Icon, Toaster, Sheet } from './ui'
+import { I18nProvider, useT, Icon, Toaster, Sheet, toast } from './ui'
+import { catName } from './data'
 import { Nav } from './nav'
 import Onboarding from './screens/Onboarding'
 import { Home, CallNow, RequestTrack, Activity } from './screens/Client'
@@ -97,6 +99,10 @@ function Shell() {
   const installFn = inst ? (inst.kind === 'android' ? inst.go : () => setIosHelp(inst.kind)) : null
   const installSheet = iosHelp && <InstallGuide kind={iosHelp} onClose={() => setIosHelp(false)} />
 
+  // what the other side did (or "someone is free now"): a note that stays 7 s
+  const note = useStore(s => s.note)
+  const lang = useStore(s => s.lang) || 'ka'
+  useEffect(() => { if (note) toast((note.icon || '🔔') + ' ' + t(note.k, { name: note.name || '', cat: note.cat ? catName(note.cat, lang) : '' }), 7000) }, [note?.ts])
   if (!user) return <div className="app"><Onboarding install={installFn} />{installSheet}<Toaster /></div>
 
   const top = stack.slice(-1)[0]
@@ -114,6 +120,18 @@ function Shell() {
         {tab === 'profile' && <Profile install={installFn} />}
         <div className="tabbar">{tabs.map(([k, ic, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon n={ic} s={24} />{l}{k === 'chats' && unread > 0 && <span className="dotn">{unread}</span>}</button>)}</div>
       </>}
+      {TEST_MODE && !user.testerOk && <Sheet onClose={() => api.updateUser({ testerOk: true })}>
+        <h2>🧪 {t('testerTitle')}</h2>
+        <div className="col" style={{ gap: 8, marginTop: 10, lineHeight: 1.45 }}>
+          <p style={{ margin: 0 }}>✅ {t('testerWorks')}</p>
+          <p style={{ margin: 0 }}>🧪 {t('testerSim')}</p>
+          <p style={{ margin: 0 }}>🐞 {t('testerReport')}</p>
+        </div>
+        <div className="grid2" style={{ marginTop: 14 }}>
+          <button className="btn light" onClick={() => { api.updateUser({ testerOk: true }); nav.go('bug') }}>{t('reportProblem')}</button>
+          <button className="btn primary" onClick={() => api.updateUser({ testerOk: true })}>{t('understood')}</button>
+        </div>
+      </Sheet>}
       {user.pro?.registered && <Incoming />}
       <IncomingCall />
       {installSheet}

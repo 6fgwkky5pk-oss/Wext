@@ -104,6 +104,8 @@ function pushMsg(threadId, msg) {
   })
 }
 
+// trims user text and caps its length (names, notes, chat, complaints)
+const clean = (x, n) => String(x ?? '').replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, '').trim().slice(0, n)
 const REPLIES = {
   ka: ['გამარჯობა! მივიღე, უკვე გზაში ვარ 👍', 'კარგი, მისამართი ზუსტად მომწერეთ, თუ შეიძლება', 'დაახლოებით 15 წუთში ვიქნები'],
   en: ['Hi! Got it, on my way 👍', 'Great, please send me the exact address', "I'll be there in about 15 minutes"],
@@ -150,6 +152,7 @@ export const api = {
     set(patch)
   },
   login(phone, name, role) {
+    name = clean(name, 40)
     const user = { id: CLOUD ? cloud.myId() : 'u_' + uid(), phone, name, role, hue: Math.floor(Math.random() * 360), createdAt: now(), pro: { type: 'individual', cats: [], members: 1, online: false, noShows: 0, blocked: false, rating: 5, jobs: 0 } }
     set({ user })
     if (CLOUD) cloud.onLogin()
@@ -159,7 +162,7 @@ export const api = {
     if (CLOUD) cloud.logoutCloud()
     set({ user: null, requests: [], proJobs: [], chats: {}, incoming: null })
   },
-  updateUser(patch) { set(s => ({ user: { ...s.user, ...patch } })); if (CLOUD) cloud.pushProfile() },
+  updateUser(patch) { if (typeof patch.name === 'string') patch = { ...patch, name: clean(patch.name, 40) }; set(s => ({ user: { ...s.user, ...patch } })); if (CLOUD) cloud.pushProfile() },
   updatePro(patch) { set(s => ({ user: { ...s.user, pro: { ...s.user.pro, ...patch } } })); if (CLOUD) cloud.pushProfile() },
 
   nearbyPros(cat, radius = 50) {
@@ -174,6 +177,10 @@ export const api = {
   },
 
   async createRequest({ cat, note, brigade, photo, voice }) {
+    note = clean(note, 500)
+    // anti-abuse: at most 5 new requests in 10 minutes from one phone
+    const recent = state.requests.filter(r => now() - (r.createdAt || 0) < 10 * 60e3).length
+    if (recent >= 5) { set({ note: { k: 'tooMany', icon: '⏳', ts: now() } }); return null }
     brigade = !!brigade
     api.bump(cat, null, 3)
     let bundle = api.activeBundle(cat)
@@ -264,6 +271,7 @@ export const api = {
   clientDone(reqId) { api._updReq(reqId, { status: 'done', doneAt: now() }) },
 
   sendMsg(threadId, text) {
+    text = clean(text, 1000); if (!text) return
     if (CLOUD) { cloud.sendMsg(threadId, { text }); return }
     pushMsg(threadId, { from: 'me', text })
   },
@@ -341,7 +349,7 @@ export const api = {
     set({ incoming: null })
     if (accept && !state.user.pro.online) api.updatePro({ online: true })
     if (CLOUD) {
-      if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, eta: Math.max(4, Math.round(inc.dist * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }) })
+      if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, eta: Math.max(4, Math.round(inc.dist * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }); else set({ note: { k: 'takenByOther', icon: '⏱', cat: inc.cat, ts: now() } }) })
       else { set(s => ({ declined: [...(s.declined || []), inc.id] })); cloud.declineRequest(inc.id) }
       return
     }
@@ -368,11 +376,12 @@ export const api = {
 
   // trust & safety
   complain(reqId, proId, reason) {
+    reason = clean(reason, 1000)
     const byId = state.user?.id
     if (CLOUD) { cloud.addItem('complaints', { reqId, proId, reason, byId, byName: state.user?.name }); return }
     set(s => ({ complaints: [{ id: uid(), reqId, proId, reason, byId, byName: s.user?.name, ts: now() }, ...s.complaints] }))
   },
-  reportBug(text, screen) { if (CLOUD) { cloud.addItem('bugs', { text, screen: screen || '', by: state.user?.name || '', ua: navigator.userAgent }); return } set(s => ({ bugs: [{ id: uid(), text, screen, ts: now(), by: s.user?.name, ua: navigator.userAgent }, ...s.bugs] })) },
+  reportBug(text, screen) { text = clean(text, 2000); if (CLOUD) { cloud.addItem('bugs', { text, screen: screen || '', by: state.user?.name || '', ua: navigator.userAgent }); return } set(s => ({ bugs: [{ id: uid(), text, screen, ts: now(), by: s.user?.name, ua: navigator.userAgent }, ...s.bugs] })) },
 
   _seed(b) { set(s => ({ seeded: true, projects: [...s.projects, ...b.projects], rides: [...s.rides, ...b.rides] })) },
 
@@ -380,7 +389,7 @@ export const api = {
   notifyAvail(cat, name) {
     const msg = '🟢 ' + name + ' · ' + catName(cat, state.lang || 'ka')
     try { if (typeof Notification !== 'undefined' && Notification.permission === 'granted') new Notification('WEXT', { body: msg, icon: 'icons/icon-192.png' }) } catch {}
-    set({ availNote: { cat, name, ts: now() } })
+    set({ note: { k: 'availNow', icon: '🟢', cat, name, ts: now() } })
   },
   watchCat(cat) { set({ watchCat: cat }); if (cat && typeof Notification !== 'undefined' && Notification.permission === 'default') Notification.requestPermission().catch(() => {}) },
   setBig(on) { set({ big: !!on }) },

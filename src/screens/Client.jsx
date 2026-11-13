@@ -52,6 +52,7 @@ export function Home({ install }) {
       <RoleSwitch />
     </div>
     <div className="pad col" style={{ gap: 12, marginTop: 6 }}>
+      {TEST_MODE && <button className="testline" onClick={() => nav.go('bug')}>🧪 {t('testLine')} · <u>{t('reportProblem')}</u></button>}
       <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q ? <button onClick={() => setQ('')}><Icon n="close" s={18} /></button> : <MicSearch onText={setQ} />}</div>
       {q ? <div className="list">
         {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => nav.go('call', { cat: c.id })}>
@@ -146,7 +147,7 @@ export function CallNow({ cat: initCat, group }) {
     if (live) { nav.replace('request', { id: live.id }); return }
     if ((!bundle || brig) && !user.card) { setPay(true); return }
     const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
-    nav.replace('request', { id })
+    if (id) nav.replace('request', { id })
   }
 
   return <>
@@ -188,7 +189,7 @@ export function CallNow({ cat: initCat, group }) {
         <Icon n="bolt" />{bundle && !brig ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
       </button>}
     </div>
-    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig, photo, voice }); nav.replace('request', { id }) }} />}
+    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig, photo, voice }); if (id) nav.replace('request', { id }) }} />}
   </>
 }
 
@@ -197,12 +198,12 @@ export function PaySheet({ amount, onClose, onDone }) {
   const user = useStore(s => s.user)
   const ua = navigator.userAgent
   const isApple = /iPhone|iPad|Mac/.test(ua)
-  const [m, setM] = useState(user.card ? 'saved' : isApple ? 'apple' : 'google')
+  const [m, setM] = useState(TEST_MODE ? 'test' : user.card ? 'saved' : isApple ? 'apple' : 'google')
   const [no, setNo] = useState(''), [exp, setExp] = useState(''), [busy, setBusy] = useState(false)
   const ok = m !== 'card' || (no.replace(/\D/g, '').length >= 16 && exp.length >= 4)
   const go = async () => {
     setBusy(true)
-    const card = m === 'card' ? { last4: no.replace(/\D/g, '').slice(-4), brand: no.startsWith('4') ? 'VISA' : 'MC', label: '•••• ' + no.replace(/\D/g, '').slice(-4) } : m === 'saved' ? user.card : { brand: m === 'apple' ? '' : 'G', label: m === 'apple' ? 'Apple Pay' : 'Google Pay' }
+    const card = m === 'test' ? { brand: '🧪', label: t('testPay') } : m === 'card' ? { last4: no.replace(/\D/g, '').slice(-4), brand: no.startsWith('4') ? 'VISA' : 'MC', label: '•••• ' + no.replace(/\D/g, '').slice(-4) } : m === 'saved' ? user.card : { brand: m === 'apple' ? '' : 'G', label: m === 'apple' ? 'Apple Pay' : 'Google Pay' }
     api.updateUser({ card })
     await onDone()
   }
@@ -210,16 +211,17 @@ export function PaySheet({ amount, onClose, onDone }) {
     <h2>{t('payTitle')}</h2>
     {TEST_MODE && <div className="badge y" style={{ marginTop: 8 }}>🧪 {t('testMode')}</div>}
     <div className="col" style={{ marginTop: 14 }}>
-      {user.card && <button className={'paym' + (m === 'saved' ? ' on' : '')} onClick={() => setM('saved')}><span className="lg">{user.card.brand}</span>{t('savedCard')} · {user.card.label}</button>}
-      {isApple ? <button className={'paym' + (m === 'apple' ? ' on' : '')} onClick={() => setM('apple')}><span className="lg"></span>Apple Pay</button>
-        : <button className={'paym' + (m === 'google' ? ' on' : '')} onClick={() => setM('google')}><span className="lg" style={{ background: '#fff', color: '#111', border: '1.5px solid #ddd' }}>G</span>Google Pay</button>}
-      <button className={'paym' + (m === 'card' ? ' on' : '')} onClick={() => setM('card')}><span className="lg" style={{ background: '#FFC21A', color: '#111' }}><Icon n="card" s={18} /></span>{t('addCard')}</button>
+      {TEST_MODE && <div className="paym on"><span className="lg">🧪</span>{t('testPay')}</div>}
+      {!TEST_MODE && user.card && <button className={'paym' + (m === 'saved' ? ' on' : '')} onClick={() => setM('saved')}><span className="lg">{user.card.brand}</span>{t('savedCard')} · {user.card.label}</button>}
+      {!TEST_MODE && (isApple ? <button className={'paym' + (m === 'apple' ? ' on' : '')} onClick={() => setM('apple')}><span className="lg"></span>Apple Pay</button>
+        : <button className={'paym' + (m === 'google' ? ' on' : '')} onClick={() => setM('google')}><span className="lg" style={{ background: '#fff', color: '#111', border: '1.5px solid #ddd' }}>G</span>Google Pay</button>)}
+      {!TEST_MODE && <button className={'paym' + (m === 'card' ? ' on' : '')} onClick={() => setM('card')}><span className="lg" style={{ background: '#FFC21A', color: '#111' }}><Icon n="card" s={18} /></span>{t('addCard')}</button>}
       {m === 'card' && <div className="col">
         <input className="inp" inputMode="numeric" placeholder={t('cardNo')} value={no} onChange={e => setNo(e.target.value.replace(/[^\d ]/g, '').slice(0, 19))} />
         <input className="inp" inputMode="numeric" placeholder={t('exp') + ' MM/YY'} value={exp} onChange={e => setExp(e.target.value.slice(0, 5))} />
       </div>}
       <div className="hold"><span>🔒</span><span>{t('holdNote')}</span></div>
-      <button className="btn primary" disabled={!ok || busy} onClick={go}>{busy ? '…' : t('payHold', { fee: money(amount) })}</button>
+      <button className="btn primary" disabled={!ok || busy} onClick={go}>{busy ? '…' : TEST_MODE ? t('payTest', { fee: money(amount) }) : t('payHold', { fee: money(amount) })}</button>
     </div>
   </Sheet>
 }
@@ -267,7 +269,7 @@ export function RequestTrack({ id }) {
   if (r.status === 'nodeal' || r.status === 'replaced') return <div className="scroll nopad">
     <Top title={catName(r.cat, lang)} onBack={nav.back} />
     <div className="pad col">
-      <div className="empty"><div className="e">🤷</div><b>{t('noDealMsg')}</b></div>
+      <div className="empty"><div className="e">🤷</div><b>{r.outcomeBy === 'pro' ? t('proNoDealMsg') : t('noDealMsg')}</b></div>
       <div className="hold"><span>🔒</span><span>{t('noDealFee')}</span></div>
       <button className="btn primary" onClick={() => nav.replace('call', { cat: r.cat })}>{t('otherPro')}</button>
     </div>

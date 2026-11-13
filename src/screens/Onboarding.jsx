@@ -31,7 +31,7 @@ export default function Onboarding({ install }) {
   return <div className="splash">
     {step === 2 && sms && <div onClick={() => { setCode(sms); setStep(3) }} style={{ position: 'fixed', zIndex: 50, left: 10, right: 10, top: 'calc(10px + env(safe-area-inset-top, 0px))', background: 'rgba(250,250,250,.97)', color: '#111', borderRadius: 18, padding: '10px 14px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', display: 'flex', gap: 10, alignItems: 'center', animation: 'smsIn .35s ease-out' }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: '#34C759', display: 'grid', placeItems: 'center', fontSize: 20, flex: 'none' }}>💬</div>
-      <div style={{ minWidth: 0 }}><div className="tiny b" style={{ opacity: .55 }}>WEXT · SMS</div><div className="small b">{t('codeSent', { code: sms })}</div></div>
+      <div style={{ minWidth: 0 }}><div className="tiny b" style={{ opacity: .55 }}>WEXT · SMS</div><div className="small b">{t('codeSent', { code: sms })}</div><div className="tiny" style={{ opacity: .6 }}>{t('smsTest')}</div></div>
     </div>}
     {install && <button onClick={install} className="row" style={{ gap: 10, background: '#111', color: '#fff', borderRadius: 16, padding: '10px 12px', marginBottom: 14, width: '100%', textAlign: 'left' }}>
       <img src="icons/icon-192.png" alt="" style={{ width: 38, height: 38, borderRadius: 10 }} />
