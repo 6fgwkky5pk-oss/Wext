@@ -232,7 +232,7 @@ export function RequestTrack({ id }) {
   const pay = useStore(s => s.payments.find(p => p.id === r?.payId))
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const now = useNow()
-  const [rate, setRate] = useState(false), [comp, setComp] = useState(false)
+  const [rate, setRate] = useState(false), [comp, setComp] = useState(false), [notDone, setNotDone] = useState(false), [ndText, setNdText] = useState('')
   // pro pressed "done" and the client did not answer in 24h → counts as done (rating is then asked)
   useEffect(() => { if (r?.status === 'agreed' && r.proDoneAt && Date.now() - r.proDoneAt > 864e5) api.clientDone(id) }, [r?.status, r?.proDoneAt])
   const pro = r?.proId ? { name: r.proName || '—', rating: 5, jobs: 0, type: 'individual', hue: 30, pos: loc, ...(pros || []).find(p => p.id === r.proId), icon: catIcon(r.cat) } : null
@@ -306,14 +306,14 @@ export function RequestTrack({ id }) {
           <button className="btn green" onClick={() => api.agree(id)}>🤝 {t('agreed')}</button>
         </div>}
         <div className="col" style={{ marginTop: 14 }}>
-          {r.status === 'agreed' && r.proDoneAt && <div className="card col" style={{ background: '#E9F8EF', gap: 8 }}>
-            <b>✅ {t('doneQ')}</b><span className="small mute b">{t('doneQSub', { name: r.proName || '' })}</span>
-            <div className="grid2"><button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => setComp(true)}>✕ {t('no')}</button>
-              <button className="btn green" onClick={() => api.clientDone(id)}>✓ {t('yes')}</button></div></div>}
           {r.status === 'agreed' && !r.proDoneAt && <button className="btn primary" onClick={() => api.clientDone(id)}><Icon n="check" />{t('jobFinished')}</button>}
-          {r.status === 'done' && !r.rating && <div className="card col" style={{ background: '#FFF6D6', gap: 8 }}>
+          {((r.status === 'agreed' && r.proDoneAt) || r.status === 'done') && !r.rating && <div className="card col" style={{ background: '#FFF6D6', gap: 8 }}>
+            {r.proDoneAt && <b>✅ {t('proFinished')}</b>}
             <b>⭐ {t('ratePrompt', { name: r.proName || '' })}</b>
             <div className="row" style={{ justifyContent: 'center', gap: 4 }}>{[1, 2, 3, 4, 5].map(i => <button key={i} style={{ fontSize: 34, background: 'none', border: 0 }} onClick={() => { api.finish(id, i); toast('⭐ ' + t('rateThanks')) }}>☆</button>)}</div>
+            {!notDone ? <button className="btn sm outline" style={{ color: 'var(--red)' }} onClick={() => setNotDone(true)}>✕ {t('notDone')}</button>
+              : <><textarea className="inp" placeholder={t('notDonePh')} value={ndText} onChange={e => setNdText(e.target.value)} />
+                <button className="btn sm red" disabled={!ndText.trim()} onClick={() => { api.complain(id, r.proId, '⚠️ ' + t('notDone') + ': ' + ndText.trim()); setNotDone(false); setNdText(''); toast('✅ ' + t('complaintSent')) }}>{t('send')}</button></>}
             <button className="btn sm light" onClick={() => nav.back()}>{t('later')}</button></div>}
           <button className="btn outline" onClick={() => setComp(true)} style={{ color: 'var(--red)' }}><Icon n="flag" s={18} />{t('complain')}</button>
         </div>
