@@ -39,8 +39,13 @@ export function Home({ install }) {
 
   return <div className="scroll home7" style={{ paddingTop: 0 }}>
     <div className="gtop h7top">
-      <button className="locpill" onClick={() => navigator.geolocation && navigator.geolocation.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true))}>
-        <Icon n="pin" s={18} /><span className="ell">{locReal ? t('myLoc') : t('findLoc')}</span><Icon n="down" s={16} />
+      <button className="locpill" onClick={() => {
+        if (!navigator.geolocation) return toast(t('locFail'))
+        toast('📍 ' + t('locFinding'))
+        navigator.geolocation.getCurrentPosition(pos => { api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy); toast('✓ ' + t('locUpd')) },
+          () => toast(t('locFail')), { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 })
+      }}>
+        <Icon n="pin" s={18} /><span className="ell">{locReal ? t('myLoc') : t('findLoc')}</span>
       </button>
       <RoleSwitch />
     </div>
