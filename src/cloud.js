@@ -20,7 +20,7 @@ import { setExtraSyn } from './data'
 export const CLOUD = !!(firebaseConfig && firebaseConfig.apiKey)
 let app, auth, db
 let ctx // { set, get, api }
-let uid = null
+let uid = null, readyP = null
 const unsubs = {}
 const threadSubs = {}
 const sub = (k, fn) => { unsubs[k]?.(); unsubs[k] = fn }
@@ -34,7 +34,8 @@ export async function initCloud(c) {
   auth = getAuth(app)
   db = getFirestore(app)
   if (firebaseConfig.emulator) { connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true }); connectFirestoreEmulator(db, '127.0.0.1', 8080) }
-  await new Promise(res => onAuthStateChanged(auth, u => { if (u) { uid = u.uid; res() } else signInAnonymously(auth).catch(e => { console.error(e); res() }) }))
+  readyP = new Promise(res => onAuthStateChanged(auth, u => { if (u) { uid = u.uid; res() } else signInAnonymously(auth).catch(e => { console.error(e); res() }) }))
+  await readyP
   ctx.set({ cloudReady: true, myUid: uid })
   listenGlobal()
   if (ctx.get().user) onLogin()
@@ -266,8 +267,12 @@ export async function createRequest(r) {
   return ref.id
 }
 // closed test: allowed numbers live in testers/{sha256 key} (admin writes, anyone may check one exact key; no numbers stored)
+// testers-only switch read fresh from the server (the live listener may not have arrived yet); null = cannot tell
+export async function testersOnlyNow() {
+  try { await readyP; const d = await getDoc(doc(db, 'config', 'main')); return !!(d.exists() && d.data().testersOnly) } catch (e) { return null }
+}
 export async function testerAllowed(p9) {
-  try { return (await getDoc(doc(db, 'testers', await phoneKey(p9)))).exists() } catch (e) { return null } // null = cannot check (rule not published yet)
+  try { await readyP; return (await getDoc(doc(db, 'testers', await phoneKey(p9)))).exists() } catch (e) { return null } // null = cannot check (rule not published yet)
 }
 export async function setTester(p9, on) {
   const ref = doc(db, 'testers', await phoneKey(p9))

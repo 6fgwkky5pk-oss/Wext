@@ -24,7 +24,11 @@ export default function Onboarding({ install }) {
   const cfgTesters = useStore(s => s.config?.testersOnly)
   const [notListed, setNotListed] = useState(false)
   const sendCode = async () => {
-    if (CLOUD && cfgTesters) { const ok = await cloud.testerAllowed(cloud.normPhone(cc + digits)); if (ok !== true) { setNotListed(ok === false ? 'notTester' : 'testerCheckFail'); return } }
+    if (CLOUD) {
+      const fresh = await cloud.testersOnlyNow(), on = fresh ?? cfgTesters
+      if (on === undefined) { setNotListed('testerCheckFail'); return } // could not learn whether the filter is on: stop (fail closed)
+      if (on) { const ok = await cloud.testerAllowed(cloud.normPhone(cc + digits)); if (ok !== true) { setNotListed(ok === false ? 'notTester' : 'testerCheckFail'); return } }
+    }
     setNotListed(false)
     // SMS provider is plugged in on the backend; in test mode the code is shown on screen
     // test mode (no SMS gateway yet): simulate an incoming SMS and auto-fill the code

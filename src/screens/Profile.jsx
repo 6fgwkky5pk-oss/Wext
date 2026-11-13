@@ -166,11 +166,11 @@ export function Admin() {
       {tab === 'users' && <div className="list">
         <h3>{t('pros')} · {proUsers.length}</h3>
         {proUsers.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{(p.cats?.length ? p.cats : [p.cat || p.pro?.cats?.[0]]).filter(Boolean).map(c => catName(c, lang)).join(', ') || (p.pro?.cats || []).map(c => catName(c, lang)).join(', ')} · ★{p.rating || '—'} · {p.online ? '🟢' : '⚪'}{p.noShows ? ' · ⚠️' + p.noShows : ''}{complaints.filter(c => c.proId === p.id).length ? ' · ⚑' + complaints.filter(c => c.proId === p.id).length : ''}{nd(r => r.proId === p.id) ? ' · ✕' + nd(r => r.proId === p.id) : ''}</span></div>
-          <button className="btn sm outline" onClick={() => api.clearUser(p.id)}>{t('clearUser')}</button>
+          <ClearBtn id={p.id} />
           <button className={'btn sm ' + (isB(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{isB(p.id) ? t('unblock') : t('block')}</button></div>)}
         {clientUsers.length > 0 && <h3 style={{ marginTop: 14 }}>{t('clients')} · {clientUsers.length}</h3>}
         {clientUsers.map(u => <div key={u.id} className="prorow"><Avatar p={{ name: u.name || '?', hue: 38, type: 'individual' }} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{u.name || '—'}</b>{nd(r => r.clientId === u.id) > 0 && <span className={'tiny b ' + (nd(r => r.clientId === u.id) >= 3 ? 'badge r' : 'mute')}>✕ {t('noDeal')}: {nd(r => r.clientId === u.id)}</span>}</div>
-          <button className="btn sm outline" onClick={() => api.clearUser(u.id)}>{t('clearUser')}</button>
+          <ClearBtn id={u.id} />
           <button className={'btn sm ' + (isB(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{isB(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
@@ -209,6 +209,14 @@ function DemandList() {
       </div> })}
     <span className="tiny mute">შეკვეთა = 3 ქულა, გახსნა = 1</span>
   </div>
+}
+
+// two taps: the first one asks, the second one clears (the name cannot be restored)
+function ClearBtn({ id }) {
+  const { t } = useT()
+  const [ask, setAsk] = useState(false)
+  useEffect(() => { if (!ask) return; const x = setTimeout(() => setAsk(false), 4000); return () => clearTimeout(x) }, [ask])
+  return <button className={'btn sm ' + (ask ? 'red' : 'outline')} onClick={() => { if (ask) { api.clearUser(id); setAsk(false) } else setAsk(true) }}>{ask ? t('sureClear') : t('clearUser')}</button>
 }
 
 function AdminPay({ id }) {

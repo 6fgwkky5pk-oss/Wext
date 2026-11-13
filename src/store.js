@@ -429,6 +429,8 @@ state.requests.filter(r => r.status === 'searching').forEach(r => setTimeout(() 
 if (CLOUD) {
   set({ pros: [], requests: state.requests.filter(r => r.id && !r.id.startsWith('r_')), incoming: null })
   cloud.initCloud({ set, get: () => state, api, ping, dist: distKm })
+  // removed services drop out of a worker's own list (old orders keep their names via catName)
+  subs.add(() => { const u = state.user; if (u?.pro?.cats?.some(c => !catById(c))) api.updateUser({ pro: { ...u.pro, cats: u.pro.cats.filter(c => catById(c)) } }) })
   // pros: own blocked flag = admin block (users/{me}.pro.blocked) or 3 no-shows
   subs.add(() => { const u = state.user; if (!u?.pro) return; const bl = !!state.adminBlocked || (u.pro.noShows || 0) >= 3; if (bl !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: bl, online: false } } })) })
   // keep "online" fresh so stale pros drop off
