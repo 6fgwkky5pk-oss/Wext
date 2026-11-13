@@ -288,9 +288,9 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; }
 @media (max-width: 360px) { .roleswitch button { padding: 0 10px; font-size: 12.5px; } .wlogo span, .wlogo { font-size: 17px; } }
 /* pro join wizard */
-.jgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.jgrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; margin-top: 16px; }
 .jt { display: flex; align-items: center; gap: 10px; padding: 14px 12px; border-radius: 20px; background: var(--card); box-shadow: var(--shadow); font-weight: 800; font-size: 14px; text-align: left; border: 3px solid transparent; line-height: 1.2; }
-.jt i { font-style: normal; font-size: 28px; flex: none; }
+.jt i { font-style: normal; font-size: 24px; flex: none; width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; }
 .jt.on { border-color: var(--ink); background: #FFF6DA; }
 .steps { display: flex; gap: 6px; } .steps i { flex: 1; height: 5px; border-radius: 3px; background: #E6E1D6; } .steps i.on { background: var(--ink); }
 .okline { display: flex; gap: 12px; align-items: flex-start; font-weight: 700; font-size: 15px; line-height: 1.4; }

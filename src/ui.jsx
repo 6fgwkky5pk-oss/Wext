@@ -119,7 +119,7 @@ export function Toaster() {
   return m ? <div className="toast" onClick={() => setM(null)}>{m}</div> : null
 }
 
-export const catIcon = id => catById(id)?.icon || '🔧'
+export const catIcon = id => <CatIcon id={id} />
 const KA_M = ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი', 'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი']
 const RU_M = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 const KA_UNTIL = ['იანვრამდე', 'თებერვლამდე', 'მარტამდე', 'აპრილამდე', 'მაისამდე', 'ივნისამდე', 'ივლისამდე', 'აგვისტომდე', 'სექტემბრამდე', 'ოქტომბრამდე', 'ნოემბრამდე', 'დეკემბრამდე']
@@ -144,3 +144,13 @@ export function RoleSwitch() {
     <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>💼 {t('rolePro')}</button>
   </div>
 }
+
+// ---------- category / group icons (style 10) ----------
+import { GROUP_ICON, CAT_ICON, HUE, TINT, iconSvg } from './icons'
+const gOf = id => catById(id)?.g || 'handy'
+export function Glyph({ spec, color, size = '1em' }) { return <span style={{ display: 'inline-grid', verticalAlign: 'middle', lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: iconSvg(spec, color, size) }} /> }
+export function CatIcon({ id, size = '1em' }) { return <Glyph spec={CAT_ICON[id]} color={HUE[gOf(id)]} size={size} /> }
+export function GroupIcon({ g, size = '1em', color }) { return <Glyph spec={GROUP_ICON[g]} color={color || HUE[g]} size={size} /> }
+export const catTint = id => TINT[gOf(id)]
+export const groupTint = g => TINT[g]
+export const catIconHtml = (id, color) => iconSvg(CAT_ICON[id], color || HUE[gOf(id)], '20px')

@@ -148,7 +148,7 @@ function DemandList() {
     <b>📊 მოთხოვნა</b>
     {groupOrder(st).map((g, i) => { const G = GROUPS.find(x => x.id === g); const cats = CATEGORIES.filter(c => c.g === g).sort((a, b) => (st[b.id] || 0) - (st[a.id] || 0))
       return <div key={g} className="col" style={{ gap: 2, padding: '6px 0', borderTop: i ? '1px solid #eee' : 0 }}>
-        <div className="row"><b className="grow">{i + 1}. {G.icon} {groupName(g, lang)}</b><b>{st['g_' + g] || 0}</b></div>
+        <div className="row"><b className="grow">{i + 1}. {groupName(g, lang)}</b><b>{st['g_' + g] || 0}</b></div>
         {cats.filter(c => st[c.id]).map(c => <div key={c.id} className="row tiny mute"><span className="grow">{catName(c.id, lang)}</span><span>{st[c.id]}</span></div>)}
       </div> })}
     <span className="tiny mute">შეკვეთა = 3 ქულა, გახსნა = 1</span>

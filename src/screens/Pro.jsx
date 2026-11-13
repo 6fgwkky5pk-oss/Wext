@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
 import { CATEGORIES, catName } from '../data'
-import { useT, Icon, Ring, useNow, catIcon, Stepper, RoleSwitch } from '../ui'
+import { useT, Icon, Ring, useNow, catIcon, catTint, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
 export function ProHome() {
@@ -105,7 +105,7 @@ export function ProSettings() {
       {pro.type === 'company' && <span className="badge g" style={{ alignSelf: 'flex-start' }}>✓ {t('verified')}</span>}
       <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
       <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-        {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{c.icon} {c.n[lang] || c.n.en}</button>)}
+        {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
       </div>
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
     </div>
@@ -129,7 +129,7 @@ export function ProJoin() {
       {step === 0 && <>
         <h1 style={{ marginTop: 8 }}>{t('joinTitle')}</h1>
         <p className="mute b small" style={{ margin: 0 }}>{t('joinSub')}</p>
-        <div className="jgrid">{CATEGORIES.map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i>{c.icon}</i>{c.n[lang] || c.n.en}</button>)}</div>
+        <div className="jgrid">{CATEGORIES.map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i style={{ background: catTint(c.id) }}>{catIcon(c.id)}</i>{c.n[lang] || c.n.en}</button>)}</div>
         <button className="btn primary" style={{ marginTop: 8 }} disabled={!cats.length} onClick={() => setStep(1)}>{t('next')} <Icon n="right" /></button>
       </>}
       {step === 1 && <>

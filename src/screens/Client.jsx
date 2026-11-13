@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
 import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
-import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
+import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
 import { TEST_MODE } from '../payments'
 import Map from '../Map'
@@ -48,7 +48,7 @@ export function Home({ install }) {
       <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q ? <button onClick={() => setQ('')}><Icon n="close" s={18} /></button> : <MicSearch onText={setQ} />}</div>
       {q ? <div className="list">
         {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => nav.go('call', { cat: c.id })}>
-          <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
+          <span className="av" style={{ background: catTint(c.id), fontSize: 26 }}><CatIcon id={c.id} /></span>
           <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
         {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
       </div> : <>
@@ -63,7 +63,7 @@ export function Home({ install }) {
           <span className="e">🔁</span><span className="grow col" style={{ textAlign: 'left', gap: 0 }}><b className="ell">{t('again', { name: last.proName })}</b><small>{t('againSub', { cat: catName(last.cat, lang) })}</small></span><Icon n="right" s={18} />
         </button>}
         <button className="h7hero" onClick={() => open(top)}>
-          <span className="hc">{G(top).icon}</span>
+          <span className="hc" style={{ background: '#fff' }}><GroupIcon g={top} size="54px" /></span>
           <span className="grow col" style={{ gap: 2, textAlign: 'left', minWidth: 0 }}>
             <b>{groupName(top, lang)}</b><small>{t(SUB[top])}</small>
             <span className="h7price">{money(p.amount)}{p.old && <s>{money(p.old)}</s>}{near.length > 0 && <em><span className="livedot" />{onlineIn(top)}</em>}</span>
@@ -72,7 +72,7 @@ export function Home({ install }) {
         </button>
         <div className="h7grid">
           {rest.map(id => <button key={id} className="h7t" onClick={() => open(id)}>
-            <span className="e">{G(id).icon}</span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
+            <span className="e" style={{ background: groupTint(id) }}><GroupIcon g={id} size="32px" /></span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
           </button>)}
         </div>
         {p.promo && <div className="h7promo">🔥 {promoText(t, cfg.promoEnd, lang)} · <b>{money(p.amount)}</b> <s>{money(cfg.baseFee)}</s></div>}
@@ -123,7 +123,7 @@ export function CallNow({ cat: initCat, group }) {
         <div className="search"><Icon n="search" s={20} /><input autoFocus={!group} placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} /></div>
         <div className="list" style={{ marginTop: 6 }}>
           {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => { api.bump(c.id, c.g); setCat(c.id) }}>
-            <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
+            <span className="av" style={{ background: catTint(c.id), fontSize: 26 }}><CatIcon id={c.id} /></span>
             <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b>
             <span className="mute small b">{api.nearbyPros(c.id, 6).filter(x => x.online).length} ●</span><Icon n="right" s={18} /></button>)}
         </div>
@@ -332,12 +332,12 @@ export function Activity() {
       {mine.map(x => {
         if (x.k === 'r') { const pay = pays.find(p => p.id === x.r.payId)
           return <button key={x.r.id} className="prorow" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.go('request', { id: x.r.id })}>
-            <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{catIcon(x.r.cat)}</span>
+            <span className="av" style={{ background: catTint(x.r.cat), fontSize: 26 }}>{catIcon(x.r.cat)}</span>
             <div className="grow"><b>{catName(x.r.cat, lang)}</b><div className="meta">{fmtDate(x.ts, lang)} · {st[x.r.status]}</div></div>
             {pay && <span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{money(pay.amount)} · {t(pay.status)}</span>}
           </button> }
         if (x.k === 'p') return <button key={x.p.id} className="prorow" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.go('projects')}>
-          <span className="av" style={{ background: '#E8F5E0', fontSize: 24 }}>{catIcon(x.p.cat)}</span>
+          <span className="av" style={{ background: catTint(x.p.cat), fontSize: 26 }}>{catIcon(x.p.cat)}</span>
           <div className="grow"><b className="ell">{x.p.title}</b><div className="meta">{fmtDate(x.p.date, lang)} · {x.p.joins.reduce((a, j) => a + j.count, 0)}/{x.p.people} {t('workers')}</div></div></button>
         return <button key={x.d.id} className="prorow" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.go('rides')}>
           <span className="av" style={{ background: '#E5F0FF', fontSize: 24 }}>🚗</span>

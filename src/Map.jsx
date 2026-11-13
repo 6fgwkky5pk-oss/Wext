@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { catIconHtml } from './ui'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -18,7 +19,7 @@ export default function Map({ center, pros = [], focus, onPick, zoom = 14 }) {
     pros.forEach(p => {
       const sel = focus === p.id
       const bg = !p.online ? '#bdb7aa' : sel ? '#111' : '#FFC21A'
-      const m = L.marker(p.pos, { icon: L.divIcon({ className: '', html: `<div class="pin" style="background:${bg}"><span>${p.icon || '🔧'}</span></div>`, iconSize: [36, 36], iconAnchor: [18, 36] }), zIndexOffset: sel ? 1000 : 0 }).addTo(g)
+      const m = L.marker(p.pos, { icon: L.divIcon({ className: '', html: `<div class="pin" style="background:${bg}"><span>${catIconHtml(p.cat, sel ? '#fff' : '#111')}</span></div>`, iconSize: [36, 36], iconAnchor: [18, 36] }), zIndexOffset: sel ? 1000 : 0 }).addTo(g)
       if (onPick) m.on('click', () => onPick(p))
       if (p.online) pts.push(p.pos)
     })

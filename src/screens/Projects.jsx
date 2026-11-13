@@ -60,7 +60,7 @@ function ProjectForm({ init, onClose }) {
     <div className="col" style={{ marginTop: 14 }}>
       <div className="row" style={{ gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
         {CATEGORIES.filter(c => c.kind === 'field' || ['painter', 'tiler', 'handyman', 'movers', 'cleaning'].includes(c.id)).map(c =>
-          <button key={c.id} className={'chip' + (f.cat === c.id ? ' on' : '')} onClick={() => setF({ ...f, cat: c.id })}>{c.icon} {c.n[lang] || c.n.en}</button>)}
+          <button key={c.id} className={'chip' + (f.cat === c.id ? ' on' : '')} onClick={() => setF({ ...f, cat: c.id })}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
       </div>
       <div className="field"><label>{t('projTitle')}</label><input className="inp" placeholder={t('projTitlePh')} value={f.title} onChange={e => setF({ ...f, title: e.target.value })} /></div>
       <div className="grid2">
