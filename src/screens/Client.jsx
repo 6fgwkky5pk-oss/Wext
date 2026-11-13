@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
-import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -160,7 +160,7 @@ export function CallNow({ cat: initCat, group }) {
         {TYPICAL[cat] && <div className="typical"><span>🏷️ {t('typical')}</span><b>{TYPICAL[cat][0]}–{TYPICAL[cat][1]} ₾{TYPICAL[cat][2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[TYPICAL[cat][2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
         <div className="grid2" style={{ marginTop: 14 }}><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
         <div className="field" style={{ marginTop: 10 }}><label>{t('note')}</label>
-          <textarea className="inp" placeholder={t('notePh')} value={note} onChange={e => setNote(e.target.value)} /></div>
+          <textarea className="inp" placeholder={(notePh(cat, lang) ? (lang === 'ka' ? 'მაგ. ' : '') + notePh(cat, lang) : t('notePh'))} value={note} onChange={e => setNote(e.target.value)} /></div>
         <div className="hold" style={{ marginTop: 12 }}><span>🔒</span><span>{t('holdNote')}<br /><b>{t('oneFee3')}</b></span></div>
       </div>
     </div>
