@@ -43,7 +43,7 @@ Local test: `npm run build && cd dist && python3 -m http.server 4321`.
 
 ## Home & categories
 Order (default, then sorted by real demand from `stats/cats`; გამაყოლე always top 3): ხელოსანი (hero card), ავტო, გამაყოლე, დალაგება, გადაზიდვა, მიწის სამუშაო, ტექნიკა. Services inside a group are also sorted by demand.
-Groups/services in `src/data.js` (`GROUPS`, `CATEGORIES` with `g`). ავტო = car wash, body repair (მეთუნუქე/ჟესტიანშიკი), mechanic, tow, tire, battery, fuel.
+Groups/services in `src/data.js` (`GROUPS`, `CATEGORIES` with `g`). ავტო = car wash, body repair (მეთუნუქე/ჟესტიანშიკი), mechanic, tow, tire, hire a driver (licence checked by the hirer). Removed: fuel, firewood, battery.
 Each service has a typical price (`TYPICAL`) and its own example text (`NOTE_PH`).
 
 ## Design
