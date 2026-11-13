@@ -29,6 +29,8 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - [ ] After the next release: deploy the users rule `trustSame` + `posOk` (cloud client code is on `staging` 6e66be4 + trust commit).
 - [ ] `phones/{key}` rule: only together with real SMS (CLAUDE.md rule). Cloud client code tolerates the denied read.
 
+- [ ] **Pre-launch check (testers start 2026-11-14).** Scope: rules + auth review (what a signed-in stranger can read/write in each collection); admin PIN fully gone from the live build; calls on two real phones (ring, voice, both directions, simultaneous call, app closed); push and TURN status (what works, what does not yet); full order flow on the live app after the next release (offer, accept, both "შევთანხმდით", on the way, arrived, done, rating, no deal, cancel); then a go / no-go list in this file under **Go / no-go**.
+
 ## TO: cloud
 - (none open)
 
@@ -49,3 +51,4 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 2026-11-13 21:25 UTC · cloud · DONE: other side's actions shown as notes, test-mode payment without card fields, tester sheet + report line, SMS test note, non-worker location not published, text caps, request/call rate limits · staging 6e66be4
 2026-11-13 21:30 UTC · cloud · DONE: pc hand-off — 50 m grid, trust numbers not sent and hidden from clients, own-rating average, aliases no longer hide anyone · staging (trust commit)
 2026-11-13 21:30 UTC · cloud · DONE: WORKLOG made neutral (no names or personal data) · this commit
+2026-11-13 21:35 UTC · cloud · DONE: two-phone test of offer → accept → both agree → done → rating card on staging build (passes) · TO pc: pre-launch check added
