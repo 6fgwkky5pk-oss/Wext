@@ -12,6 +12,9 @@ Owner: Alexander. Talk to him in **Georgian**, very short and simple. Show desig
 - Bump `const V` in `public/sw.js` on each release. Open apps reload themselves (`version.json` check in `src/main.jsx`).
 - Repo is **public**: never commit secrets, real phone numbers or admin PINs. (Firebase web config in `src/firebase-config.js` is public by design.)
 
+## Two agents: sync through WORKLOG.md (rule from Alexander, 2026-11-13)
+Cloud Claude (`staging`) and Claude Code (`pc`) work at the same time. Before every task: `git fetch`, read **WORKLOG.md** on both branches, add a `STARTED:` line (what, files) and push it. When done add `DONE:` (commit), when stuck `BLOCKED:`. Don't edit files or areas the other agent has STARTED and not finished. Owners of each area are in WORKLOG.md.
+
 ## Stack
 React 18 + Vite 5 PWA (`base: './'`). State: `src/store.js` (useSyncExternalStore, `api` facade). Firebase (project `wext-af650`, Firestore europe-west3, Spark plan, anonymous auth) in `src/cloud.js`; `CLOUD` mode when config exists. Calls: WebRTC with Firestore signalling, STUN + public TURN.
 Local test: `npm run build && cd dist && python3 -m http.server 4321`.
