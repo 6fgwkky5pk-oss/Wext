@@ -27,13 +27,27 @@ Suggested plan:
 2. Web Push: service worker `push` handler + VAPID + a sender (needs Firebase Blaze plan for Cloud Functions, or another small server). iOS 16.4+ supports push only for PWAs added to Home Screen.
 3. For reliable calls on a locked iPhone: wrap the app with Capacitor and use CallKit/PushKit (iOS) and ConnectionService/FCM (Android). This is the real fix for "ring like a normal phone call".
 
+## Login on a new phone (one number = one profile) — found 2026-11-13
+**Cause:** the strict rules (deployed live) block the old `restoreByPhone`: it queried other people's `/private` docs by number (denied) and wrote `movedTo` on old `/users` docs (denied). Console: "restore FirebaseError: Missing or insufficient permissions". So the same number on a new phone opens an empty new profile.
+**Fix (client, on `staging` 54f35d6, not live):** a lookup doc `phones/{sha256('wext-phone:'+last9)}` = `{ uids:[...], uid, at }`. Login reads it by exact key, adopts the best old account (name, worker data) and saves its ids in `aliases`. No writes to other people's docs: the pros list hides an account that a newer account lists in `aliases`.
+**Needs a rules change (waits for Alexander's OK, then pc deploys):**
+```
+match /phones/{key} {
+  allow get: if signedIn();          // by exact key only
+  allow list, delete: if false;      // nobody can download the list
+  allow create, update: if signedIn() && request.auth.uid in request.resource.data.uids
+    && request.resource.data.uids.size() <= 10 && request.resource.data.uid == request.auth.uid;
+}
+```
+Limits: while SMS is simulated, anyone who types a number can open that profile anyway (real SMS fixes it). Someone who knows a number could also write a wrong id into its phones doc; real SMS + a Cloud Function should own this doc later.
+
 ## 2. Distance accuracy
 Fixed in v7: a request made without real GPS shows "? კმ" to the pro; pros without real GPS are not drawn on the map. Positions are rounded to ~100 m (`round` in cloud.js).
 To check on real phones: two phones in Telavi, compare the km shown with Google Maps straight-line distance. Pro positions update on 50 m moves and every 5 min while green.
 
 ## 3. Other pending
 - Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
-- Firestore rules: strict `firestore.rules` is in the repo; confirm it is deployed in the Firebase console.
+- ✅ Firestore rules deployed 2026-11-13 (see Repo privacy note). ✅ Also deployed 2026-11-13: `stats/misses` admin-only; users may only add/raise up to 3 stats counters per write, never delete. Live rules = `firestore.rules` on `pc` (main gets the file on the next release).
 - ✅ Admin PIN removed from the client (`pc`, 2026-11-13). Admin = only `/admins/{uid}`. ⚠️ Live `main` still has the PIN path and the old rules (any signed-in user can write `config`): fixed only after Alexander creates his `/admins/{uid}` doc, the rules are deployed and `pc` is released.
 - Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
 - My-pros tab: the call button reuses the old request thread; verify after a job is finished.
@@ -62,4 +76,4 @@ Rules: Alexander opens every account and enters the card himself; keys/secrets o
 
 ## Repo privacy (decided with Alexander, 2026-11-13)
 The repo stays **public for now**. Next stage: make it private. Two ways: GitHub Pro (~$4/month, Alexander opens it with the company card), or move hosting to Firebase Hosting and then make the repo private. Until then, keep the rule: no secrets, PINs, keys or real phone numbers in git.
-Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `pc` are **not deployed yet**.
+Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `main` (v10) were **deployed on 2026-11-13** and checked live: strangers cannot list requests, chats or calls, or change prices; own requests and config still load.
