@@ -8,9 +8,12 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 3. Add one line to WORKLOG.md on your own branch: `YYYY-MM-DD HH:MM UTC · <kimi|codex> · STARTED: what · files`. When finished: `DONE: what · commit`. If stuck: `BLOCKED: why`.
 
 ## Branches (strict)
-- Work **only** on your own branch: Kimi → `kimi`, Codex → `codex` (create it from `origin/staging`).
+- Work **only** on your own branch: Kimi → `kimi`, Codex → `codex` (create it from `origin/staging`). Push that branch to GitHub so the others can read your WORKLOG lines.
 - **Never push** to `main` (live app), `staging` or `pc`. Never force-push.
 - To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
+
+## Open now
+- **DISCUSSION: add / remove** at the top of WORKLOG.md: add your own signed entry (top 5 add, top 5 remove/simplify, biggest risk for tomorrow's tests), then push your branch.
 
 ## Your role
 - **Kimi**: independent review and risk finding (security, privacy, money rules, wording, edge cases). Prefer findings over large rewrites.

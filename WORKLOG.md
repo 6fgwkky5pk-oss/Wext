@@ -14,6 +14,24 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - **Verified:** order flow offer → accept → both agree → done → rating card, and client no-deal → note to the worker: two headless browser phones on the v12 build against live Firebase (test location far from Georgia, fake numbers); the same flow plus rules in the emulator (pc, 86 checks).
 - **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
 
+## DISCUSSION: add / remove (open 2026-11-13, for the owner)
+Question to every agent (cloud, pc, codex, kimi): **top 5 to add, top 5 to remove or simplify, and the single biggest risk for tomorrow's tests.** Write your own entry below, signed, neutral wording, no personal data. Codex/Kimi: push your branch (`codex` / `kimi`) so the others can read it, or open a PR into `staging` that only touches this section.
+
+### cloud (Claude, staging)
+Add:
+1. A neutral event counter per category (request created / accepted / seconds to accept) so the scale-up metric (S-008) can be measured from day one.
+2. When a call fails or nobody answers: one tap "write in chat instead" with the request text pre-filled.
+3. Admin: a "new today" list (new users, new bug reports, no-deal flags) on the first admin tab.
+4. Bug report: optional screenshot attach (the hardest bugs are hard to describe in words).
+5. A clear "the worker is coming" status line for the client with the time the worker pressed "on my way".
+Remove / simplify:
+1. In test mode, skip the payment sheet entirely (one tap less, it charges nothing anyway).
+2. Hide the 7 extra languages that were never checked by a native speaker; keep ka/en/ru/de/tr.
+3. Hide the field-work board (projects) during the test; keep ride-along as decided.
+4. Brigade option: hide until a real brigade signs up.
+5. Fewer words on the worker's job card (step chips + one main button is enough; drop repeated hints).
+Biggest risk: testers believe calls are broken because nothing rings while the app is closed or the screen is locked. Mitigation: the tester notice (done on staging), and test calls on two real phones before inviting people.
+
 ## Rule (both agents, every step)
 1. Before every step: `git fetch`, read this file on **both** `origin/staging` and `origin/pc`, act on open **TO:** items for you.
 2. Starting: add `YYYY-MM-DD HH:MM UTC · who · STARTED: what · files`, commit, push right away. Finished: `DONE: what · commit`. Stuck: `BLOCKED: why`.
@@ -48,6 +66,8 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - [x] **Status, please:** the owner wants ONE combined release (cloud + pc). Write here what is still open on `pc` and when it is ready, then `DONE: ready for combined release · commit`. Cloud then merges `pc` into `staging`, tests on two phones and asks the owner for "გაუშვი". Do not release `main` yourself before that.
 
 - [ ] **HOLD the rules deploy** (users trustSame/posOk, bugs/complaints limits): v12 is live, but publishing rules needs the owner's separate explicit OK, which is still pending. Cloud writes `Owner OK for rules: given` here when it comes.
+
+- [ ] **DISCUSSION: add / remove** — write your signed entry (see the section at the top).
 
 ## TO: cloud
 - [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
@@ -104,3 +124,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:12 UTC · cloud · DONE: name label says no surname needed (ka/en/ru/de/tr) · staging (next release)
 2026-11-13 22:15 UTC · cloud · DONE: RELEASE STATUS block (single source), stale release/rules lines removed from ISSUES/HANDOFF; SUGGESTIONS S-008, S-009 · TO pc: confirm the rules state in RELEASE STATUS
 2026-11-13 22:18 UTC · cloud · DONE: tester notice says calls ring only while the app is open · staging (next release)
+2026-11-13 22:20 UTC · cloud · STARTED: DISCUSSION add/remove opened, cloud entry written · TO pc, codex, kimi: add your entries
