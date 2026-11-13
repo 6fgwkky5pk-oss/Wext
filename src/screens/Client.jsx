@@ -215,7 +215,7 @@ export function RequestTrack({ id }) {
       <div className="radar"><i /><i /><i /><div className="core"><span style={{ fontSize: 40 }}>{catIcon(r.cat)}</span></div></div>
       <h1 className="center" style={{ fontSize: 24 }}>{t('searching')}</h1>
       <div className="col" style={{ marginTop: 18, gap: 12 }}>
-        {r.log.map((l, i) => <div key={i} className="logline"><span className="ok"><Icon n="check" s={14} w={3} /></span>{l.k === 'notify' ? t('notifying', { n: l.n }) : t('radiusUp', { r: l.r })}</div>)}
+        {r.log.map((l, i) => <div key={i} className="logline"><span className="ok"><Icon n="check" s={14} w={3} /></span>{l.k === 'notify' ? t('notifying', { n: l.n }) : l.k === 'sms' ? t('smsSent', { n: l.n }) : t('radiusUp', { r: l.r })}</div>)}
       </div>
       <div style={{ marginTop: 20 }}><Ring left={left} total={75} size={86} /></div>
       <div className="col" style={{ marginTop: 20 }}>

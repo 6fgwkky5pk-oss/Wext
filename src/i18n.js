@@ -7,6 +7,11 @@ export const LANGS = [
 ]
 
 const ka = {
+  smsSent: 'SMS გაეგზავნა კიდევ {n} ხელოსანს, ვინც ახლა ხაზგარეშეა',
+  smsJob: 'ახალი სამუშაო: {cat}, {d} კმ-ში. აიღებ?',
+  open: 'ნახვა',
+  acceptGoesOnline: 'მიღებისას ავტომატურად ხაზზე გახვალ',
+  offlineSms: 'ხაზგარეშეც მიიღებ SMS-ს ახლომდებარე სამუშაოზე',
   roleClient: 'კლიენტი',
   rolePro: 'სამუშაო',
   joinTitle: 'რას აკეთებ?',
@@ -82,6 +87,11 @@ const ka = {
 }
 
 const en = {
+  smsSent: 'SMS sent to {n} more pros who are offline',
+  smsJob: 'New job: {cat}, {d} km away. Take it?',
+  open: 'Open',
+  acceptGoesOnline: 'Accepting puts you online automatically',
+  offlineSms: 'Even offline you get an SMS about jobs nearby',
   roleClient: 'Client',
   rolePro: 'Work',
   joinTitle: 'What do you do?',
@@ -157,6 +167,11 @@ const en = {
 }
 
 const ru = {
+  smsSent: 'SMS отправлено ещё {n} мастерам не на линии',
+  smsJob: 'Новая работа: {cat}, {d} км. Возьмёте?',
+  open: 'Открыть',
+  acceptGoesOnline: 'Приняв, вы автоматически выйдете на линию',
+  offlineSms: 'Даже не на линии вы получите SMS о работе рядом',
   roleClient: 'Клиент',
   rolePro: 'Работа',
   joinTitle: 'Чем вы занимаетесь?',
@@ -232,6 +247,11 @@ const ru = {
 }
 
 const de = {
+  smsSent: 'SMS an {n} weitere Profis gesendet, die offline sind',
+  smsJob: 'Neuer Auftrag: {cat}, {d} km entfernt. Annehmen?',
+  open: 'Öffnen',
+  acceptGoesOnline: 'Beim Annehmen gehst du automatisch online',
+  offlineSms: 'Auch offline bekommst du eine SMS zu Aufträgen in der Nähe',
   roleClient: 'Kunde',
   rolePro: 'Arbeit',
   joinTitle: 'Was machst du?',
@@ -307,6 +327,11 @@ const de = {
 }
 
 const tr = {
+  smsSent: 'Çevrimdışı {n} ustaya daha SMS gönderildi',
+  smsJob: 'Yeni iş: {cat}, {d} km uzakta. Alır mısın?',
+  open: 'Aç',
+  acceptGoesOnline: 'Kabul edince otomatik çevrimiçi olursun',
+  offlineSms: 'Çevrimdışıyken de yakındaki işler için SMS alırsın',
   roleClient: 'Müşteri',
   rolePro: 'İş',
   joinTitle: 'Ne iş yapıyorsun?',

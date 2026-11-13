@@ -27,6 +27,7 @@ export function ProHome() {
       </button>
       <p className="center b mute small" style={{ margin: '6px 0 18px' }}>{pro.online ? t('goOffline') : t('goOnline')}</p>
       {pro.online && !active.length && <p className="center b" style={{ marginTop: -6 }}>⏳ {t('waiting')}</p>}
+      {!pro.online && <p className="center small b mute" style={{ marginTop: -6 }}>💬 {t('offlineSms')}</p>}
 
       {active.map(j => <div key={j.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--ink)' }}>
         <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{t('away', { d: j.dist })}{j.note ? ' · ' + j.note : ''}</div></div></div>
@@ -60,8 +61,14 @@ export function Incoming() {
   const left = inc ? (inc.expires - now) / 1000 : 0
   useEffect(() => { if (inc && left <= 0) api.respondIncoming(false) }, [left <= 0])
   if (!inc) return null
+  if (!inc.opened) return <button className="smsbar" onClick={() => api.openSms()}>
+    <span className="smsic">💬</span>
+    <span className="grow" style={{ textAlign: 'left' }}><b>SMS · WEXT</b><br />{t('smsJob', { cat: catName(inc.cat, lang), d: inc.dist })}</span>
+    <span className="btn sm yellow">{t('open')}</span>
+  </button>
   return <div className="incoming">
     <div className="center b" style={{ fontSize: 15, letterSpacing: .5 }}>⚡ {t('incoming')}</div>
+    {inc.viaSms && <div className="center small b" style={{ marginTop: 6 }}>🔴 → 🟢 {t('acceptGoesOnline')}</div>}
     <div className="center" style={{ fontSize: 72, marginTop: 18 }}>{catIcon(inc.cat)}</div>
     <h1 className="center" style={{ fontSize: 30 }}>{catName(inc.cat, lang)}</h1>
     <p className="center b" style={{ fontSize: 18, margin: '8px 0 0' }}>📍 {t('away', { d: inc.dist })} · {inc.client}</p>

@@ -147,7 +147,8 @@ export const api = {
       later(id, 1800, () => api._dispatch(id))
       return
     }
-    api._updReq(id, x => ({ notified: [...x.notified, ...cand.map(c => c.id)], current: cand.map(c => c.id), windowEnds: now() + 75000, log: [...x.log, { k: 'notify', n: cand.length }] }))
+    const sms = api.nearbyPros(r.cat, r.radius).filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
+    api._updReq(id, x => ({ notified: [...x.notified, ...cand.map(c => c.id), ...sms.map(c => c.id)], current: cand.map(c => c.id), windowEnds: now() + 75000, log: [...x.log, { k: 'notify', n: cand.length }, ...(sms.length ? [{ k: 'sms', n: sms.length }] : [])] }))
     // local simulation: one of them accepts in 4–10s
     later(id, 4000 + Math.random() * 6000, () => {
       const rr = api._req(id); if (!rr || rr.status !== 'searching') return
@@ -222,30 +223,36 @@ export const api = {
   // pro side
   setOnline(on) {
     api.updatePro({ online: on })
-    if (on) api._scheduleIncoming(); else { clearTimeout(timers.incoming); set({ incoming: null }) }
+    clearTimeout(timers.incoming); set({ incoming: null })
+    api._scheduleIncoming()
   },
+  // Online (green) pros get the job in-app. Offline (red) pros get an SMS; opening it and accepting turns them green.
   _scheduleIncoming() {
-    later('incoming', 8000 + Math.random() * 10000, () => {
-      const u = state.user; if (!u?.pro.online || u.pro.blocked || state.incoming) return
+    const off = !state.user?.pro.online
+    later('incoming', off ? 25000 + Math.random() * 20000 : 8000 + Math.random() * 10000, () => {
+      const u = state.user; if (!u || u.role !== 'pro' || !u.pro.registered || u.pro.blocked || state.incoming) return
+      const viaSms = !u.pro.online
       const cats = u.pro.cats.length ? u.pro.cats : ['handyman']
       const cat = cats[Math.floor(Math.random() * cats.length)]
       const loc = state.loc || [41.92, 45.47]
       const d = 0.4 + Math.random() * 3.5
       const notes = { ka: ['წყალი ჩამოდის ჭერიდან', 'როზეტკა არ მუშაობს', 'კარი არ იკეტება', 'სასწრაფოდ მჭირდება', ''], en: ['Water leaking from ceiling', 'Socket not working', "Door won't lock", 'Urgent', ''] }
       const ns = notes[state.lang] || notes.ka
-      set({ incoming: { id: 'in_' + uid(), cat, dist: +d.toFixed(1), note: ns[Math.floor(Math.random() * ns.length)], client: ['ნათია', 'ლაშა', 'Anna', 'მზია', 'გიგა'][Math.floor(Math.random() * 5)], expires: now() + 75000, pos: [loc[0] + d / 140, loc[1] + d / 160] } })
-      ping('job')
+      set({ incoming: { id: 'in_' + uid(), cat, dist: +d.toFixed(1), note: ns[Math.floor(Math.random() * ns.length)], client: ['ნათია', 'ლაშა', 'Anna', 'მზია', 'გიგა'][Math.floor(Math.random() * 5)], expires: now() + (viaSms ? 300000 : 75000), viaSms, opened: !viaSms, pos: [loc[0] + d / 140, loc[1] + d / 160] } })
+      ping(viaSms ? 'soft' : 'job')
     })
   },
   respondIncoming(accept) {
     const inc = state.incoming; if (!inc) return
     set({ incoming: null })
+    if (accept && !state.user.pro.online) api.updatePro({ online: true })
     if (accept) {
       const job = { ...inc, status: 'accepted', acceptedAt: now(), threadId: 't_' + inc.id }
       set(s => ({ proJobs: [job, ...s.proJobs], user: { ...s.user, pro: { ...s.user.pro, jobs: s.user.pro.jobs + 1 } } }))
       pushMsg(job.threadId, { from: 'client', text: inc.note || '👋' })
     } else api._scheduleIncoming()
   },
+  openSms() { set(s => s.incoming ? { incoming: { ...s.incoming, opened: true, expires: now() + 75000 } } : {}); ping('job') },
   proArrived(jobId) { set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
   proDone(jobId) { set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'done' } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   // No-show: accepted but no GPS "arrived" within 1h. 3 → automatic block.
@@ -280,6 +287,6 @@ setInterval(() => {
 }, 30000)
 
 // resume pro network after reload
-if (state.user?.pro?.online) setTimeout(() => api._scheduleIncoming(), 3000)
+if (state.user?.role === 'pro') setTimeout(() => api._scheduleIncoming(), 3000)
 // resume in-flight searches after reload
 state.requests.filter(r => r.status === 'searching').forEach(r => setTimeout(() => api._dispatch(r.id), 1000))
