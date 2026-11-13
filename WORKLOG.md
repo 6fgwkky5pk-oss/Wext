@@ -52,3 +52,4 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 2026-11-13 21:30 UTC · cloud · DONE: pc hand-off — 50 m grid, trust numbers not sent and hidden from clients, own-rating average, aliases no longer hide anyone · staging (trust commit)
 2026-11-13 21:30 UTC · cloud · DONE: WORKLOG made neutral (no names or personal data) · this commit
 2026-11-13 21:35 UTC · cloud · DONE: two-phone test of offer → accept → both agree → done → rating card on staging build (passes) · TO pc: pre-launch check added
+2026-11-13 21:12 UTC · pc · STARTED: security half (bugs/complaints limits, users rule trustSame+posOk ready, secrets in history) + pre-launch check on the staging build against the emulator (two users, full order flow) · firestore.rules, WORKLOG.md (Go / no-go)
