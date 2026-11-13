@@ -327,12 +327,14 @@ export function Activity() {
   const projects = useStore(s => s.projects)
   const rides = useStore(s => s.rides)
   const user = useStore(s => s.user)
+  const proJobs = useStore(s => s.proJobs)
+  const work = user.role === 'pro' && user.pro?.registered
   const mine = [
-    ...reqs.map(r => ({ ts: r.createdAt, k: 'r', r })),
+    ...(work ? proJobs.map(j => ({ ts: j.acceptedAt || 0, k: 'j', j })) : reqs.map(r => ({ ts: r.createdAt, k: 'r', r }))),
     ...projects.filter(p => api.isMe(p.ownerId) || p.joins.some(j => api.isMe(j.userId))).map(p => ({ ts: p.createdAt, k: 'p', p })),
     ...rides.filter(r => api.isMe(r.driverId) || r.bookings.some(b => api.isMe(b.userId))).map(r => ({ ts: r.createdAt, k: 'd', d: r })),
   ].sort((a, b) => b.ts - a.ts)
-  const st = { searching: t('searching'), accepted: t('accepted'), arrived: t('arrivedOk'), done: t('jobDone'), cancelled: t('cancel'), nopros: t('noPros'), expired: '—' }
+  const st = { searching: t('searching'), accepted: t('accepted'), arrived: t('arrivedOk'), agreed: t('agreedOk'), nodeal: t('noDeal'), replaced: '—', done: t('jobDone'), cancelled: t('cancel'), nopros: t('noPros'), expired: '—' }
   return <div className="scroll">
     <Top title={t('activity')} />
     <div className="pad list">
@@ -344,6 +346,9 @@ export function Activity() {
             <div className="grow"><b>{catName(x.r.cat, lang)}</b><div className="meta">{fmtDate(x.ts, lang)} · {st[x.r.status]}</div></div>
             {pay && <span className={'badge ' + (pay.status === 'captured' ? 'g' : pay.status === 'held' ? 'y' : '')}>{money(pay.amount)} · {t(pay.status)}</span>}
           </button> }
+        if (x.k === 'j') return <div key={x.j.id} className="prorow" style={{ width: '100%' }}>
+          <span className="av" style={{ background: catTint(x.j.cat), fontSize: 26 }}>{catIcon(x.j.cat)}</span>
+          <div className="grow"><b>{catName(x.j.cat, lang)} · {x.j.client}</b><div className="meta">{x.ts ? fmtDate(x.ts, lang) + ' · ' : ''}{x.j.status === 'accepted' ? t('jobAccepted') : st[x.j.status] || x.j.status}</div></div></div>
         if (x.k === 'p') return <button key={x.p.id} className="prorow" style={{ width: '100%', textAlign: 'left' }} onClick={() => nav.go('projects')}>
           <span className="av" style={{ background: catTint(x.p.cat), fontSize: 26 }}>{catIcon(x.p.cat)}</span>
           <div className="grow"><b className="ell">{x.p.title}</b><div className="meta">{fmtDate(x.p.date, lang)} · {x.p.joins.reduce((a, j) => a + j.count, 0)}/{x.p.people} {t('workers')}</div></div></button>

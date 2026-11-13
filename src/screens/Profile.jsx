@@ -30,7 +30,7 @@ export function Profile({ install }) {
         <Row ic={<span style={{ fontSize: 18, fontWeight: 900 }}>Aa</span>} label={t('bigText')} right={<span className={'tgl' + (big ? ' on' : '')}><i /></span>} onClick={() => api.setBig(!big)} />
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
         <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); nav.home() }} />
-        {isPro && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
+        {isPro && user.pro?.registered && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
         {user.card && <Row ic={<Icon n="card" s={20} />} label={`${t('savedCard')} · ${user.card.label}`} onClick={() => { api.updateUser({ card: null }); toast('✓') }} />}
         {install && <Row ic={<Icon n="dl" s={20} />} label={t('install')} onClick={install} />}
         <Row ic={<Icon n="bug" s={20} />} label={t('reportBug')} onClick={() => nav.go('bug')} />
