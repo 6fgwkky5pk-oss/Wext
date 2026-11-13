@@ -94,3 +94,4 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 22:00 UTC · cloud · DONE: AGENTS.md for kimi/codex (own branches, roles, never push main/staging/pc); roles added here
 2026-11-13 22:05 UTC · cloud · DONE: language chip on the first screen (opens the language list), 'kran' search shows plumber then crane · staging (next release)
 2026-11-13 22:10 UTC · cloud · DONE: DECISIONS (identity before payment, own concept first), SUGGESTIONS S-001..S-007 with status
+2026-11-13 22:12 UTC · cloud · DONE: name label says no surname needed (ka/en/ru/de/tr) · staging (next release)
