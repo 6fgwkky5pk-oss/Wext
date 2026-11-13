@@ -209,3 +209,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:05 UTC · cloud · DONE: გადაწყვეტილება — ტესტში ერთი ფასი, surge გამორთულია (live config-ში surge არ არის ჩართული) · DECISIONS.md, SUGGESTIONS S-017
 2026-11-13 23:10 UTC · cloud · STARTED: სატესტო პაკეტი (ტესტერების სია, ადმინის გასუფთავება და თანხა, „ვერავინ მიპასუხა?“, X/3, გადახდის ფანჯრის გამოტოვება) · src/cloud.js, src/store.js, Onboarding.jsx, Client.jsx, Pro.jsx, Profile.jsx, i18n.js
 2026-11-13 23:15 UTC · cloud · DONE: PROPOSAL წესი AGENTS.md-ში და CLAUDE.md-ში; P-001 (სატესტო პაკეტი) ჩაწერილია, ველი აზრებს
+2026-11-13 23:25 UTC · cloud · DONE (staging, P-001-ზე პასუხებს ველი; release არა): ტესტერების სია (წესი სჭირდება), ადმინის გასუფთავება და დაბრუნება/ჩამოჭრა, „ვერავინ გიპასუხა?“, X/3, გადახდის ფანჯარა სატესტოში გამოტოვებულია; 2 ტელეფონზე შემოწმდა

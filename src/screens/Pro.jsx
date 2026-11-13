@@ -54,6 +54,7 @@ export function ProHome() {
       {!pro.online && <p className="center small b mute" style={{ marginTop: -6 }}>💬 {t('offlineSms')}</p>}
 
 
+      <div className="center" style={{ marginTop: 14 }}><span className={'badge ' + ((pro.noShows || 0) >= 2 ? 'r' : '')}>{t('noShows')}: {pro.noShows || 0}/3</span></div>
       <p className="tiny mute center" style={{ marginTop: 14, lineHeight: 1.5 }}>{t('noShowRule')}</p>
     </div>
   </div>
