@@ -13,6 +13,7 @@ export function ProHome() {
   const active = jobs.filter(j => ['accepted', 'arrived'].includes(j.status))
   const todayN = jobs.filter(j => new Date(j.acceptedAt).toDateString() === new Date().toDateString()).length
 
+  if (!pro.registered) return <ProJoin />
   if (pro.blocked) return <div className="scroll"><div className="empty" style={{ paddingTop: 120 }}><div className="e">⛔</div><h2>{t('blockedMsg')}</h2><p>{t('noShows')}: {pro.noShows}/3</p></div></div>
 
   return <div className="scroll">
@@ -90,6 +91,48 @@ export function ProSettings() {
         {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{c.icon} {c.n[lang] || c.n.en}</button>)}
       </div>
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
+    </div>
+  </div>
+}
+
+// First time in "I work" mode: what do you do → solo/crew/company → how it works
+export function ProJoin() {
+  const { t, lang } = useT()
+  const pro = useStore(s => s.user.pro)
+  const [step, setStep] = useState(0)
+  const [cats, setCats] = useState(pro.cats)
+  const [type, setType] = useState(pro.type)
+  const [n, setN] = useState(Math.max(pro.members, 3))
+  const tog = id => setCats(cats.includes(id) ? cats.filter(c => c !== id) : [...cats, id])
+  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, registered: true }); setTimeout(() => api.setOnline(true), 300) }
+  return <div className="scroll">
+    <div className="fhead"><span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span><RoleSwitch /></div>
+    <div className="pad col" style={{ gap: 12 }}>
+      <div className="steps">{[0, 1, 2].map(i => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
+      {step === 0 && <>
+        <h1 style={{ marginTop: 8 }}>{t('joinTitle')}</h1>
+        <p className="mute b small" style={{ margin: 0 }}>{t('joinSub')}</p>
+        <div className="jgrid">{CATEGORIES.map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i>{c.icon}</i>{c.n[lang] || c.n.en}</button>)}</div>
+        <button className="btn primary" style={{ marginTop: 8 }} disabled={!cats.length} onClick={() => setStep(1)}>{t('next')} <Icon n="right" /></button>
+      </>}
+      {step === 1 && <>
+        <h1 style={{ marginTop: 8 }}>{t('howWork')}</h1>
+        {[['individual', '🙋', t('alone'), t('aloneSub')], ['brigade', '👷', t('brigade'), t('crewSub')], ['company', '🏢', t('company'), t('companySub')]].map(([k, e, l, sub]) =>
+          <button key={k} className={'rolecard' + (type === k ? ' on' : '')} onClick={() => setType(k)}><span className="e">{e}</span><div><b style={{ fontSize: 18 }}>{l}</b><div className="small mute b">{sub}</div></div></button>)}
+        {type !== 'individual' && <div className="card row between"><b>{t('howMany')}</b><Stepper v={n} set={setN} min={2} max={200} /></div>}
+        <div className="grid2" style={{ gridTemplateColumns: '1fr 2fr' }}><button className="btn outline" onClick={() => setStep(0)}>{t('back')}</button><button className="btn primary" onClick={() => setStep(2)}>{t('next')}</button></div>
+      </>}
+      {step === 2 && <>
+        <h1 style={{ marginTop: 8 }}>{t('readyTitle')}</h1>
+        <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>{cats.map(c => <span key={c} className="badge y" style={{ fontSize: 13, padding: '6px 10px' }}>{catIcon(c)} {catName(c, lang)}</span>)}</div>
+        <div className="card col" style={{ gap: 16 }}>
+          <div className="okline"><b>🟢</b>{t('ready1')}</div>
+          <div className="okline"><b>🔔</b>{t('ready2')}</div>
+          <div className="okline"><b>🔒</b>{t('ready3')}</div>
+        </div>
+        <p className="tiny mute" style={{ margin: 0, lineHeight: 1.5 }}>⚠️ {t('noShowRule')}</p>
+        <button className="btn green" style={{ height: 64, fontSize: 19 }} onClick={finish}>{t('startWork')} <Icon n="right" /></button>
+      </>}
     </div>
   </div>
 }

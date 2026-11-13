@@ -26,7 +26,7 @@ export function Profile({ install }) {
       </div>
       <div className="card" style={{ marginTop: 12, padding: '4px 14px' }}>
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
-        <Row ic={<Icon n="swap" s={20} />} label={isPro ? t('clientMode') : t('proMode')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); if (isPro) api.setOnline(false); nav.home() }} />
+        <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); if (isPro) api.setOnline(false); nav.home() }} />
         {isPro && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
         {user.card && <Row ic={<Icon n="card" s={20} />} label={`${t('savedCard')} · ${user.card.label}`} onClick={() => { api.updateUser({ card: null }); toast('✓') }} />}
         {install && <Row ic={<Icon n="dl" s={20} />} label={t('install')} onClick={install} />}

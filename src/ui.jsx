@@ -139,6 +139,6 @@ export function RoleSwitch() {
   const set = r => { if (r === role) return; if (r === 'client') api.setOnline(false); api.updateUser({ role: r }) }
   return <div className="roleswitch">
     <button className={role === 'client' ? 'on' : ''} onClick={() => set('client')}>🙋 {t('roleClient')}</button>
-    <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>🧰 {t('rolePro')}</button>
+    <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>💼 {t('rolePro')}</button>
   </div>
 }

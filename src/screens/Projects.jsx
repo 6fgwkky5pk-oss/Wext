@@ -19,7 +19,7 @@ export function Projects({ cat, create }) {
     .filter(p => !cat || create || p.cat === cat).sort((a, b) => a.date.localeCompare(b.date))
   return <>
     <div className="scroll">
-      <Top title={t('projects')} onBack={nav.back} right={<button className="iconbtn" style={{ background: 'var(--y)' }} onClick={() => setForm({ cat: cat || 'harvest' })}><Icon n="plus" /></button>} />
+      <Top title={t('peopleNeed')} onBack={nav.back} right={<button className="iconbtn" style={{ background: 'var(--y)' }} onClick={() => setForm({ cat: cat || 'harvest' })}><Icon n="plus" /></button>} />
       <div className="pad col">
         <div className="seg"><button className={tab === 'open' ? 'on' : ''} onClick={() => setTab('open')}>{t('openProjects')}</button><button className={tab === 'mine' ? 'on' : ''} onClick={() => setTab('mine')}>{t('myProjects')}</button></div>
         {!list.length && <div className="empty"><div className="e">🍇</div>{t('none')}</div>}

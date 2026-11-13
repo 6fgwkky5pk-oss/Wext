@@ -25,14 +25,15 @@ export function Home({ install }) {
   const eta = near.length ? Math.max(5, Math.round(near[0].dist * 3 + 5)) : null
   const featured = useMemo(() => { const seen = new Set(); return near.filter(x => !seen.has(x.cat) && seen.add(x.cat)).slice(0, 8) }, [near])
 
+  const openJobs = useStore(s => s.projects.filter(p => p.date >= new Date().toISOString().slice(0, 10)).length)
+
   return <div className="scroll" style={{ paddingTop: 0 }}>
-    <div className="homehead">
-      <div className="row between">
-        <RoleSwitch />
-        <button className="iconbtn" style={{ width: 38, height: 38 }} onClick={() => nav.go('bug')} aria-label="bug"><Icon n="bug" s={18} /></button>
-      </div>
-      <h1 className="hh">{t('whatToday', { name: user.name.split(' ')[0] })} 👋</h1>
-      <div className="search" style={{ marginTop: 14 }}><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+    <div className="fhead">
+      <span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span>
+      <RoleSwitch />
+    </div>
+    <div className="pad" style={{ marginTop: 6 }}>
+      <div className="search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
     </div>
 
     {q ? <div className="pad list" style={{ marginTop: 14 }}>
@@ -40,47 +41,37 @@ export function Home({ install }) {
         <span className="av" style={{ background: TINT[c.id], fontSize: 24 }}>{c.icon}</span>
         <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
       {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
-    </div> : <>
-      <div className="pad" style={{ marginTop: -46, position: 'relative', zIndex: 2 }}>
-        {active && <button className="card row" onClick={() => nav.go('request', { id: active.id })} style={{ textAlign: 'left', marginBottom: 10, border: '2px solid var(--ink)' }}>
-          <span style={{ fontSize: 26 }}>{catIcon(active.cat)}</span>
-          <div className="grow"><b>{catName(active.cat, lang)}</b><div className="small b" style={{ color: 'var(--green)' }}>{active.status === 'searching' ? t('searching') : t('accepted')}</div></div>
-          <Icon n="right" />
-        </button>}
-        <button className="callcard" onClick={() => nav.go('call')}>
-          {p.promo && <span className="promo y">🔥 {promoText(t, cfg.promoEnd, lang)}</span>}
-          <h2>⚡ {t('callNow')}</h2>
-          <div className="live">
-            <div className="stack">{[...near].sort((a, b) => (a.type === 'company') - (b.type === 'company')).slice(0, 4).map(x => <Avatar key={x.id} p={{ ...x, online: false }} />)}</div>
-            <span>{near.length ? t('liveNow', { n: near.length, m: eta }) : t('callNowSub')}</span>
-          </div>
-          <div className="cta"><span><b className="pr">{money(p.amount)}</b>{p.old && <s>{money(p.old)}</s>} · {t('findPro')}</span><span className="ar"><Icon n="right" /></span></div>
-          {p.surge > 1 && <span className="badge r" style={{ marginTop: 10 }}>⚡ {t('highDemand')} ×{p.surge}</span>}
-        </button>
-      </div>
+    </div> : <div className="pad col" style={{ gap: 12, marginTop: 12 }}>
+      {active && <button className="card row" onClick={() => nav.go('request', { id: active.id })} style={{ textAlign: 'left', border: '2px solid var(--ink)' }}>
+        <span style={{ fontSize: 26 }}>{catIcon(active.cat)}</span>
+        <div className="grow"><b>{catName(active.cat, lang)}</b><div className="small b" style={{ color: 'var(--green)' }}>{active.status === 'searching' ? t('searching') : t('accepted')}</div></div>
+        <Icon n="right" />
+      </button>}
 
-      <div className="sec"><h3>{t('popular')}</h3></div>
-      <div className="hscroll">
-        {CATEGORIES.filter(c => c.kind === 'instant').map(c => <button key={c.id} className="ctile" onClick={() => go(nav, c)}><i style={{ background: TINT[c.id] }}>{c.icon}</i>{c.n[lang] || c.n.en}</button>)}
-      </div>
+      <button className="blk blk-a" onClick={() => nav.go('call')}>
+        <span className="pill dark">{near.length ? <><span className="livedot" /> {t('onlineN', { n: near.length })}</> : '⚡'}</span>
+        {p.promo && <span className="pill dark" style={{ marginLeft: 6 }}>🔥 {promoText(t, cfg.promoEnd, lang)}</span>}
+        <h2>{t('proNow')}</h2>
+        {eta && <p>{t('arrives', { m: eta })}</p>}
+        <span className="tag dark">{money(p.amount)}{p.old && <s>{money(p.old)}</s>} <Icon n="right" s={18} /></span>
+        {p.surge > 1 && <span className="badge r" style={{ marginLeft: 8 }}>⚡ {t('highDemand')}</span>}
+        <span className="e">⚡</span>
+      </button>
 
-      {featured.length > 0 && <><div className="sec"><h3>{t('nearNow')} <span className="livedot" /></h3></div>
-      <div className="hscroll">
-        {featured.map(x => <button key={x.id} className="pcard" onClick={() => nav.go('call', { cat: x.cat })}>
-          <Avatar p={x} /><b className="ell">{x.name}{x.verified ? ' ✓' : ''}</b>
-          <span>⭐ {x.rating} · {x.dist.toFixed(1)} {t('km')}</span><span>{catIcon(x.cat)} {catName(x.cat, lang)}</span>
-        </button>)}
-      </div></>}
+      <button className="blk blk-b" onClick={() => nav.go('projects')}>
+        <h2>{t('peopleNeed')}</h2><p>{t('peopleNeedSub')}</p>
+        <span className="tag yellow">{t('openJobs', { n: openJobs })}</span>
+        <span className="e">🍇</span>
+      </button>
 
-      <div className="pad col" style={{ marginTop: 18, gap: 12 }}>
-        <div className="grid2">
-          <button className="tile" onClick={() => nav.go('projects')}><span className="emoji">🍇</span><div><h3>{t('projects')}</h3><p>{t('projectsSub')}</p></div></button>
-          <button className="tile" onClick={() => nav.go('rides')}><span className="emoji">🚗</span><div><h3>{t('ride')}</h3><p>{t('rideSub')}</p></div></button>
-        </div>
-        <div className="trust">🔒 <span>{t('trustLine')}</span></div>
-        {install && <InstallCard onClick={install} />}
-      </div>
-    </>}
+      <button className="blk blk-c" onClick={() => nav.go('rides')}>
+        <h2>{t('ride')}</h2><p>{t('rideSub2')}</p>
+        <span className="e" style={{ fontSize: 64 }}>🚗</span>
+      </button>
+
+      <div className="trust">🔒 <span>{t('trustLine')}</span></div>
+      {install && <InstallCard onClick={install} />}
+    </div>}
   </div>
 }
 
