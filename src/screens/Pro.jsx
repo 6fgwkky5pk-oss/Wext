@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
-import { CATEGORIES, catName } from '../data'
+import { CATEGORIES, catName, TYPICAL } from '../data'
 import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
@@ -37,29 +37,22 @@ export function ProHome() {
         <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{fmtKm(j.dist, t)}{j.note ? ' · ' + j.note : ''}</div></div></div>
         {j.photo && <img src={j.photo} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 14, marginTop: 8 }} />}
         {j.voice && <audio src={j.voice} controls style={{ width: '100%', marginTop: 8 }} />}
-        <div className="grid2" style={{ marginTop: 12 }}>
-          <a className="btn light sm" style={{ width: '100%', textDecoration: 'none' }} href={`https://www.google.com/maps/dir/?api=1&destination=${j.pos[0]},${j.pos[1]}`} target="_blank" rel="noreferrer"><Icon n="nav" s={18} />{t('navigate')}</a>
-          <button className="btn yellow sm" style={{ width: '100%' }} onClick={() => nav.go('chat', { threadId: j.threadId })}><Icon n="chat" s={18} />{t('chat')}</button>
+        <div className="jsteps">{[t('stepOnWay'), t('stepArrived'), t('stepDone')].map((l, i) => { const at = j.status === 'agreed' ? 2 : j.status === 'arrived' ? 2 : j.onWayAt ? 1 : 0; return <span key={i} className={i < at ? 'ok' : i === at ? 'now' : ''}>{i < at ? '✓ ' : ''}{l}</span> })}</div>
+        <div className="grid3" style={{ marginTop: 10 }}>
+          <button className="btn green sm" onClick={() => nav.go('voice', { threadId: j.threadId, reqId: j.id })}><Icon n="phone" s={18} />{t('call')}</button>
+          <a className="btn light sm" style={{ textDecoration: 'none' }} href={`https://www.google.com/maps/dir/?api=1&destination=${j.pos[0]},${j.pos[1]}`} target="_blank" rel="noreferrer"><Icon n="nav" s={18} />{t('navigate')}</a>
+          <button className="btn yellow sm" onClick={() => nav.go('chat', { threadId: j.threadId })}><Icon n="chat" s={18} />{t('chat')}</button>
         </div>
-        {j.status === 'agreed'
-          ? <><div className="badge g" style={{ marginTop: 10 }}>🤝 {t('agreedOk')}</div><button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proDone(j.id)}><Icon n="check" />{t('jobDone')}</button></>
-          : <>
-            {j.status === 'accepted' && <button className="btn light" style={{ marginTop: 10 }} onClick={() => api.proArrived(j.id)}><Icon n="pin" s={18} />{t('iArrived')}</button>}
-            <div className="grid2 dealrow" style={{ marginTop: 10 }}>
-              <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.proNoDeal(j.id)}>✕ {t('noDeal')}</button>
-              <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
-            </div></>}
+        {j.status === 'accepted' && !j.onWayAt && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proOnWay(j.id)}>🚗 {t('stepOnWay')}</button>}
+        {j.status === 'accepted' && j.onWayAt && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proArrived(j.id)}><Icon n="pin" s={18} />{t('stepArrived')}</button>}
+        {j.status === 'agreed' && <button className="btn primary" style={{ marginTop: 10 }} onClick={() => api.proDone(j.id)}><Icon n="check" />{t('stepDone')}</button>}
+        {j.status !== 'agreed' && <div className="grid2 dealrow" style={{ marginTop: 10 }}>
+          <button className="btn outline" style={{ color: 'var(--red)' }} onClick={() => api.proNoDeal(j.id)}>✕ {t('noDeal')}</button>
+          <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
+        </div>}
       </div>)}
 
-      <div className="row" style={{ gap: 10 }}>
-        <div className="stat"><b>{todayN}</b><span className="tiny mute b">{t('today')}</span></div>
-        <div className="stat"><b>★ {pro.rating}</b><span className="tiny mute b">{t('rating')}</span></div>
-        <div className="stat"><b style={{ color: pro.noShows ? 'var(--red)' : undefined }}>{pro.noShows}/3</b><span className="tiny mute b">{t('noShows')}</span></div>
-      </div>
       <p className="tiny mute center" style={{ marginTop: 14, lineHeight: 1.5 }}>{t('noShowRule')}</p>
-      <div className="col" style={{ marginTop: 6 }}>
-        <button className="tile" style={{ minHeight: 100 }} onClick={() => nav.go('rides')}><span className="emoji">🚗</span><h3>{t('ride')}</h3></button>
-      </div>
     </div>
   </div>
 }
@@ -89,8 +82,8 @@ export function Incoming() {
     </div>}
     <div style={{ marginTop: 24 }}><Ring left={left} total={75} /></div>
     <div className="bigbtns">
-      <button className="btn red" onClick={() => api.respondIncoming(false)}>{t('decline')}</button>
-      <button className="btn primary" style={{ background: 'var(--green)' }} onClick={() => api.respondIncoming(true)}>{t('accept')}</button>
+      <button className="btn red" onClick={() => api.respondIncoming(false)}>✕ {t('decline')}</button>
+      <button className="btn primary" style={{ background: 'var(--green)' }} onClick={() => api.respondIncoming(true)}>✓ {t('acceptIt')}</button>
     </div>
   </div>
 }
@@ -101,7 +94,7 @@ export function ProSettings() {
   const pro = useStore(s => s.user.pro)
   const toggle = id => api.updatePro({ cats: pro.cats.includes(id) ? pro.cats.filter(c => c !== id) : [...pro.cats, id] })
   return <div className="scroll nopad">
-    <div className="top"><button className="iconbtn" onClick={nav.back}><Icon n="back" /></button><h2>{t('proMode')}</h2></div>
+    <div className="top"><button className="iconbtn" onClick={nav.back}><Icon n="back" /></button><h2>{t('myServices')}</h2></div>
     <div className="pad col">
       <h3>{t('profileType')}</h3>
       <div className="seg">{['individual', 'brigade', 'company'].map(k => <button key={k} className={pro.type === k ? 'on' : ''} onClick={() => api.updatePro({ type: k, members: k === 'individual' ? 1 : Math.max(pro.members, 3) })}>{t(k)}</button>)}</div>
@@ -111,6 +104,16 @@ export function ProSettings() {
       <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
         {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
       </div>
+      {pro.cats.length > 0 && <>
+        <h3 style={{ marginTop: 8 }}>🏷️ {t('myPrice')}</h3>
+        <p className="tiny mute b" style={{ margin: 0 }}>{t('myPriceNote')}</p>
+        {pro.cats.map(c => { const d = TYPICAL[c] || [], v = (pro.prices || {})[c] || []
+          const put = (i, x) => { const cur = [...v]; cur[i] = x === '' ? '' : +x; api.updatePro({ prices: { ...(pro.prices || {}), [c]: cur } }) }
+          return <div key={c} className="row" style={{ gap: 6 }}><span className="grow small b ell">{catIcon(c)} {catName(c, lang)}</span>
+            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={d[0] != null ? String(d[0]) : ''} value={v[0] ?? ''} onChange={e => put(0, e.target.value)} />
+            <span>–</span>
+            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={d[1] != null ? String(d[1]) : ''} value={v[1] ?? ''} onChange={e => put(1, e.target.value)} /><span className="small b">₾</span></div> })}
+      </>}
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
     </div>
   </div>

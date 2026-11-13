@@ -1,7 +1,7 @@
 // WEXT data layer. All app screens talk to `api` only, so the local adapter below can be
 // swapped for a realtime backend (Firebase/Supabase) without touching UI code.
 import { useSyncExternalStore } from 'react'
-import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS } from './data'
+import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS, TYPICAL } from './data'
 import { payments } from './payments'
 import * as cloud from './cloud'
 export const CLOUD = cloud.CLOUD
@@ -87,6 +87,8 @@ export function priceFor(cat, kind = 'instant', brigade = false) {
   const amount = Math.round(base * surge * 100) / 100
   return { amount, old: kind === 'instant' && promo && !brigade ? cfg.baseFee : null, surge, promo }
 }
+// approximate price range per service (not binding): admin override in config.typical, else the default in data.js
+export const typicalFor = cat => { const o = state.config?.typical?.[cat]; const d = TYPICAL[cat]; if (o && o[0] && o[1]) return [o[0], o[1], d?.[2]]; return d || null }
 export const currency = () => regionFor(state.loc || [41.92, 45.47])
 export const money = n => `${Number.isInteger(n) ? n : n.toFixed(2)}${currency().symbol}`
 
@@ -340,6 +342,7 @@ export const api = {
     } else api._scheduleIncoming()
   },
   openSms() { set(s => s.incoming ? { incoming: { ...s.incoming, opened: true, expires: now() + 75000 } } : {}); ping('job') },
+  proOnWay(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { onWayAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, onWayAt: now() } : j) })) },
   proArrived(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'arrived', arrivedAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
   proDone(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'done' }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'done' } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   // No-show: accepted but no GPS "arrived" within 1h. 3 → automatic block.

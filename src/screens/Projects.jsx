@@ -53,7 +53,7 @@ export function Projects({ cat, create }) {
 
 function ProjectForm({ init, onClose }) {
   const { t, lang } = useT()
-  const [f, setF] = useState({ cat: init.cat, title: '', date: inDays(3), people: 5, place: '', pay: 60 })
+  const [f, setF] = useState({ cat: init.cat, title: '', date: inDays(3), people: 5, place: '', pay: '' })
   const fee = priceFor(f.cat, 'project')
   return <Sheet onClose={onClose}>
     <h2>{t('newProject')}</h2>
@@ -65,7 +65,7 @@ function ProjectForm({ init, onClose }) {
       <div className="field"><label>{t('projTitle')}</label><input className="inp" placeholder={t('projTitlePh')} value={f.title} onChange={e => setF({ ...f, title: e.target.value })} /></div>
       <div className="grid2">
         <div className="field"><label>{t('date')}</label><input className="inp" type="date" value={f.date} onChange={e => setF({ ...f, date: e.target.value })} /></div>
-        <div className="field"><label>{t('payPerDay')}</label><input className="inp" type="number" inputMode="numeric" value={f.pay} onChange={e => setF({ ...f, pay: +e.target.value })} /></div>
+        <div className="field"><label>{t('payPerDay')} ({t('optional')})</label><input className="inp" type="number" inputMode="numeric" placeholder={t('priceDeal')} value={f.pay} onChange={e => setF({ ...f, pay: e.target.value === '' ? '' : +e.target.value })} /></div>
       </div>
       <div className="field"><label>{t('place')}</label><input className="inp" placeholder={t('placePh')} value={f.place} onChange={e => setF({ ...f, place: e.target.value })} /></div>
       <div className="row between"><b>{t('people')}</b><Stepper v={f.people} set={v => setF({ ...f, people: v })} max={200} /></div>
@@ -116,7 +116,7 @@ export function Rides() {
                 <div style={{ width: 2, height: 14, background: '#ddd', margin: '2px 0 2px 4px' }} />
                 <div className="row" style={{ gap: 8 }}><span style={{ width: 10, height: 10, borderRadius: 5, background: 'var(--o)' }} /><b>{r.to}</b></div>
               </div>
-              <div style={{ textAlign: 'right' }}><b style={{ fontSize: 20 }}>{r.price}₾</b><div className="tiny mute b">{t('perSeat')}</div></div>
+              <div style={{ textAlign: 'right' }}><b style={{ fontSize: r.price ? 20 : 14 }}>{r.price ? r.price + '₾' : t('priceDeal')}</b><div className="tiny mute b">{t('perSeat')}</div></div>
             </div>
             <div className="sep" />
             <div className="row between">
@@ -139,7 +139,7 @@ export function Rides() {
 
 function RideForm({ onClose }) {
   const { t } = useT()
-  const [f, setF] = useState({ from: '', to: '', date: inDays(1), time: '09:00', seats: 3, price: 10, car: '' })
+  const [f, setF] = useState({ from: '', to: '', date: inDays(1), time: '09:00', seats: 3, price: '', car: '' })
   return <Sheet onClose={onClose}>
     <h2>{t('postRide')}</h2>
     <div className="col" style={{ marginTop: 14 }}>
@@ -150,7 +150,7 @@ function RideForm({ onClose }) {
         <div className="field"><label>{t('when')}</label><input className="inp" type="time" value={f.time} onChange={e => setF({ ...f, time: e.target.value })} /></div>
       </div>
       <div className="grid2">
-        <div className="field"><label>{t('price')}</label><input className="inp" type="number" inputMode="numeric" value={f.price} onChange={e => setF({ ...f, price: +e.target.value })} /></div>
+        <div className="field"><label>{t('price')} ({t('optional')})</label><input className="inp" type="number" inputMode="numeric" placeholder={t('priceDeal')} value={f.price} onChange={e => setF({ ...f, price: e.target.value === '' ? '' : +e.target.value })} /></div>
         <div className="field"><label>{t('car')}</label><input className="inp" placeholder="Prius, თეთრი" value={f.car} onChange={e => setF({ ...f, car: e.target.value })} /></div>
       </div>
       <div className="row between"><b>{t('seats')}</b><Stepper v={f.seats} set={v => setF({ ...f, seats: v })} max={8} /></div>

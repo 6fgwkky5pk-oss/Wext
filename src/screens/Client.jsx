@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { api, useStore, priceFor, money, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
+import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
 import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
@@ -106,12 +106,14 @@ export function CallNow({ cat: initCat, group }) {
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
-  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat) })) : [], [cat, loc, blocked, brig])
+  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: (p.prices || {})[cat] })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
   const watching = useStore(s => s.watchCat) === cat
   const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
   const user = useStore(s => s.user)
+  useStore(s => s.config?.typical)
+  const typ = cat ? typicalFor(cat) : null
   const locReal = useStore(s => s.locReal)
   const askLoc = () => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Safari → Location'), { enableHighAccuracy: true, timeout: 15000 })
 
@@ -161,7 +163,7 @@ export function CallNow({ cat: initCat, group }) {
             {(CLOUD ? pros.length : online.length) > 0 && <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ marginTop: 12 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button>}</div>}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
-        {TYPICAL[cat] && <div className="typical"><span>🏷️ {t('typical')}</span><b>{TYPICAL[cat][0]}–{TYPICAL[cat][1]} ₾{TYPICAL[cat][2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[TYPICAL[cat][2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
+        {typ && <div className="typical"><span>🏷️ {t('typical')}</span><b>{typ[0]}–{typ[1]} ₾{typ[2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[typ[2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
         <div className="grid2" style={{ marginTop: 14 }}><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
         <div className="field" style={{ marginTop: 10 }}><label>{t('note')}</label>
           <textarea className="inp" placeholder={(notePh(cat, lang) ? (lang === 'ka' ? 'მაგ. ' : '') + notePh(cat, lang) : t('notePh'))} value={note} onChange={e => setNote(e.target.value)} /></div>

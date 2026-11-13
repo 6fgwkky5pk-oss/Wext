@@ -119,7 +119,7 @@ function listenUser() {
     snap.forEach(d => {
       const u = d.data(); if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos) return
       pros.push({
-        id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], members: u.pro.members || 1,
+        id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
         online: !!u.pro.online && now - (u.updatedAt || 0) < 6 * 3600e3,
       })
@@ -169,7 +169,7 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)

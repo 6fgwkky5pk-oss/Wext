@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { api, CLOUD, useStore, money, promoActive, getState, groupOrder } from '../store'
 import { LANGS } from '../i18n'
-import { catName, CATEGORIES, GROUPS, groupName } from '../data'
+import { catName, CATEGORIES, GROUPS, groupName, TYPICAL } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
 import { useNav } from '../nav'
 import * as cloud from '../cloud'
@@ -12,7 +12,7 @@ export function Profile({ install }) {
   const nav = useNav()
   const user = useStore(s => s.user)
   const [langSheet, setLangSheet] = useState(false)
-  const [stopAsk, setStopAsk] = useState(false)
+  const [stopAsk, setStopAsk] = useState(false), [extra, setExtra] = useState(false)
   const activeJobs = useStore(s => (s.proJobs || []).filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status)).length)
   const [taps, setTaps] = useState(0)
   // admin = server-side list /admins/{uid}, enforced by firestore.rules. No PIN in the client.
@@ -38,7 +38,8 @@ export function Profile({ install }) {
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
         <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); nav.home() }} />
         {user.pro?.registered && <Row ic="⏹" label={t('stopWork')} onClick={() => setStopAsk(true)} />}
-        {isPro && user.pro?.registered && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
+        {user.pro?.registered && <Row ic="🧰" label={t('myServices')} onClick={() => nav.go('proSettings')} />}
+        <Row ic="➕" label={t('extra')} onClick={() => setExtra(true)} />
         {user.card && <Row ic={<Icon n="card" s={20} />} label={`${t('savedCard')} · ${user.card.label}`} onClick={() => { api.updateUser({ card: null }); toast('✓') }} />}
         {install && <Row ic={<Icon n="dl" s={20} />} label={t('install')} onClick={install} />}
         <Row ic={<Icon n="bug" s={20} />} label={t('reportBug')} onClick={() => nav.go('bug')} />
@@ -47,6 +48,11 @@ export function Profile({ install }) {
       </div>
       <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); openAdmin() } }}>WEXT 0.1 · {t('tagline')}</p>
     </div>
+    {extra && <Sheet onClose={() => setExtra(false)}><h2>{t('extra')}</h2>
+      <div className="col" style={{ marginTop: 10 }}>
+        {user.pro?.registered && <button className="listrow" onClick={() => { setExtra(false); nav.go('proSettings') }}><span className="ico">👷</span><span className="grow">{t('brigade')} / {t('company')}</span><Icon n="right" s={18} /></button>}
+        <button className="listrow" onClick={() => { setExtra(false); nav.go('rides') }}><span className="ico">🚗</span><span className="grow">{t('ride')}</span><Icon n="right" s={18} /></button>
+      </div></Sheet>}
     {stopAsk && <Sheet onClose={() => setStopAsk(false)}><h2>{t('stopWorkQ')}</h2>
       {activeJobs > 0 ? <p className="b" style={{ color: 'var(--red)' }}>{t('stopWorkBusy')}</p> : <p className="mute b">{t('stopWorkNote')}</p>}
       <div className="grid2" style={{ marginTop: 12 }}><button className="btn outline" onClick={() => setStopAsk(false)}>{t('cancel')}</button>
@@ -121,6 +127,14 @@ export function Admin() {
         <div className="grid2"><div className="field"><label>{t('surgeCap')}</label>{N('surgeCap', 0.1)}</div><div className="field"><label>{t('surgeNow')}</label>
           <button className={'btn sm ' + (f.surgeMode === 'on' ? 'red' : f.surgeMode === 'auto' ? 'yellow' : 'outline')} style={{ width: '100%', height: 54 }} onClick={() => setF({ ...f, surgeManual: false, surgeMode: f.surgeMode === 'off' || !f.surgeMode ? 'auto' : f.surgeMode === 'auto' ? 'on' : 'off' })}>{(f.surgeMode || 'off').toUpperCase()}</button></div></div>
         <div className="grid2"><div className="field"><label>👷 {t('brigadeN')}</label>{N('brigadeFee')}</div><div className="field"><label>{t('rideFee')}</label>{N('rideFee')}</div></div>
+        <h3 style={{ marginTop: 8 }}>🏷️ {t('typical')}</h3>
+        <p className="tiny mute b" style={{ margin: 0 }}>{t('typicalAdmin')}</p>
+        {CATEGORIES.map(c => { const d = TYPICAL[c.id] || ['', ''], o = (f.typical || {})[c.id] || []
+          const put = (i, v) => { const cur = [...((f.typical || {})[c.id] || ['', ''])]; cur[i] = v === '' ? '' : +v; setF({ ...f, typical: { ...(f.typical || {}), [c.id]: cur } }) }
+          return <div key={c.id} className="row" style={{ gap: 6 }}><span className="grow small b ell">{catName(c.id, lang)}</span>
+            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={String(d[0])} value={o[0] ?? ''} onChange={e => put(0, e.target.value)} />
+            <span>–</span>
+            <input className="inp" style={{ width: 70, height: 40 }} type="number" inputMode="numeric" placeholder={String(d[1])} value={o[1] ?? ''} onChange={e => put(1, e.target.value)} /></div> })}
         <button className="btn primary" onClick={() => { api.setConfig(f); toast('✅ ' + t('saved')) }}>{t('save')}</button>
       </div>}
 

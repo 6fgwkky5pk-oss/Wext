@@ -73,7 +73,7 @@ export function ProRow({ p, onClick, right }) {
     <Avatar p={p} />
     <div className="grow">
       <div className="row" style={{ gap: 6 }}><b className="ell">{p.name}</b></div>
-      <div className="meta"><span className="stars">★ {p.rating}</span><span>· {p.jobs} {t('jobs')}</span>{p.dist != null && <span>· {p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}</div>
+      <div className="meta"><span className="stars">★ {p.rating}</span><span>· {p.jobs} {t('jobs')}</span>{p.dist != null && <span>· {p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}{p.myPrice && (p.myPrice[0] || p.myPrice[1]) ? <span>· 🏷️ {[p.myPrice[0], p.myPrice[1]].filter(x => x !== '' && x != null).join('–')} ₾</span> : null}</div>
       <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={p} /></div>
     </div>
     {right}
