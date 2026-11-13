@@ -27,7 +27,7 @@ export function Profile({ install }) {
       </div>
       <div className="card" style={{ marginTop: 12, padding: '4px 14px' }}>
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
-        <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); if (isPro) api.setOnline(false); nav.home() }} />
+        <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); nav.home() }} />
         {isPro && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
         {user.card && <Row ic={<Icon n="card" s={20} />} label={`${t('savedCard')} · ${user.card.label}`} onClick={() => { api.updateUser({ card: null }); toast('✓') }} />}
         {install && <Row ic={<Icon n="dl" s={20} />} label={t('install')} onClick={install} />}
@@ -79,8 +79,8 @@ export function Admin() {
   const adminUsers = useStore(s => s.adminUsers) || []
   const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
   const adminReqs = adminReqsCloud || myReqs
-  const proUsers = adminUsers.length ? adminUsers.filter(u => u.role === 'pro') : pros
-  const clientUsers = adminUsers.filter(u => u.role !== 'pro')
+  const proUsers = adminUsers.length ? adminUsers.filter(u => u.pro?.registered) : pros
+  const clientUsers = adminUsers.filter(u => !u.pro?.registered)
   const contacted = adminReqs.filter(r => r.contacted || ['arrived', 'done'].includes(r.status))
   const Stat = ({ n, l, e }) => <div className="card center" style={{ padding: 14 }}><div style={{ fontSize: 22 }}>{e}</div><div style={{ fontSize: 28, fontWeight: 900 }}>{n}</div><div className="tiny mute b">{l}</div></div>
   const [f, setF] = useState(cfg)
@@ -93,7 +93,7 @@ export function Admin() {
 
       {tab === 'stats' && <div className="grid2">
         <Stat e="👥" n={adminUsers.length || '—'} l={t('statUsers')} />
-        <Stat e="🟢" n={proUsers.filter(p => p.online).length} l={t('statOnline')} />
+        <Stat e="🟢" n={proUsers.filter(p => p.online || p.pro?.online).length} l={t('statOnline')} />
         <Stat e="⚡" n={adminReqs.length} l={t('statReqs')} />
         <Stat e="💰" n={money(contacted.length * (promoActive(cfg) ? cfg.promoFee : cfg.baseFee))} l={t('statRevenue')} />
         <Stat e="🧰" n={proUsers.length} l={t('pros')} />

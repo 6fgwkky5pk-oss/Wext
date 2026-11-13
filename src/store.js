@@ -259,7 +259,7 @@ export const api = {
     if (CLOUD) return
     const off = !state.user?.pro.online
     later('incoming', off ? 25000 + Math.random() * 20000 : 8000 + Math.random() * 10000, () => {
-      const u = state.user; if (!u || u.role !== 'pro' || !u.pro.registered || u.pro.blocked || state.incoming) return
+      const u = state.user; if (!u || !u.pro.registered || u.pro.blocked || state.incoming) return
       const viaSms = !u.pro.online
       const cats = u.pro.cats.length ? u.pro.cats : ['handyman']
       const cat = cats[Math.floor(Math.random() * cats.length)]
@@ -319,11 +319,11 @@ export const api = {
 // expire hold automatically if a request never got a real contact within 2h
 setInterval(() => {
   state.requests.filter(r => r.status === 'accepted' && !r.contacted && now() - r.acceptedAt > 2 * 3600e3).forEach(r => { api._updReq(r.id, { status: 'expired' }); api._releaseIfUnused(r.payId) })
-  if (state.user?.role === 'pro') api.checkNoShows()
+  if (state.user?.pro?.registered) api.checkNoShows()
 }, 30000)
 
 // resume pro network after reload
-if (state.user?.role === 'pro') setTimeout(() => api._scheduleIncoming(), 3000)
+if (state.user?.pro?.registered) setTimeout(() => api._scheduleIncoming(), 3000)
 // resume in-flight searches after reload
 state.requests.filter(r => r.status === 'searching').forEach(r => setTimeout(() => api._dispatch(r.id), 1000))
 

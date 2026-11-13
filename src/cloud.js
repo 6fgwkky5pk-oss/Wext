@@ -79,7 +79,7 @@ function listenUser() {
     const now = Date.now()
     const pros = []
     snap.forEach(d => {
-      const u = d.data(); if (d.id === uid || u.role !== 'pro' || !u.pro?.registered || !u.pos) return
+      const u = d.data(); if (d.id === uid || !u.pro?.registered || !u.pos) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, hue: u.hue ?? 30,
@@ -105,7 +105,7 @@ function listenUser() {
   // jobs offered to me (online → full screen, offline → SMS-style banner)
   sub('offers', onSnapshot(query(collection(db, 'requests'), where('notified', 'array-contains', uid)), snap => {
     const s = ctx.get()
-    if (s.user?.role !== 'pro' || !s.user.pro.registered || s.user.pro.blocked) return
+    if (!s.user?.pro?.registered || s.user.pro.blocked) return
     const declined = s.declined || []
     let best = null
     snap.forEach(d => {

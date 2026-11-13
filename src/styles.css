@@ -370,3 +370,9 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .brigseg { display: grid !important; grid-template-columns: 1fr 1fr; }
 .brigseg button { font-size: 13px; white-space: nowrap; }
 @media (max-width: 360px) { .h7hero .hc { width: 70px; height: 70px; font-size: 38px; } .h7hero b { font-size: 22px; } .h7t { min-height: 112px; padding: 12px; } }
+.workchip { display: flex; align-items: center; gap: 10px; width: 100%; background: rgba(255,255,255,.7); border-radius: 16px; padding: 10px 14px; text-align: left; font-size: 14px; color: #111; }
+.workchip .sw { width: 42px; height: 24px; border-radius: 99px; background: #c9c3b6; position: relative; flex: none; transition: background .15s; }
+.workchip .sw i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+.workchip.on { background: #111; color: #fff; }
+.workchip.on .sw { background: var(--green); }
+.workchip.on .sw i { left: 21px; }

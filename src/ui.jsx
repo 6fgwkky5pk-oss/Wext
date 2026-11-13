@@ -138,7 +138,7 @@ export function fmtTime(ts) { const d = new Date(ts); return d.getHours().toStri
 export function RoleSwitch() {
   const { t } = useT()
   const role = useStore(s => s.user.role)
-  const set = r => { if (r === role) return; if (r === 'client') api.setOnline(false); api.updateUser({ role: r }) }
+  const set = r => { if (r === role) return; api.updateUser({ role: r }) }
   return <div className="roleswitch">
     <button className={role === 'client' ? 'on' : ''} onClick={() => set('client')}>🙋 {t('roleClient')}</button>
     <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>💼 {t('rolePro')}</button>

@@ -109,7 +109,7 @@ function Shell() {
         {tab === 'profile' && <Profile install={installFn} />}
         <div className="tabbar">{tabs.map(([k, ic, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon n={ic} s={24} />{l}{k === 'chats' && unread > 0 && <span className="dotn">{unread}</span>}</button>)}</div>
       </>}
-      {isPro && <Incoming />}
+      {user.pro?.registered && <Incoming />}
       <IncomingCall />
       {installSheet}
       <Toaster />
