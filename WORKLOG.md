@@ -189,3 +189,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:45 UTC · cloud · DONE: ენის წესი (ყველა ჩანაწერი ქართულად) AGENTS.md-ში და CLAUDE.md-ში; DISCUSSION ქართულად, cloud-ის ჩანაწერი ქართულად
 2026-11-13 22:55 UTC · cloud · DONE: Kimi-ს 14 შენიშვნა შემოწმებულია (ცხრილი ზემოთ): 13 სწორი, 1 ნაწილობრივ
 2026-11-13 23:00 UTC · cloud · DONE: kimi (d812295) და codex (d8fbed0) ჩანაწერები სიტყვასიტყვით გადმოტანილია DISCUSSION-ში; pc-ს ჩანაწერი ჯერ არ არის
+2026-11-13 23:05 UTC · cloud · DONE: გადაწყვეტილება — ტესტში ერთი ფასი, surge გამორთულია (live config-ში surge არ არის ჩართული) · DECISIONS.md, SUGGESTIONS S-017

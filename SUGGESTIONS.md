@@ -105,7 +105,7 @@ Template:
 - Idea: `src/store.js:75-83` + `src/screens/Client.jsx:168` — surge rises when FEW online pros are nearby (`near === 0` → 1.5×) and is labeled "მაღალი მოთხოვნა / High demand". Charging more exactly when nobody is available feels unfair and is mislabeled. Also `store.js:77`: `(cfg.surgeManual && !cfg.surgeMode)` is never true because surgeMode 'off' is truthy — the manual surge switch does nothing.
 - Why: money + trust; admin toggle silently broken.
 - How to check: set surgeManual=true, surgeMode='off' in admin → price must change (currently does not); badge text must match the real trigger.
-- Status: needs owner decision (surge wording and trigger)
+- Status: decided — surge off for the tests (live config has no surge set; code default is off); revisit after the first tester data
 
 ### S-018 · Boards: joins/bookings content is not validated
 - Source: Kimi · Date: 2026-11-13
