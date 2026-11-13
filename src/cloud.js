@@ -15,6 +15,7 @@ import {
   arrayUnion, increment, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
 } from 'firebase/firestore'
 import firebaseConfig from './firebase-config'
+import { setExtraSyn } from './data'
 
 export const CLOUD = !!(firebaseConfig && firebaseConfig.apiKey)
 let app, auth, db
@@ -104,6 +105,7 @@ function listenGlobal() {
   sub('config', onSnapshot(doc(db, 'config', 'main'), d => {
     const c = d.data(); if (!c) return
     const { blockedIds = [], ...cfg } = c
+    setExtraSyn(cfg.syn)
     ctx.set(s => ({ config: { ...s.config, ...cfg }, blockedIds }))
   }))
   sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { ctx.set({ catStats: d.data() || {} }) }, () => {}))

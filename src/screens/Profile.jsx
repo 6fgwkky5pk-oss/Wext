@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { api, CLOUD, useStore, money, promoActive, getState, groupOrder } from '../store'
 import { LANGS } from '../i18n'
-import { catName, CATEGORIES, GROUPS, groupName, TYPICAL } from '../data'
+import { catName, CATEGORIES, GROUPS, groupName, TYPICAL, SLANG } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
 import { useNav } from '../nav'
 import * as cloud from '../cloud'
@@ -109,7 +109,7 @@ export function Admin() {
   return <div className="scroll nopad">
     <Top title={t('admin')} onBack={nav.back} />
     <div className="pad col">
-      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['bugs', t('bugs')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
+      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['words', t('words')], ['bugs', t('bugs')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
 
       {tab === 'stats' && <div className="grid2">
         <Stat e="👥" n={adminUsers.length || '—'} l={t('statUsers')} />
@@ -158,6 +158,12 @@ export function Admin() {
           <button className={'btn sm ' + (blocked.includes(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{blocked.includes(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
+      {tab === 'words' && <div className="card col">
+        <p className="tiny mute b" style={{ margin: 0 }}>{t('wordsAdmin')}</p>
+        {CATEGORIES.map(c => <div key={c.id} className="field"><label>{catName(c.id, lang)}</label>
+          <input className="inp" style={{ height: 42 }} placeholder={(SLANG[c.id] || '').split(' ').slice(0, 3).join(', ') + '…'} value={(f.syn || {})[c.id] || ''} onChange={e => setF({ ...f, syn: { ...(f.syn || {}), [c.id]: e.target.value } })} /></div>)}
+        <button className="btn primary" onClick={() => { api.setConfig({ syn: f.syn || {} }); toast('✅ ' + t('saved')) }}>{t('save')}</button>
+      </div>}
       {tab === 'bugs' && <div className="list">
         {!bugs.length && <div className="empty">{t('none')}</div>}
         {bugs.map(b => <div key={b.id} className="card"><div className="row between"><b>{b.by}</b><span className="tiny mute">{fmtDate(b.ts, lang)}</span></div><p style={{ margin: '6px 0 0' }}>{b.text}</p><div className="tiny mute">{b.screen}</div></div>)}

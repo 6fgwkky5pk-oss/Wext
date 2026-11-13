@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
-import { CATEGORIES, catName, TYPICAL } from '../data'
+import { CATEGORIES, catName, TYPICAL, searchCats } from '../data'
 import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
@@ -92,6 +92,7 @@ export function ProSettings() {
   const { t, lang } = useT()
   const nav = useNav()
   const pro = useStore(s => s.user.pro)
+  const [sq, setSq] = useState('')
   const toggle = id => api.updatePro({ cats: pro.cats.includes(id) ? pro.cats.filter(c => c !== id) : [...pro.cats, id] })
   return <div className="scroll nopad">
     <div className="top"><button className="iconbtn" onClick={nav.back}><Icon n="back" /></button><h2>{t('myServices')}</h2></div>
@@ -112,7 +113,8 @@ export function ProSettings() {
       </>}
       <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
       <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-        {CATEGORIES.map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
+        <div className="search" style={{ width: '100%' }}><Icon n="search" s={20} /><input placeholder={t('findService')} value={sq} onChange={e => setSq(e.target.value)} /></div>
+        {(sq ? searchCats(sq, lang) : CATEGORIES).map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
       </div>
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
     </div>
@@ -123,7 +125,7 @@ export function ProSettings() {
 export function ProJoin() {
   const { t, lang } = useT()
   const pro = useStore(s => s.user.pro)
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(0), [jq, setJq] = useState('')
   const [cats, setCats] = useState(pro.cats)
   const [type, setType] = useState(pro.type)
   const [n, setN] = useState(Math.max(pro.members, 3))
@@ -141,7 +143,8 @@ export function ProJoin() {
       {step === 0 && <>
         <h1 style={{ marginTop: 8 }}>{t('joinTitle')}</h1>
         <p className="mute b small" style={{ margin: 0 }}>{t('joinSub')}</p>
-        <div className="jgrid">{CATEGORIES.map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i style={{ background: catTint(c.id) }}>{catIcon(c.id)}</i>{c.n[lang] || c.n.en}</button>)}</div>
+        <div className="search"><Icon n="search" s={20} /><input placeholder={t('findService')} value={jq} onChange={e => setJq(e.target.value)} /></div>
+        <div className="jgrid">{(jq ? searchCats(jq, lang) : CATEGORIES).map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i style={{ background: catTint(c.id) }}>{catIcon(c.id)}</i>{c.n[lang] || c.n.en}</button>)}</div>
         <button className="btn primary" style={{ marginTop: 8 }} disabled={!cats.length} onClick={() => setStep(1)}>{t('next')} <Icon n="right" /></button>
       </>}
       {step === 1 && <>

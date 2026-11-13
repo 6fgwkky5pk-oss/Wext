@@ -1,7 +1,7 @@
 // WEXT data layer. All app screens talk to `api` only, so the local adapter below can be
 // swapped for a realtime backend (Firebase/Supabase) without touching UI code.
 import { useSyncExternalStore } from 'react'
-import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS, TYPICAL } from './data'
+import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS, TYPICAL, setExtraSyn } from './data'
 import { payments } from './payments'
 import * as cloud from './cloud'
 export const CLOUD = cloud.CLOUD
@@ -26,6 +26,7 @@ let state = load() || {
   requests: [], chats: {}, projects: [], rides: [], complaints: [], bugs: [], payments: [], incoming: null, proJobs: [], blockedIds: [],
 }
 state.config = { ...defaultConfig, ...state.config }
+setExtraSyn(state.config.syn)
 const subs = new Set()
 let saveT
 function set(patch) {
@@ -373,7 +374,7 @@ export const api = {
   },
   watchCat(cat) { set({ watchCat: cat }); if (cat && typeof Notification !== 'undefined' && Notification.permission === 'default') Notification.requestPermission().catch(() => {}) },
   setBig(on) { set({ big: !!on }) },
-  setConfig(patch) { if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
+  setConfig(patch) { if (patch.syn) setExtraSyn(patch.syn); if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
   clearRinging() { set({ ringing: null }) },
   setOutgoing(to) { set({ outgoing: to }) },

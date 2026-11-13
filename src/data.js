@@ -80,18 +80,74 @@ export const catName = (id, lang) => { const c = catById(id); return c ? (c.n[la
 
 // Search: matches names in all languages + synonyms, prefix-tolerant
 const norm = s => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+
+// Everyday / slang / Russian-origin / misspelled words per service (Georgian street usage).
+// Admin can add more in admin → words (config.syn). Uncertain entries are marked in HANDOFF/ISSUES for Alexander to check.
+export const SLANG = {
+  bodywork: 'ჟესტიანჩიკი ჟესტიანშჩიკი ჟეშტიანჩიკი ჟესტიანშიკი ჟესტიანშიკ ჟესტი ჟესტიანკა რიხტოვკა რიხტოვშიკი კუზავი კუზოვი კუზავშიკი თუნუქის სამუშაო მეთუნუქე жестянщик жестянка рихтовка кузовной кузов zhestyanshik jestianshiki jestianchiki',
+  plumber: 'სანტეხნიკი სანტეხი სანტექნიკი სანტეხნიკოსი კანალიზაცია ტრუბა ტრუბები смеситель сантехник santexniki santeqnikosi',
+  electric: 'ელექტრიკი ელეკტრიკოსი ელექტრიკოზი ელექტროობა პრავოდკა სჩოტჩიკი электрик проводка elektriki elektrikosi',
+  appliance: 'სტირალკა ხალადილნიკი ჰალადილნიკი მაცივრის ხელოსანი ტელევიზორი პლიტა კონდიციონერის ხელოსანი стиралка холодильник ремонт техники',
+  handyman: 'მასტერი მასტერ ხელოსანი ყველაფრის ხელოსანი мастер на час',
+  painter: 'მალიარი მალიარკა შტუკატური შპაკლი шпаклевка штукатур маляр maliari',
+  tiler: 'კაფელი კაფელშიკი კაფელის ოსტატი ფილების დაგება მეტლახი плиточник кафельщик kafeli',
+  carpenter: 'სტალიარი სტოლიარი პლოტნიკი столяр плотник stoliari',
+  locksmith: 'ზამოკი ზამოკის გაღება კლუჩი საკეტის ოსტატი замок ключ zamoki',
+  cleaning: 'უბორკა დამლაგებელი დალაგება ქალბატონი დასალაგებლად уборка',
+  windows: 'ფანჯრის წმენდა მინის წმენდა мойка окон',
+  movers: 'გრუზჩიკი გრუზჩიკები მტვირთავები ამწევი грузчик gruzchiki',
+  cartruck: 'გაზელი გაზელით ფურგონი სატვირთო მანქანა ბორტოვოი газель фургон gazeli',
+  excavator: 'ჯისიბი ჯეისიბი ბობკატი экскаватор jcb jisibi bobcat',
+  crane: 'კრანი მანიპულიატორი ავტოკრანი манипулятор кран',
+  tractor: 'ტრაქტორი ხვნა მოხვნა трактор',
+  carwash: 'მოიკა სამრეცხაო ავტორეცხვა მანქანის რეცხვა мойка moika',
+  mechanic: 'მოტორისტი ხადავოი ხოდავოი ავტოხელოსანი მანქანის ხელოსანი моторист ходовая автомеханик',
+  tow: 'ბუქსირი ევაკუატორი ევაკუატორს ევაკუატორ буксир эвакуатор evakuatori',
+  tire: 'შინამონტაჟი შინა ბალონი ვულკანიზაცია საბურავის შეკეთება шиномонтаж шина vulkanizacia',
+  battery: 'აკუმლატორი აკუმულიატორი აკუმულატორის დაქოქვა პრიკურიტ аккумулятор прикурить akumulatori',
+  fuel: 'ბენზინი დიზელი სალიარკა საწვავი გამითავდა солярка бензин benzini',
+  firewood: 'დროვა შეშა дрова',
+  harvest: 'რთველი ყურძნის კრეფა მკრეფავები',
+  garden: 'ბაღი ბალახის თიბვა გაზონი газон',
+  land: 'ბოსტანი თოხნა ბარვა огород',
+  office: 'ოფისის დალაგება офис',
+}
+let EXTRA = {}
+export const setExtraSyn = o => { EXTRA = o || {} }
+
+// Latin letters typed on a phone → Georgian (so "jestianchiki" finds ჟესტიანჩიკი)
+const LAT = [['tch', 'ჭ'], ['sh', 'შ'], ['ch', 'ჩ'], ['zh', 'ჟ'], ['kh', 'ხ'], ['gh', 'ღ'], ['ts', 'ც'], ['dz', 'ძ'], ['th', 'თ'], ['ph', 'ფ'],
+  ['a', 'ა'], ['b', 'ბ'], ['g', 'გ'], ['d', 'დ'], ['e', 'ე'], ['v', 'ვ'], ['z', 'ზ'], ['t', 'ტ'], ['i', 'ი'], ['k', 'კ'], ['l', 'ლ'], ['m', 'მ'], ['n', 'ნ'], ['o', 'ო'], ['p', 'პ'],
+  ['r', 'რ'], ['s', 'ს'], ['u', 'უ'], ['f', 'ფ'], ['q', 'ქ'], ['y', 'ყ'], ['x', 'ხ'], ['j', 'ჯ'], ['h', 'ჰ'], ['c', 'ც'], ['w', 'ვ']]
+function latToKa(w) { let o = '', i = 0; outer: while (i < w.length) { for (const [a, b] of LAT) if (w.startsWith(a, i)) { o += b; i += a.length; continue outer } o += w[i++] } return o }
+
+// small edit distance (typos), capped for speed
+function lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i
+    for (let j = 1; j <= b.length; j++) { cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); best = Math.min(best, cur[j]) }
+    if (best > max) return max + 1
+    prev = cur
+  }
+  return prev[b.length]
+}
+const tolerance = w => w.length >= 8 ? 2 : w.length >= 4 ? 1 : 0
+
 export function searchCats(q, lang) {
   const t = norm(q.trim())
   if (!t) return CATEGORIES
-  const words = t.split(/\s+/)
+  const words = t.split(/\s+/).flatMap(w => /[a-z]/.test(w) ? [w, latToKa(w)] : [w])
   return CATEGORIES.map(c => {
-    const hay = norm(Object.values(c.n).join(' ') + ' ' + c.syn)
-    const tokens = hay.split(/\s+/)
+    const hay = norm(Object.values(c.n).join(' ') + ' ' + c.syn + ' ' + (SLANG[c.id] || '') + ' ' + (EXTRA[c.id] || ''))
+    const tokens = hay.split(/\s+/).filter(Boolean)
     let score = 0
     for (const w of words) {
       if (tokens.some(x => x === w)) score += 3
       else if (tokens.some(x => x.startsWith(w) || (w.length >= 4 && x.startsWith(w.slice(0, -1))))) score += 2
       else if (w.length >= 3 && hay.includes(w)) score += 1
+      else if (tolerance(w) && tokens.some(x => lev(w, x.slice(0, w.length + 1), tolerance(w)) <= tolerance(w) || lev(w, x, tolerance(w)) <= tolerance(w))) score += 1
     }
     return { c, score }
   }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).map(x => x.c)
