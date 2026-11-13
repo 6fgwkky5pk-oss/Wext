@@ -62,7 +62,7 @@ export function Profile({ install }) {
 }
 
 const EN_NAMES = { ka: 'Georgian', en: 'English', ru: 'Russian', de: 'German', tr: 'Turkish', uk: 'Ukrainian', hy: 'Armenian', az: 'Azerbaijani', es: 'Spanish', fr: 'French', ar: 'Arabic', zh: 'Chinese' }
-function LangSheet({ lang, t, onClose }) {
+export function LangSheet({ lang, t, onClose }) {
   const [q, setQ] = useState('')
   const list = LANGS.filter(l => !q || (l.label + ' ' + l.code + ' ' + (EN_NAMES[l.code] || '')).toLowerCase().includes(q.toLowerCase()))
   return <Sheet onClose={onClose}><h2>{t('language')}</h2>

@@ -1,7 +1,7 @@
 // Categories: id, emoji icon, kind (instant | field), names in 5 languages, search synonyms/jargon
 export const CATEGORIES = [
   { id: 'plumber', g: 'handy', icon: '🚰', kind: 'instant', n: { ka: 'სანტექნიკოსი', en: 'Plumber', ru: 'Сантехник', de: 'Klempner', tr: 'Tesisatçı' },
-    syn: 'სანტექნიკი სანტექნიკოსი ონკანი კრანი მილი წყალი უნიტაზი ტუალეტი კანალიზაცია ბოილერი წყალგაყვანილობა сантехник кран труба унитаз вода канализация бойлер течь plumber tap faucet pipe leak toilet water boiler klempner installateur wasserhahn rohr tesisatçı musluk boru su tuvalet' },
+    syn: 'სანტექნიკი სანტექნიკოსი ონკანი კრანი kran krani მილი წყალი უნიტაზი ტუალეტი კანალიზაცია ბოილერი წყალგაყვანილობა сантехник кран труба унитаз вода канализация бойлер течь plumber tap faucet pipe leak toilet water boiler klempner installateur wasserhahn rohr tesisatçı musluk boru su tuvalet' },
   { id: 'electric', g: 'handy', icon: '⚡', kind: 'instant', n: { ka: 'ელექტრიკოსი', en: 'Electrician', ru: 'Электрик', de: 'Elektriker', tr: 'Elektrikçi' },
     syn: 'ელექტრიკოსი დენი შუქი როზეტკა როზეტი ჩამრთველი ავტომატი სადენი ნათურა მოკლე ჩართვა электрик свет розетка проводка автомат выключатель лампа electrician electricity socket outlet light wiring breaker strom steckdose elektrik priz kablo sigorta' },
   { id: 'appliance', g: 'handy', icon: '🧺', kind: 'instant', n: { ka: 'ტექნიკის შეკეთება', en: 'Appliance repair', ru: 'Ремонт техники', de: 'Geräte-Reparatur', tr: 'Beyaz eşya tamiri' },

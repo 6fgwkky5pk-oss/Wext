@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { api, useStore } from '../store'
 import { useT, Icon, toast } from '../ui'
+import { LangSheet } from './Profile'
 import { regionFor } from '../data'
 
 const CC = { ge: '+995', tr: '+90', de: '+49' }
@@ -13,6 +14,7 @@ export default function Onboarding({ install }) {
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(null)
   const [sms, setSms] = useState(null)
+  const [langSheet, setLangSheet] = useState(false)
   const [name, setName] = useState('')
   const [role, setRole] = useState('client')
   const cc = CC[regionFor(loc || [41.92, 45.47]).id]
@@ -29,6 +31,7 @@ export default function Onboarding({ install }) {
   }
 
   return <div className="splash">
+    {langSheet && <LangSheet lang={lang} t={t} onClose={() => setLangSheet(false)} />}
     {step === 2 && sms && <div onClick={() => { setCode(sms); setStep(3) }} style={{ position: 'fixed', zIndex: 50, left: 10, right: 10, top: 'calc(10px + env(safe-area-inset-top, 0px))', background: 'rgba(250,250,250,.97)', color: '#111', borderRadius: 18, padding: '10px 14px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', display: 'flex', gap: 10, alignItems: 'center', animation: 'smsIn .35s ease-out' }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: '#34C759', display: 'grid', placeItems: 'center', fontSize: 20, flex: 'none' }}>💬</div>
       <div style={{ minWidth: 0 }}><div className="tiny b" style={{ opacity: .55 }}>WEXT · SMS</div><div className="small b">{t('codeSent', { code: sms })}</div><div className="tiny" style={{ opacity: .6 }}>{t('smsTest')}</div></div>
@@ -38,7 +41,10 @@ export default function Onboarding({ install }) {
       <b className="grow small">📲 {t('install')}</b>
       <span className="btn sm yellow" style={{ pointerEvents: 'none' }}>{t('installBtn')}</span>
     </button>}
-    <div className="logo"><img src="icons/icon-192.png" alt="" />WEXT</div>
+    <div className="row between" style={{ alignItems: 'center' }}>
+      <div className="logo"><img src="icons/icon-192.png" alt="" />WEXT</div>
+      <button className="langchip" onClick={() => setLangSheet(true)} aria-label="Language">🌐 {lang.toUpperCase()}</button>
+    </div>
     <div style={{ marginTop: 28 }}>
       <h1 style={{ fontSize: 34 }}>{t('tagline')}</h1>
     </div>

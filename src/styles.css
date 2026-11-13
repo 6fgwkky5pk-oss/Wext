@@ -411,3 +411,4 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 
 .testline { all: unset; cursor: pointer; display: block; text-align: center; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,.7); color: var(--ink); }
 .testline u { text-underline-offset: 3px; }
+.langchip { all: unset; cursor: pointer; font-weight: 800; font-size: 14px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.85); color: var(--ink); }
