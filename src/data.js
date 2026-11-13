@@ -40,9 +40,15 @@ export const CATEGORIES = [
     syn: 'ამწე კრანი манипулятор кран автокран crane lift kran vinç' },
   { id: 'cartruck', g: 'move', icon: '🚚', kind: 'instant', n: { ka: 'მანქანა მძღოლით', en: 'Truck with driver', ru: 'Грузовик с водителем', de: 'Transporter mit Fahrer', tr: 'Şoförlü kamyonet', uk: 'Вантажівка з водієм', es: 'Camión con conductor', fr: 'Camion avec chauffeur' },
     syn: 'მანქანა სატვირთო გადაზიდვა ტვირთი ფორდი газель грузовик перевозка truck van transport delivery lkw transporter kamyon kamyonet nakliye' },
+  { id: 'carwash', g: 'road', icon: '🧼', kind: 'instant', n: { ka: 'მანქანის რეცხვა', en: 'Car wash', ru: 'Автомойка', de: 'Autowäsche', tr: 'Oto yıkama', uk: 'Автомийка', es: 'Lavado de coche', fr: 'Lavage auto' },
+    syn: 'რეცხვა სამრეცხაო მანქანის რეცხვა ქიმწმენდა салона мойка автомойка химчистка car wash wash detailing autowäsche yıkama' },
+  { id: 'bodywork', g: 'road', icon: '🔨', kind: 'instant', n: { ka: 'მეთუნუქე', en: 'Body repair', ru: 'Жестянщик', de: 'Karosserie', tr: 'Kaportacı', uk: 'Бляхар', es: 'Chapista', fr: 'Carrossier' },
+    syn: 'მეთუნუქე ჟესტიანშიკი ჟეშტიანშიკი თუნუქი კუზავი ღებვა მანქანის შეღებვა жестянщик кузов покраска рихтовка body repair dent bodywork paint karosserie kaporta boya' },
+  { id: 'mechanic', g: 'road', icon: '🔧', kind: 'instant', n: { ka: 'ავტომექანიკოსი', en: 'Car mechanic', ru: 'Автомеханик', de: 'Kfz-Mechaniker', tr: 'Oto tamirci', uk: 'Автомеханік', es: 'Mecánico', fr: 'Mécanicien auto' },
+    syn: 'მექანიკოსი ხელოსანი მანქანის ძრავი სავალი ნაწილი მოტორისტი ავტოელექტრიკოსი механик автосервис ремонт авто mechanic car repair engine kfz werkstatt tamirci' },
   { id: 'tow', g: 'road', icon: '🛻', kind: 'instant', n: { ka: 'ევაკუატორი', en: 'Tow truck', ru: 'Эвакуатор', de: 'Abschleppdienst', tr: 'Çekici', uk: 'Евакуатор', es: 'Grúa de auto', fr: 'Dépanneuse' },
     syn: 'ევაკუატორი ევაკუაცია გაფუჭდა მანქანა эвакуатор tow towing breakdown abschleppen çekici' },
-  { id: 'tire', g: 'road', icon: '🛞', kind: 'instant', n: { ka: 'საბურავი', en: 'Flat tire', ru: 'Шиномонтаж', de: 'Reifenpanne', tr: 'Lastik', uk: 'Шиномонтаж', es: 'Pinchazo', fr: 'Pneu crevé' },
+  { id: 'tire', g: 'road', icon: '🛞', kind: 'instant', n: { ka: 'ვულკანიზაცია / საბურავი', en: 'Flat tire', ru: 'Шиномонтаж', de: 'Reifenpanne', tr: 'Lastik', uk: 'Шиномонтаж', es: 'Pinchazo', fr: 'Pneu crevé' },
     syn: 'საბურავი ბორბალი ვულკანიზაცია დაეშვა шина колесо шиномонтаж прокол tire tyre flat wheel reifen lastik' },
   { id: 'battery', g: 'road', icon: '🔋', kind: 'instant', n: { ka: 'აკუმულატორი', en: 'Battery jump', ru: 'Аккумулятор', de: 'Starthilfe', tr: 'Akü takviye', uk: 'Акумулятор', es: 'Batería', fr: 'Batterie' },
     syn: 'აკუმულატორი დაჯდა არ ქოქავს аккумулятор прикурить сел battery jump start starthilfe batterie akü' },
@@ -57,7 +63,7 @@ export const GROUPS = [
   { id: 'land', icon: '🌾', n: { ka: 'მიწის სამუშაო', en: 'Land & farm', ru: 'Земля и сад', de: 'Feld & Garten', tr: 'Tarla & bahçe', uk: 'Земля і сад', hy: 'Հող և այգի', az: 'Torpaq və bağ', es: 'Campo y jardín', fr: 'Champs & jardin', ar: 'أعمال الأرض', zh: '田地' } },
   { id: 'machine', icon: '🚜', n: { ka: 'ტექნიკა', en: 'Machinery', ru: 'Спецтехника', de: 'Maschinen', tr: 'İş makinesi', uk: 'Спецтехніка', hy: 'Տեխնիկա', az: 'Texnika', es: 'Maquinaria', fr: 'Engins', ar: 'آليات', zh: '机械' } },
   { id: 'move', icon: '🚚', n: { ka: 'გადაზიდვა', en: 'Moving', ru: 'Перевозка', de: 'Transport', tr: 'Nakliye', uk: 'Перевезення', hy: 'Փոխադրում', az: 'Daşıma', es: 'Mudanza', fr: 'Transport', ar: 'نقل', zh: '搬运' } },
-  { id: 'road', icon: '🛞', n: { ka: 'გზაზე დახმარება', en: 'Roadside help', ru: 'Помощь на дороге', de: 'Pannenhilfe', tr: 'Yol yardımı', uk: 'Допомога на дорозі', hy: 'Ճանապարհային օգնություն', az: 'Yol yardımı', es: 'Asistencia en carretera', fr: 'Dépannage', ar: 'مساعدة على الطريق', zh: '道路救援' } },
+  { id: 'road', icon: '🚘', n: { ka: 'ავტო', en: 'Car services', ru: 'Авто', de: 'Auto', tr: 'Oto', uk: 'Авто', hy: 'Ավտո', az: 'Avto', es: 'Coche', fr: 'Auto', ar: 'السيارات', zh: '汽车' } },
 ]
 export const groupName = (g, lang) => { const x = GROUPS.find(y => y.id === g); return x ? (x.n[lang] || x.n.en) : g }
 
@@ -118,7 +124,7 @@ export function seedPros(center) {
       const type = c.g === 'land' ? (i === 0 ? 'company' : i === 1 ? 'brigade' : 'individual') : (i === 2 ? 'brigade' : 'individual')
       const r = 0.4 + rnd() * 5.5, a = rnd() * Math.PI * 2
       const pos = [center[0] + (r / 111) * Math.cos(a), center[1] + (r / (111 * Math.cos(center[0] * Math.PI / 180))) * Math.sin(a)]
-      const companyNames = { office: 'CleanOffice', tractor: 'AgroTech', excavator: 'BuildMach', crane: 'LiftPro', cartruck: 'CargoGo', tow: 'Evakuatori 24', tire: 'TireHelp', battery: 'PowerStart', fuel: 'FuelGo', plumber: 'AquaFix', electric: 'Volt Service', appliance: 'TechnoMaster', handyman: 'HomeHelp', painter: 'ColorPro', tiler: 'TileArt', carpenter: 'WoodLine', locksmith: 'KeyPoint', cleaning: 'CleanHouse', windows: 'ClearView', harvest: 'კახური ვენახი', land: 'AgroTeam', garden: 'GreenCut', firewood: 'შეშა 24', movers: 'MoveIt' }
+      const companyNames = { carwash: 'ShineWash', bodywork: 'BodyFix', mechanic: 'AutoMaster', office: 'CleanOffice', tractor: 'AgroTech', excavator: 'BuildMach', crane: 'LiftPro', cartruck: 'CargoGo', tow: 'Evakuatori 24', tire: 'TireHelp', battery: 'PowerStart', fuel: 'FuelGo', plumber: 'AquaFix', electric: 'Volt Service', appliance: 'TechnoMaster', handyman: 'HomeHelp', painter: 'ColorPro', tiler: 'TileArt', carpenter: 'WoodLine', locksmith: 'KeyPoint', cleaning: 'CleanHouse', windows: 'ClearView', harvest: 'კახური ვენახი', land: 'AgroTeam', garden: 'GreenCut', firewood: 'შეშა 24', movers: 'MoveIt' }
       pros.push({
         id: `p_${c.id}_${i}`,
         name: type === 'company' ? companyNames[c.id] : type === 'brigade' ? `${fn}ს ბრიგადა` : `${fn} ${LAST[Math.floor(rnd() * LAST.length)]}`,
