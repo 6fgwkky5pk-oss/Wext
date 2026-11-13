@@ -343,3 +343,30 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .popc .pl { width: 92px; overflow-wrap: anywhere; hyphens: auto; }
 .promo b { color: var(--ink); }
 @media (max-width: 380px) { .locpill span { display: none; } .locpill { padding: 0 10px; } .gtop .roleswitch button { padding: 0 9px; font-size: 12.5px; } }
+
+/* Home 7 — final: yellow world (v3 colours) + grid layout (v1) */
+.home7 { background: var(--y); min-height: 100%; }
+.h7top { padding: calc(12px + var(--safe-t)) 16px 0; }
+.h7search { box-shadow: 0 8px 20px rgba(150,90,0,.16); }
+.h7hero { display: flex; align-items: center; gap: 14px; width: 100%; background: #111; color: #fff; border-radius: 28px; padding: 16px 16px 16px 14px; box-shadow: 0 0 0 6px rgba(255,255,255,.28), 0 14px 30px rgba(120,70,0,.28); transition: transform .1s; }
+.h7hero:active, .h7t:active { transform: scale(.97); }
+.h7hero .hc { width: 86px; height: 86px; flex: none; border-radius: 50%; background: var(--y); display: grid; place-items: center; font-size: 46px; box-shadow: 0 0 0 6px rgba(255,194,26,.25); }
+.h7hero b { font-size: 26px; font-weight: 900; line-height: 1.1; }
+.h7hero small { font-size: 12.5px; color: #c9c9c9; font-weight: 700; }
+.h7price { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-weight: 900; font-size: 18px; color: var(--y); }
+.h7price s { color: #888; font-size: 13px; font-weight: 700; }
+.h7price em { font-style: normal; font-size: 12.5px; color: #fff; background: #2a2a2a; border-radius: 999px; padding: 2px 9px; display: inline-flex; align-items: center; gap: 5px; }
+.h7grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.h7t { background: #fff; border-radius: 24px; padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; min-height: 124px; box-shadow: 0 6px 16px rgba(150,90,0,.14); color: #111; transition: transform .1s; }
+.h7t .e { width: 54px; height: 54px; border-radius: 50%; background: #FFF4CF; display: grid; place-items: center; font-size: 30px; margin-bottom: 6px; }
+.h7t b { font-size: 16.5px; font-weight: 900; line-height: 1.15; }
+.h7t small { font-size: 11px; color: #777; font-weight: 700; line-height: 1.3; }
+.h7t.dark { background: #111; color: #fff; }
+.h7t.dark .e { background: var(--y); }
+.h7t.dark small { color: #bbb; }
+.h7promo { background: rgba(255,255,255,.6); border-radius: 16px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: #3a2c00; }
+.h7promo s { opacity: .5; }
+.home7 .trust { background: rgba(255,255,255,.45); }
+.brigseg { display: grid !important; grid-template-columns: 1fr 1fr; }
+.brigseg button { font-size: 13px; white-space: nowrap; }
+@media (max-width: 360px) { .h7hero .hc { width: 70px; height: 70px; font-size: 38px; } .h7hero b { font-size: 22px; } .h7t { min-height: 112px; padding: 12px; } }

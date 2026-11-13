@@ -1,36 +1,65 @@
 // Categories: id, emoji icon, kind (instant | field), names in 5 languages, search synonyms/jargon
 export const CATEGORIES = [
-  { id: 'plumber', icon: '🚰', kind: 'instant', n: { ka: 'სანტექნიკოსი', en: 'Plumber', ru: 'Сантехник', de: 'Klempner', tr: 'Tesisatçı' },
+  { id: 'plumber', g: 'handy', icon: '🚰', kind: 'instant', n: { ka: 'სანტექნიკოსი', en: 'Plumber', ru: 'Сантехник', de: 'Klempner', tr: 'Tesisatçı' },
     syn: 'სანტექნიკი სანტექნიკოსი ონკანი კრანი მილი წყალი უნიტაზი ტუალეტი კანალიზაცია ბოილერი წყალგაყვანილობა сантехник кран труба унитаз вода канализация бойлер течь plumber tap faucet pipe leak toilet water boiler klempner installateur wasserhahn rohr tesisatçı musluk boru su tuvalet' },
-  { id: 'electric', icon: '⚡', kind: 'instant', n: { ka: 'ელექტრიკოსი', en: 'Electrician', ru: 'Электрик', de: 'Elektriker', tr: 'Elektrikçi' },
+  { id: 'electric', g: 'handy', icon: '⚡', kind: 'instant', n: { ka: 'ელექტრიკოსი', en: 'Electrician', ru: 'Электрик', de: 'Elektriker', tr: 'Elektrikçi' },
     syn: 'ელექტრიკოსი დენი შუქი როზეტკა როზეტი ჩამრთველი ავტომატი სადენი ნათურა მოკლე ჩართვა электрик свет розетка проводка автомат выключатель лампа electrician electricity socket outlet light wiring breaker strom steckdose elektrik priz kablo sigorta' },
-  { id: 'appliance', icon: '🧺', kind: 'instant', n: { ka: 'ტექნიკის შეკეთება', en: 'Appliance repair', ru: 'Ремонт техники', de: 'Geräte-Reparatur', tr: 'Beyaz eşya tamiri' },
+  { id: 'appliance', g: 'handy', icon: '🧺', kind: 'instant', n: { ka: 'ტექნიკის შეკეთება', en: 'Appliance repair', ru: 'Ремонт техники', de: 'Geräte-Reparatur', tr: 'Beyaz eşya tamiri' },
     syn: 'სარეცხი მანქანა მაცივარი ქურა ღუმელი კონდიციონერი ტელევიზორი სტირალკა ხალადილნიკი стиральная машина холодильник плита кондиционер ремонт техники washing machine fridge oven ac air conditioner appliance waschmaschine kühlschrank çamaşır makinesi buzdolabı klima' },
-  { id: 'handyman', icon: '🔧', kind: 'instant', n: { ka: 'ოსტატი ყველაფერზე', en: 'Handyman', ru: 'Мастер на час', de: 'Hausmeister', tr: 'Tamirci' },
+  { id: 'handyman', g: 'handy', icon: '🔧', kind: 'instant', n: { ka: 'რემონტი / ოსტატი', en: 'Handyman', ru: 'Мастер на час', de: 'Hausmeister', tr: 'Tamirci' },
     syn: 'ოსტატი ხელოსანი მასტერი შეკეთება კარი საკეტი ავეჯის აწყობა თარო ფარდა мастер на час муж на час ремонт сборка мебели handyman fix repair assemble furniture shelf handwerker reparatur tamirci usta montaj' },
-  { id: 'painter', icon: '🎨', kind: 'instant', n: { ka: 'მღებავი', en: 'Painter', ru: 'Маляр', de: 'Maler', tr: 'Boyacı' },
+  { id: 'painter', g: 'handy', icon: '🎨', kind: 'instant', n: { ka: 'მღებავი', en: 'Painter', ru: 'Маляр', de: 'Maler', tr: 'Boyacı' },
     syn: 'მღებავი შეღებვა საღებავი შპალერი ობოი კედელი маляр покраска обои стены painter paint wallpaper wall maler streichen tapete boyacı boya duvar kağıdı' },
-  { id: 'tiler', icon: '🧱', kind: 'instant', n: { ka: 'მეკაფელე', en: 'Tiler', ru: 'Плиточник', de: 'Fliesenleger', tr: 'Fayansçı' },
+  { id: 'tiler', g: 'handy', icon: '🧱', kind: 'instant', n: { ka: 'მეკაფელე', en: 'Tiler', ru: 'Плиточник', de: 'Fliesenleger', tr: 'Fayansçı' },
     syn: 'მეკაფელე კაფელი ფილა მეტლახი плиточник плитка кафель tiler tile tiles fliesen fliesenleger fayans seramik' },
-  { id: 'carpenter', icon: '🪚', kind: 'instant', n: { ka: 'დურგალი', en: 'Carpenter', ru: 'Плотник', de: 'Tischler', tr: 'Marangoz' },
+  { id: 'carpenter', g: 'handy', icon: '🪚', kind: 'instant', n: { ka: 'დურგალი', en: 'Carpenter', ru: 'Плотник', de: 'Tischler', tr: 'Marangoz' },
     syn: 'დურგალი ხე ავეჯი კარი ფანჯარა იატაკი ლამინატი столяр плотник мебель дерево двери ламинат carpenter wood furniture door floor laminate tischler schreiner holz marangoz ahşap mobilya' },
-  { id: 'locksmith', icon: '🔑', kind: 'instant', n: { ka: 'საკეტების ოსტატი', en: 'Locksmith', ru: 'Слесарь (замки)', de: 'Schlüsseldienst', tr: 'Çilingir' },
+  { id: 'locksmith', g: 'handy', icon: '🔑', kind: 'instant', n: { ka: 'საკეტების ოსტატი', en: 'Locksmith', ru: 'Слесарь (замки)', de: 'Schlüsseldienst', tr: 'Çilingir' },
     syn: 'საკეტი გასაღები კარი ჩამეკეტა ზამოკი замок ключ вскрыть дверь слесарь locksmith lock key locked out schlüssel schloss çilingir kilit anahtar' },
-  { id: 'cleaning', icon: '🧽', kind: 'instant', n: { ka: 'სახლის დალაგება', en: 'Home cleaning', ru: 'Уборка дома', de: 'Hausreinigung', tr: 'Ev temizliği' },
+  { id: 'cleaning', g: 'clean', icon: '🧽', kind: 'instant', n: { ka: 'სახლი', en: 'Home cleaning', ru: 'Уборка дома', de: 'Hausreinigung', tr: 'Ev temizliği' },
     syn: 'დალაგება დასუფთავება დამლაგებელი уборка клининг cleaning cleaner clean house putzen reinigung temizlik' },
-  { id: 'windows', icon: '🪟', kind: 'instant', n: { ka: 'ფანჯრების წმენდა', en: 'Window cleaning', ru: 'Мойка окон', de: 'Fensterputzen', tr: 'Cam silme' },
+  { id: 'windows', g: 'clean', icon: '🪟', kind: 'instant', n: { ka: 'ფანჯრები', en: 'Window cleaning', ru: 'Мойка окон', de: 'Fensterputzen', tr: 'Cam silme' },
     syn: 'ფანჯარა მინა წმენდა окна мойка окон стекло window windows glass fenster cam pencere' },
-  { id: 'harvest', icon: '🍇', kind: 'field', n: { ka: 'რთველი', en: 'Grape harvest', ru: 'Ртвели (сбор винограда)', de: 'Weinlese', tr: 'Bağ bozumu' },
+  { id: 'harvest', g: 'land', icon: '🍇', kind: 'instant', n: { ka: 'მოსავლის აღება / რთველი', en: 'Grape harvest', ru: 'Ртвели (сбор винограда)', de: 'Weinlese', tr: 'Bağ bozumu' },
     syn: 'რთველი ყურძენი ვენახი კრეფა მკრეფავი ртвели виноград сбор винограда виноградник harvest grape vineyard picking weinlese trauben bağ bozumu üzüm' },
-  { id: 'land', icon: '⛏️', kind: 'field', n: { ka: 'თოხნა / მიწის სამუშაო', en: 'Hoeing / land work', ru: 'Прополка / земляные работы', de: 'Hacken / Erdarbeiten', tr: 'Çapa / toprak işi' },
+  { id: 'land', g: 'land', icon: '⛏️', kind: 'instant', n: { ka: 'მიწის დამუშავება', en: 'Hoeing / land work', ru: 'Прополка / земляные работы', de: 'Hacken / Erdarbeiten', tr: 'Çapa / toprak işi' },
     syn: 'თოხნა მიწა ბარვა თხრა ბოსტანი სარეველა прополка копать земля огород hoe hoeing dig land weeding garden bed hacken graben çapa kazmak toprak' },
-  { id: 'garden', icon: '🌳', kind: 'field', n: { ka: 'ბაღი / სხვლა', en: 'Garden / pruning', ru: 'Сад / обрезка', de: 'Garten / Baumschnitt', tr: 'Bahçe / budama' },
+  { id: 'garden', g: 'land', icon: '🌳', kind: 'instant', n: { ka: 'ბაღის მოვლა', en: 'Garden / pruning', ru: 'Сад / обрезка', de: 'Garten / Baumschnitt', tr: 'Bahçe / budama' },
     syn: 'ბაღი სხვლა ხე ბალახი გაკრეჭა სათიბი სად обрезка деревья газон покос garden pruning trees lawn mowing garten rasen baumschnitt bahçe budama çim' },
-  { id: 'firewood', icon: '🪵', kind: 'field', n: { ka: 'შეშა', en: 'Firewood', ru: 'Дрова', de: 'Brennholz', tr: 'Odun' },
+  { id: 'firewood', g: 'land', icon: '🪵', kind: 'instant', n: { ka: 'შეშა', en: 'Firewood', ru: 'Дрова', de: 'Brennholz', tr: 'Odun' },
     syn: 'შეშა დაჩეხვა ხერხვა დრова дрова колоть пилить firewood wood chop split brennholz holz hacken odun kesmek' },
-  { id: 'movers', icon: '📦', kind: 'instant', n: { ka: 'მზიდავები', en: 'Movers', ru: 'Грузчики', de: 'Umzugshelfer', tr: 'Nakliyeci' },
+  { id: 'movers', g: 'move', icon: '📦', kind: 'instant', n: { ka: 'მტვირთავი', en: 'Movers', ru: 'Грузчики', de: 'Umzugshelfer', tr: 'Nakliyeci' },
     syn: 'მზიდავი გადაზიდვა გადასვლა ტვირთი ბარგი მუშა грузчики переезд перевозка movers moving carry umzug träger nakliye taşıma hamal' },
+  { id: 'office', g: 'clean', icon: '🏢', kind: 'instant', n: { ka: 'ოფისი', en: 'Office cleaning', ru: 'Уборка офиса', de: 'Büroreinigung', tr: 'Ofis temizliği', uk: 'Прибирання офісу', es: 'Limpieza de oficinas', fr: 'Ménage de bureaux' },
+    syn: 'ოფისი ოფისის დალაგება офис уборка офиса office cleaning büro ofis' },
+  { id: 'tractor', g: 'machine', icon: '🚜', kind: 'instant', n: { ka: 'ტრაქტორი', en: 'Tractor', ru: 'Трактор', de: 'Traktor', tr: 'Traktör', uk: 'Трактор', es: 'Tractor', fr: 'Tracteur' },
+    syn: 'ტრაქტორი ხვნა მოხვნა კულტივაცია трактор вспашка пахать tractor plough plow traktor pflügen traktör' },
+  { id: 'excavator', g: 'machine', icon: '🏗️', kind: 'instant', n: { ka: 'ექსკავატორი', en: 'Excavator', ru: 'Экскаватор', de: 'Bagger', tr: 'Ekskavatör', uk: 'Екскаватор', es: 'Excavadora', fr: 'Pelleteuse' },
+    syn: 'ექსკავატორი ბულდოზერი თხრა ორმო ფუნდამენტი экскаватор копать котлован bulldozer excavator digger bagger kepçe ekskavatör jcb' },
+  { id: 'crane', g: 'machine', icon: '🏗', kind: 'instant', n: { ka: 'ამწე', en: 'Crane', ru: 'Кран', de: 'Kran', tr: 'Vinç', uk: 'Кран', es: 'Grúa', fr: 'Grue' },
+    syn: 'ამწე კრანი манипулятор кран автокран crane lift kran vinç' },
+  { id: 'cartruck', g: 'move', icon: '🚚', kind: 'instant', n: { ka: 'მანქანა მძღოლით', en: 'Truck with driver', ru: 'Грузовик с водителем', de: 'Transporter mit Fahrer', tr: 'Şoförlü kamyonet', uk: 'Вантажівка з водієм', es: 'Camión con conductor', fr: 'Camion avec chauffeur' },
+    syn: 'მანქანა სატვირთო გადაზიდვა ტვირთი ფორდი газель грузовик перевозка truck van transport delivery lkw transporter kamyon kamyonet nakliye' },
+  { id: 'tow', g: 'road', icon: '🛻', kind: 'instant', n: { ka: 'ევაკუატორი', en: 'Tow truck', ru: 'Эвакуатор', de: 'Abschleppdienst', tr: 'Çekici', uk: 'Евакуатор', es: 'Grúa de auto', fr: 'Dépanneuse' },
+    syn: 'ევაკუატორი ევაკუაცია გაფუჭდა მანქანა эвакуатор tow towing breakdown abschleppen çekici' },
+  { id: 'tire', g: 'road', icon: '🛞', kind: 'instant', n: { ka: 'საბურავი', en: 'Flat tire', ru: 'Шиномонтаж', de: 'Reifenpanne', tr: 'Lastik', uk: 'Шиномонтаж', es: 'Pinchazo', fr: 'Pneu crevé' },
+    syn: 'საბურავი ბორბალი ვულკანიზაცია დაეშვა шина колесо шиномонтаж прокол tire tyre flat wheel reifen lastik' },
+  { id: 'battery', g: 'road', icon: '🔋', kind: 'instant', n: { ka: 'აკუმულატორი', en: 'Battery jump', ru: 'Аккумулятор', de: 'Starthilfe', tr: 'Akü takviye', uk: 'Акумулятор', es: 'Batería', fr: 'Batterie' },
+    syn: 'აკუმულატორი დაჯდა არ ქოქავს аккумулятор прикурить сел battery jump start starthilfe batterie akü' },
+  { id: 'fuel', g: 'road', icon: '⛽', kind: 'instant', n: { ka: 'საწვავი', en: 'Fuel delivery', ru: 'Доставка топлива', de: 'Kraftstoff', tr: 'Yakıt', uk: 'Пальне', es: 'Combustible', fr: 'Carburant' },
+    syn: 'საწვავი ბენზინი დიზელი გამითავდა бензин топливо закончился fuel gas petrol diesel benzin yakıt' },
 ]
+
+export const GROUPS = [
+  { id: 'handy', icon: '🔧', n: { ka: 'ხელოსანი', en: 'Handyman', ru: 'Мастер', de: 'Handwerker', tr: 'Usta', uk: 'Майстер', hy: 'Վարպետ', az: 'Usta', es: 'Manitas', fr: 'Artisan', ar: 'حرفي', zh: '师傅' } },
+  { id: 'clean', icon: '🧽', n: { ka: 'დალაგება', en: 'Cleaning', ru: 'Уборка', de: 'Reinigung', tr: 'Temizlik', uk: 'Прибирання', hy: 'Մաքրում', az: 'Təmizlik', es: 'Limpieza', fr: 'Ménage', ar: 'تنظيف', zh: '保洁' } },
+  { id: 'ride', icon: '🚗', n: { ka: 'გამაყოლე', en: 'Ride along', ru: 'Попутка', de: 'Mitfahren', tr: 'Yolculuk', uk: 'Попутка', hy: 'Ուղեկցում', az: 'Yol yoldaşı', es: 'Viaje compartido', fr: 'Covoiturage', ar: 'توصيلة', zh: '顺风车' } },
+  { id: 'land', icon: '🌾', n: { ka: 'მიწის სამუშაო', en: 'Land & farm', ru: 'Земля и сад', de: 'Feld & Garten', tr: 'Tarla & bahçe', uk: 'Земля і сад', hy: 'Հող և այգի', az: 'Torpaq və bağ', es: 'Campo y jardín', fr: 'Champs & jardin', ar: 'أعمال الأرض', zh: '田地' } },
+  { id: 'machine', icon: '🚜', n: { ka: 'ტექნიკა', en: 'Machinery', ru: 'Спецтехника', de: 'Maschinen', tr: 'İş makinesi', uk: 'Спецтехніка', hy: 'Տեխնիկա', az: 'Texnika', es: 'Maquinaria', fr: 'Engins', ar: 'آليات', zh: '机械' } },
+  { id: 'move', icon: '🚚', n: { ka: 'გადაზიდვა', en: 'Moving', ru: 'Перевозка', de: 'Transport', tr: 'Nakliye', uk: 'Перевезення', hy: 'Փոխադրում', az: 'Daşıma', es: 'Mudanza', fr: 'Transport', ar: 'نقل', zh: '搬运' } },
+  { id: 'road', icon: '🛞', n: { ka: 'გზაზე დახმარება', en: 'Roadside help', ru: 'Помощь на дороге', de: 'Pannenhilfe', tr: 'Yol yardımı', uk: 'Допомога на дорозі', hy: 'Ճանապարհային օգնություն', az: 'Yol yardımı', es: 'Asistencia en carretera', fr: 'Dépannage', ar: 'مساعدة على الطريق', zh: '道路救援' } },
+]
+export const groupName = (g, lang) => { const x = GROUPS.find(y => y.id === g); return x ? (x.n[lang] || x.n.en) : g }
 
 export const catById = id => CATEGORIES.find(c => c.id === id)
 export const catName = (id, lang) => { const c = catById(id); return c ? (c.n[lang] || c.n.en) : id }
@@ -81,15 +110,15 @@ export function seedPros(center) {
   const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
   const pros = []
   CATEGORIES.forEach((c, ci) => {
-    const count = c.kind === 'field' ? 3 : 4
+    const count = c.g === 'land' ? 4 : 3
     for (let i = 0; i < count; i++) {
       let fn = FIRST[Math.floor(rnd() * FIRST.length)]
       if (['cleaning', 'windows'].includes(c.id) && rnd() < .6) fn = [...FEMALE][Math.floor(rnd() * 4)]
       if (!['cleaning', 'windows', 'harvest', 'garden'].includes(c.id) && FEMALE.has(fn)) fn = 'გიორგი'
-      const type = c.kind === 'field' ? (i === 0 ? 'company' : i === 1 ? 'brigade' : 'individual') : (i === 3 ? 'company' : i === 2 && rnd() < .5 ? 'brigade' : 'individual')
+      const type = c.g === 'land' ? (i === 0 ? 'company' : i === 1 ? 'brigade' : 'individual') : (i === 2 ? 'brigade' : 'individual')
       const r = 0.4 + rnd() * 5.5, a = rnd() * Math.PI * 2
       const pos = [center[0] + (r / 111) * Math.cos(a), center[1] + (r / (111 * Math.cos(center[0] * Math.PI / 180))) * Math.sin(a)]
-      const companyNames = { plumber: 'AquaFix', electric: 'Volt Service', appliance: 'TechnoMaster', handyman: 'HomeHelp', painter: 'ColorPro', tiler: 'TileArt', carpenter: 'WoodLine', locksmith: 'KeyPoint', cleaning: 'CleanHouse', windows: 'ClearView', harvest: 'კახური ვენახი', land: 'AgroTeam', garden: 'GreenCut', firewood: 'შეშა 24', movers: 'MoveIt' }
+      const companyNames = { office: 'CleanOffice', tractor: 'AgroTech', excavator: 'BuildMach', crane: 'LiftPro', cartruck: 'CargoGo', tow: 'Evakuatori 24', tire: 'TireHelp', battery: 'PowerStart', fuel: 'FuelGo', plumber: 'AquaFix', electric: 'Volt Service', appliance: 'TechnoMaster', handyman: 'HomeHelp', painter: 'ColorPro', tiler: 'TileArt', carpenter: 'WoodLine', locksmith: 'KeyPoint', cleaning: 'CleanHouse', windows: 'ClearView', harvest: 'კახური ვენახი', land: 'AgroTeam', garden: 'GreenCut', firewood: 'შეშა 24', movers: 'MoveIt' }
       pros.push({
         id: `p_${c.id}_${i}`,
         name: type === 'company' ? companyNames[c.id] : type === 'brigade' ? `${fn}ს ბრიგადა` : `${fn} ${LAST[Math.floor(rnd() * LAST.length)]}`,

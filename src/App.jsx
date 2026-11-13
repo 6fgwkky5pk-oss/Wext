@@ -66,7 +66,7 @@ function Shell() {
   const { t } = useT()
   const user = useStore(s => s.user)
   const unread = useStore(s => Object.values(s.chats).reduce((a, c) => a + (c.unread || 0), 0))
-  const [tab, setTab] = useState('home')
+  const [tab, setTab] = useState(() => new URLSearchParams(location.search).has('admin') ? 'profile' : 'home')
   const [stack, setStack] = useState([])
   const [iosHelp, setIosHelp] = useState(false)
   const inst = useInstall()

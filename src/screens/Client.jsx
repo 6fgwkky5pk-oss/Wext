@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState, CLOUD } from '../store'
-import { CATEGORIES, catName, searchCats, catById } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById } from '../data'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
 import { TEST_MODE } from '../payments'
 import Map from '../Map'
 
 const TINT = { plumber: '#E0F0FF', electric: '#FFF3BF', appliance: '#E6FCF5', handyman: '#FFE3E3', painter: '#F3F0FF', tiler: '#FFF0E0', carpenter: '#F4EBDD', locksmith: '#FFF9DB', cleaning: '#E3FAFC', windows: '#E7F5FF', harvest: '#F3E8FF', land: '#EBFBEE', garden: '#E6FCF5', firewood: '#FFF0E0', movers: '#F1F3F5' }
-const go = (nav, c) => nav.go(c.kind === 'field' ? 'projects' : 'call', { cat: c.id, create: c.kind === 'field' })
+const go = (nav, c) => nav.go('call', { cat: c.id })
 
 export function Home({ install }) {
   const { t, lang } = useT()
@@ -27,52 +27,44 @@ export function Home({ install }) {
 
   const openJobs = useStore(s => s.projects.filter(p => p.date >= new Date().toISOString().slice(0, 10)).length)
 
-  const B = ({ e, label, onClick, big, badge }) => <button className={'gb' + (big ? ' big' : '')} onClick={onClick}>
-    <span className="bc"><span className="be">{e}</span>{badge}</span>
-    <span className="bl">{label}</span>
-  </button>
-  const POP = ['plumber', 'electric', 'locksmith', 'appliance', 'cleaning', 'handyman', 'painter', 'movers'].map(catById).filter(Boolean)
+  const G = id => GROUPS.find(g => g.id === id)
+  const SUB = { handy: 'groupHandySub', clean: 'groupCleanSub', ride: 'groupRideSub', land: 'groupLandSub', machine: 'groupMachineSub', move: 'groupMoveSub', road: 'groupRoadSub' }
+  const open = id => id === 'ride' ? nav.go('rides') : nav.go('call', { group: id })
+  const onlineIn = id => near.filter(x => (x.cats || [x.cat]).some(c => (catById(c) || {}).g === id)).length
 
-  return <div className="scroll" style={{ paddingTop: 0, paddingBottom: 0 }}>
-    <div className="ghead">
-      <div className="gtop">
-        <button className="locpill" onClick={() => api.setLoc && navigator.geolocation && navigator.geolocation.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true))}>
-          <Icon n="pin" s={18} /><span className="ell">{locReal ? t('myLoc') : t('findLoc')}</span><Icon n="down" s={16} />
-        </button>
-        <RoleSwitch />
-      </div>
-      {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
-        <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
-        <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
-      </button>}
-      <div className="bubs r2">
-        <B big e="⚡" label={t('proNow')} onClick={() => nav.go('call')} badge={near.length ? <span className="bbadge"><span className="livedot" />{near.length}</span> : null} />
-        <B big e="👷" label={t('peopleNeed')} onClick={() => nav.go('projects')} badge={openJobs ? <span className="bbadge dark">{openJobs}</span> : null} />
-      </div>
-      <div className="bubs r3">
-        <B e="🚗" label={t('ride')} onClick={() => nav.go('rides')} />
-        <B e="🍇" label={catName('harvest', lang)} onClick={() => go(nav, catById('harvest'))} />
-        <B e="📦" label={catName('movers', lang)} onClick={() => go(nav, catById('movers'))} />
-      </div>
-      <svg className="gwave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 22 C 90 2, 170 2, 240 16 S 360 34, 400 10 L400 40 L0 40Z" /></svg>
+  return <div className="scroll home7" style={{ paddingTop: 0 }}>
+    <div className="gtop h7top">
+      <button className="locpill" onClick={() => navigator.geolocation && navigator.geolocation.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true))}>
+        <Icon n="pin" s={18} /><span className="ell">{locReal ? t('myLoc') : t('findLoc')}</span><Icon n="down" s={16} />
+      </button>
+      <RoleSwitch />
     </div>
-
-    <div className="gbody">
-      <div className="search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
-      {q ? <div className="list" style={{ marginTop: 12 }}>
-        {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => go(nav, c)}>
-          <span className="av" style={{ background: TINT[c.id], fontSize: 24 }}>{c.icon}</span>
+    <div className="pad col" style={{ gap: 12, marginTop: 6 }}>
+      <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+      {q ? <div className="list">
+        {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => nav.go('call', { cat: c.id })}>
+          <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
           <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
         {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
       </div> : <>
-        <h2 className="gh2">{t('forYou', { name: (user.name || '').split(' ')[0] })}</h2>
-        <div className="poprow">{POP.map(c => <button key={c.id} className="popc" onClick={() => go(nav, c)}>
-          <span className="pi" style={{ background: TINT[c.id] }}>{c.icon}</span><span className="pl">{c.n[lang] || c.n.en}</span></button>)}</div>
-        <button className="promo" onClick={() => nav.go('call')}>
-          <div className="grow"><b>{t('proNow')}</b><div className="pp">{money(p.amount)} {p.old && <s>{money(p.old)}</s>}</div>
-            {p.promo && <span className="tiny b mute">🔥 {promoText(t, cfg.promoEnd, lang)}</span>}</div>
-          <span className="pe">🧰</span>
+        {active && <button className="activebar" onClick={() => nav.go('request', { id: active.id })}>
+          <span style={{ fontSize: 22 }}>{catIcon(active.cat)}</span>
+          <b className="grow ell">{catName(active.cat, lang)} · {active.status === 'searching' ? t('searching') : t('accepted')}</b><Icon n="right" s={18} />
+        </button>}
+        <button className="h7hero" onClick={() => open('handy')}>
+          <span className="hc">🔧</span>
+          <span className="grow col" style={{ gap: 2, textAlign: 'left', minWidth: 0 }}>
+            <b>{groupName('handy', lang)}</b><small>{t(SUB.handy)}</small>
+            <span className="h7price">{money(p.amount)}{p.old && <s>{money(p.old)}</s>}{near.length > 0 && <em><span className="livedot" />{onlineIn('handy')}</em>}</span>
+          </span>
+          <Icon n="right" s={26} />
         </button>
+        <div className="h7grid">
+          {['clean', 'ride', 'land', 'machine', 'move', 'road'].map(id => <button key={id} className={'h7t' + (id === 'ride' ? ' dark' : '')} onClick={() => open(id)}>
+            <span className="e">{G(id).icon}</span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
+          </button>)}
+        </div>
+        {p.promo && <div className="h7promo">🔥 {promoText(t, cfg.promoEnd, lang)} · <b>{money(p.amount)}</b> <s>{money(cfg.baseFee)}</s></div>}
         <div className="trust">🔒 <span>{t('trustLine')}</span></div>
         {install && <InstallCard onClick={install} />}
       </>}
@@ -92,28 +84,29 @@ function InstallCard({ onClick }) {
   </div>
 }
 
-export function CallNow({ cat: initCat }) {
+export function CallNow({ cat: initCat, group }) {
   const { t, lang } = useT()
   const nav = useNav()
   const [cat, setCat] = useState(initCat || null)
+  const [brig, setBrig] = useState(false)
   const [q, setQ] = useState('')
   const [note, setNote] = useState('')
   const [pay, setPay] = useState(false)
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
-  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).map(p => ({ ...p, icon: catIcon(p.cat) })) : [], [cat, loc, blocked])
+  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat) })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
-  const p = cat ? priceFor(cat) : null
+  const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
   const user = useStore(s => s.user)
 
   if (!cat) {
-    const res = searchCats(q, lang).filter(c => c.kind === 'instant')
+    const res = searchCats(q, lang).filter(c => !group || q || c.g === group)
     return <div className="scroll nopad">
-      <Top title={t('callNow')} onBack={nav.back} />
+      <Top title={group ? groupName(group, lang) : t('pickService')} onBack={nav.back} />
       <div className="pad col">
-        <div className="search"><Icon n="search" s={20} /><input autoFocus placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} /></div>
+        <div className="search"><Icon n="search" s={20} /><input autoFocus={!group} placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} /></div>
         <div className="list" style={{ marginTop: 6 }}>
           {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => setCat(c.id)}>
             <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
@@ -125,8 +118,8 @@ export function CallNow({ cat: initCat }) {
   }
 
   const send = async () => {
-    if (!bundle && !user.card) { setPay(true); return }
-    const id = await api.createRequest({ cat, note })
+    if ((!bundle || brig) && !user.card) { setPay(true); return }
+    const id = await api.createRequest({ cat, note, brigade: brig })
     nav.replace('request', { id })
   }
 
@@ -141,7 +134,11 @@ export function CallNow({ cat: initCat }) {
       </div>
       <div className="sheet">
         <div className="grab" />
-        <div className="row between"><h3>{t('nearby')} · {online.length}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
+        <div className="seg brigseg">
+          <button className={!brig ? 'on' : ''} onClick={() => setBrig(false)}>👤 {t('oneMan')} · {money(priceFor(cat, 'instant', false).amount)}</button>
+          <button className={brig ? 'on' : ''} onClick={() => setBrig(true)}>👷 {t('brigadeN')} · {money(priceFor(cat, 'instant', true).amount)}</button>
+        </div>
+        <div className="row between" style={{ marginTop: 12 }}><h3>{t('nearby')} · {online.length}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
         <div className="list" style={{ marginTop: 12 }}>
           {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}</div>}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
@@ -153,10 +150,10 @@ export function CallNow({ cat: initCat }) {
     </div>
     <div className="dock">
       <button className="btn primary" style={{ height: 62 }} disabled={!(CLOUD ? pros.length : online.length)} onClick={send}>
-        <Icon n="bolt" />{bundle ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
+        <Icon n="bolt" />{bundle && !brig ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
       </button>
     </div>
-    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note }); nav.replace('request', { id }) }} />}
+    {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig }); nav.replace('request', { id }) }} />}
   </>
 }
 

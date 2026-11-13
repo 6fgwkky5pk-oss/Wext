@@ -13,7 +13,7 @@ const DAY = 864e5
 
 const defaultConfig = {
   baseFee: 5, promoFee: 1, promoEnd: '2027-02-13', surgeCap: 2, surgeManual: false,
-  rideFee: 1, projFee: 1, surgeThreshold: 2, surgeMode: 'off',
+  rideFee: 1, brigadeFee: 3, projFee: 1, surgeThreshold: 2, surgeMode: 'off',
 }
 
 function load() {
@@ -66,12 +66,12 @@ export function surgeFor(cat) {
   if (near >= cfg.surgeThreshold) return 1
   return Math.min(cfg.surgeCap, near === 0 ? 1.5 : 1.3)
 }
-export function priceFor(cat, kind = 'instant') {
+export function priceFor(cat, kind = 'instant', brigade = false) {
   const cfg = state.config, promo = promoActive(cfg)
-  const base = kind === 'ride' ? cfg.rideFee : kind === 'project' ? cfg.projFee : promo ? cfg.promoFee : cfg.baseFee
+  const base = kind === 'ride' ? cfg.rideFee : kind === 'project' ? cfg.projFee : brigade ? (cfg.brigadeFee || 3) : promo ? cfg.promoFee : cfg.baseFee
   const surge = kind === 'instant' ? surgeFor(cat) : 1
   const amount = Math.round(base * surge * 100) / 100
-  return { amount, old: kind === 'instant' && promo ? cfg.baseFee : null, surge, promo }
+  return { amount, old: kind === 'instant' && promo && !brigade ? cfg.baseFee : null, surge, promo }
 }
 export const currency = () => regionFor(state.loc || [41.92, 45.47])
 export const money = n => `${Number.isInteger(n) ? n : n.toFixed(2)}${currency().symbol}`
@@ -129,21 +129,23 @@ export const api = {
     return state.payments.find(p => p.cat === cat && p.status !== 'released' && now() - p.createdAt < DAY && p.contacts < 3)
   },
 
-  async createRequest({ cat, note }) {
+  async createRequest({ cat, note, brigade }) {
+    brigade = !!brigade
     let bundle = api.activeBundle(cat)
-    const price = priceFor(cat)
+    if (bundle && !!bundle.brigade !== brigade) bundle = null
+    const price = priceFor(cat, 'instant', brigade)
     if (!bundle) {
       const pay = await payments.preauthorize({ amount: price.amount, currency: currency().currency, card: state.user?.card })
-      bundle = { id: pay.id, cat, amount: price.amount, status: 'held', contacts: 0, createdAt: now() }
+      bundle = { id: pay.id, cat, brigade, amount: price.amount, status: 'held', contacts: 0, createdAt: now() }
       set(s => ({ payments: [bundle, ...s.payments] }))
     }
     if (CLOUD) {
-      const id = await cloud.createRequest({ cat, note: note || '', status: 'searching', payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
-      set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
+      const id = await cloud.createRequest({ cat, note: note || '', status: 'searching', brigade, payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
+      set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
       api._dispatch(id)
       return id
     }
-    const req = { id: 'r_' + uid(), cat, note, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], proId: null, log: [] }
+    const req = { id: 'r_' + uid(), cat, note, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], proId: null, log: [] }
     set(s => ({ requests: [req, ...s.requests] }))
     api._dispatch(req.id)
     return req.id
@@ -157,8 +159,9 @@ export const api = {
   // dispatch: nearest 3 online pros, 75s window, then expand radius 3 -> 6 -> 12 km
   _dispatch(id) {
     const r = api._req(id); if (!r || r.status !== 'searching') return
-    const cand = api.nearbyPros(r.cat, r.radius).filter(p => p.online && !r.notified.includes(p.id)).slice(0, 3)
-    const sms = api.nearbyPros(r.cat, r.radius).filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
+    const pool = api.nearbyPros(r.cat, r.radius).filter(p => !r.brigade || p.type !== 'individual')
+    const cand = pool.filter(p => p.online && !r.notified.includes(p.id)).slice(0, 3)
+    const sms = pool.filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
     if (!cand.length && !(CLOUD && sms.length)) {
       if (r.radius >= 12) { if (CLOUD && r.notified.length && now() - r.createdAt < 5 * 60e3) { later(id, 30000, () => api._dispatch(id)); return } api._updReq(id, { status: 'nopros' }); api._releaseIfUnused(r.payId); return }
       const radius = r.radius === 3 ? 6 : 12

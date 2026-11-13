@@ -161,6 +161,12 @@ export function listenAdmin() {
   sub('bugs', onSnapshot(query(collection(db, 'bugs'), orderBy('ts', 'desc'), limit(200)), snap => {
     const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ bugs: a })
   }))
+  sub('adminUsers', onSnapshot(query(collection(db, 'users'), limit(1000)), snap => {
+    const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ adminUsers: a })
+  }))
+  sub('adminReqs', onSnapshot(query(collection(db, 'requests'), limit(1000)), snap => {
+    const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ adminReqs: a })
+  }))
 }
 
 export function listenThread(tid, reqId, side) {

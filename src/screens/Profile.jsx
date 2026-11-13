@@ -13,7 +13,8 @@ export function Profile({ install }) {
   const user = useStore(s => s.user)
   const [langSheet, setLangSheet] = useState(false)
   const [taps, setTaps] = useState(0)
-  const [pin, setPin] = useState(null)
+  const user0 = useStore(s => s.user)
+  const [pin, setPin] = useState(() => new URLSearchParams(location.search).has('admin') && !user0?.admin ? '' : null)
   const Row = ({ ic, label, right, onClick, danger }) => <button className="listrow" onClick={onClick} style={danger ? { color: 'var(--red)' } : null}><span className="ico">{ic}</span><span className="grow">{label}</span>{right}<Icon n="right" s={18} /></button>
   const isPro = user.role === 'pro'
   return <div className="scroll">
@@ -74,21 +75,37 @@ export function Admin() {
   const bugs = useStore(s => s.bugs)
   const pros = useStore(s => s.pros) || []
   const blocked = useStore(s => s.blockedIds)
-  const [tab, setTab] = useState('prices')
+  const [tab, setTab] = useState('stats')
+  const adminUsers = useStore(s => s.adminUsers) || []
+  const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
+  const adminReqs = adminReqsCloud || myReqs
+  const proUsers = adminUsers.length ? adminUsers.filter(u => u.role === 'pro') : pros
+  const clientUsers = adminUsers.filter(u => u.role !== 'pro')
+  const contacted = adminReqs.filter(r => r.contacted || ['arrived', 'done'].includes(r.status))
+  const Stat = ({ n, l, e }) => <div className="card center" style={{ padding: 14 }}><div style={{ fontSize: 22 }}>{e}</div><div style={{ fontSize: 28, fontWeight: 900 }}>{n}</div><div className="tiny mute b">{l}</div></div>
   const [f, setF] = useState(cfg)
   const byUser = complaints.reduce((a, c) => (a[c.byId] = (a[c.byId] || 0) + 1, a), {})
   const N = (k, step = 0.5) => <input className="inp" type="number" step={step} inputMode="decimal" value={f[k]} onChange={e => setF({ ...f, [k]: +e.target.value })} />
   return <div className="scroll nopad">
     <Top title={t('admin')} onBack={nav.back} />
     <div className="pad col">
-      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>{[['prices', t('prices')], ['complaints', t('complaints')], ['users', t('users')], ['bugs', t('bugs')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
+      <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['bugs', t('bugs')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
+
+      {tab === 'stats' && <div className="grid2">
+        <Stat e="👥" n={adminUsers.length || '—'} l={t('statUsers')} />
+        <Stat e="🟢" n={proUsers.filter(p => p.online).length} l={t('statOnline')} />
+        <Stat e="⚡" n={adminReqs.length} l={t('statReqs')} />
+        <Stat e="💰" n={money(contacted.length * (promoActive(cfg) ? cfg.promoFee : cfg.baseFee))} l={t('statRevenue')} />
+        <Stat e="🧰" n={proUsers.length} l={t('pros')} />
+        <Stat e="⚑" n={complaints.length} l={t('complaints')} />
+      </div>}
 
       {tab === 'prices' && <div className="card col">
         <div className="grid2"><div className="field"><label>{t('baseFee')}</label>{N('baseFee')}</div><div className="field"><label>{t('promoFee')}</label>{N('promoFee')}</div></div>
         <div className="field"><label>{t('promoEnd')} {promoActive(f) ? '🟢' : '⚪'}</label><input className="inp" type="date" value={f.promoEnd} onChange={e => setF({ ...f, promoEnd: e.target.value })} /></div>
         <div className="grid2"><div className="field"><label>{t('surgeCap')}</label>{N('surgeCap', 0.1)}</div><div className="field"><label>{t('surgeNow')}</label>
           <button className={'btn sm ' + (f.surgeMode === 'on' ? 'red' : f.surgeMode === 'auto' ? 'yellow' : 'outline')} style={{ width: '100%', height: 54 }} onClick={() => setF({ ...f, surgeManual: false, surgeMode: f.surgeMode === 'off' || !f.surgeMode ? 'auto' : f.surgeMode === 'auto' ? 'on' : 'off' })}>{(f.surgeMode || 'off').toUpperCase()}</button></div></div>
-        <div className="grid2"><div className="field"><label>{t('projFee')}</label>{N('projFee')}</div><div className="field"><label>{t('rideFee')}</label>{N('rideFee')}</div></div>
+        <div className="grid2"><div className="field"><label>👷 {t('brigadeN')}</label>{N('brigadeFee')}</div><div className="field"><label>{t('rideFee')}</label>{N('rideFee')}</div></div>
         <button className="btn primary" onClick={() => { api.setConfig(f); toast('✅ ' + t('saved')) }}>{t('save')}</button>
       </div>}
 
@@ -104,9 +121,12 @@ export function Admin() {
       </div>}
 
       {tab === 'users' && <div className="list">
-        <h3>{t('pros')} · {pros.length}</h3>
-        {pros.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{catName(p.cat, lang)} · ★{p.rating}</span></div>
+        <h3>{t('pros')} · {proUsers.length}</h3>
+        {proUsers.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{catName(p.cat || (p.cats || [])[0], lang)} · ★{p.rating || '—'} · {p.online ? '🟢' : '⚪'}{p.noShows ? ' · ⚠️' + p.noShows : ''}{complaints.filter(c => c.proId === p.id).length ? ' · ⚑' + complaints.filter(c => c.proId === p.id).length : ''}</span></div>
           <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>)}
+        {clientUsers.length > 0 && <h3 style={{ marginTop: 14 }}>{t('clients')} · {clientUsers.length}</h3>}
+        {clientUsers.map(u => <div key={u.id} className="prorow"><Avatar p={{ name: u.name || '?', hue: 38, type: 'individual' }} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{u.name || '—'}</b></div>
+          <button className={'btn sm ' + (blocked.includes(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{blocked.includes(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
       {tab === 'bugs' && <div className="list">
