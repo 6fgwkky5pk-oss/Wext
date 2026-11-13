@@ -111,6 +111,7 @@ export function CallNow({ cat: initCat, group }) {
   const blocked = useStore(s => s.blockedIds)
   const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat) })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
+  const watching = useStore(s => s.watchCat) === cat
   const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
   const user = useStore(s => s.user)
@@ -157,7 +158,8 @@ export function CallNow({ cat: initCat, group }) {
         </div>
         <div className="row between" style={{ marginTop: 12 }}><h3>{t('nearby')} · {online.length}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
         <div className="list" style={{ marginTop: 12 }}>
-          {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}</div>}
+          {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}
+            <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ marginTop: 12 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button></div>}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
         {TYPICAL[cat] && <div className="typical"><span>🏷️ {t('typical')}</span><b>{TYPICAL[cat][0]}–{TYPICAL[cat][1]} ₾{TYPICAL[cat][2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[TYPICAL[cat][2]]) : ''}</b><small>{t('typicalNote')}</small></div>}

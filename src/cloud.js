@@ -123,6 +123,9 @@ function listenUser() {
         online: !!u.pro.online && now - (u.updatedAt || 0) < 6 * 3600e3,
       })
     })
+    const w = ctx.get().watchCat
+    if (w) { const hit = pros.find(p => p.online && (p.cats || []).includes(w) && !p.posUnknown && ctx.dist(ctx.get().loc || p.pos, p.pos) < 15)
+      if (hit) { ctx.set({ watchCat: null }); ctx.ping('job'); ctx.api.notifyAvail?.(w, hit.name) } }
     ctx.set({ pros })
   }))
   // my requests as a client
@@ -184,7 +187,7 @@ function listenUser() {
     a.forEach(r => (r.bookings || []).forEach(b => { if (isMe(r.driverId) || isMe(b.userId)) listenThread(`d_${r.id}_${b.userId}`, null, 'board') }))
   }))
   // incoming internet calls
-  sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', '==', uid)), snap => {
+  sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', 'in', myIds.length ? myIds : [uid])), snap => {
     let ring = null
     snap.forEach(d => { const c = d.data(); if (c.state === 'ringing' && Date.now() - c.ts < 40000) ring = { id: d.id, ...c } })
     const cur = ctx.get().ringing
@@ -256,7 +259,11 @@ export async function slotTx(col, id, fn) {
 export const setConfig = patch => setDoc(doc(db, 'config', 'main'), patch, { merge: true })
 
 // ---------- WebRTC internet calls (Firestore signaling) ----------
-const ICE = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] }
+// STUN finds a direct path; TURN relays audio when mobile networks block direct paths (free public relay, replace with own later)
+const ICE = { iceServers: [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
+] }
 export async function startCall({ to, threadId, reqId, fromName, onState, onRemote }) {
   const pc = new RTCPeerConnection(ICE)
   const local = await navigator.mediaDevices.getUserMedia({ audio: true })

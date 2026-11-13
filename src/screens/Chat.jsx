@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { api, useStore, getState, ping, CLOUD } from '../store'
+import { api, useStore, getState, ping, CLOUD, callAudio } from '../store'
 import * as cloud from '../cloud'
 import { catName } from '../data'
 import { useT, Icon, Top, Avatar, fmtTime, catIcon } from '../ui'
@@ -94,14 +94,14 @@ export function Voice({ threadId, reqId, answerId }) {
   const [secs, setSecs] = useState(0)
   const [mute, setMute] = useState(false), [spk, setSpk] = useState(true)
   const call = useRef(), audio = useRef(), done = useRef(false)
-  const finish = (st) => { if (done.current) return; done.current = true; call.current?.end(st); setTimeout(() => nav.back(), 900) }
+  const finish = (st) => { if (done.current) return; done.current = true; call.current?.end(st); try { callAudio().srcObject = null } catch {} setTimeout(() => nav.back(), 900) }
   useEffect(() => {
     let ring, tm, tick
     const onState = st => {
       if (st === 'connected') { setState('connected'); clearInterval(ring); clearTimeout(tm); const t0 = Date.now(); tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); setSecs(s); if (s === 20 && reqId) api.registerContact(reqId, 'call') }, 1000) }
       if (['declined', 'ended', 'failed'].includes(st)) { setState('ended'); finish() }
     }
-    const onRemote = stream => { if (audio.current) { audio.current.srcObject = stream; audio.current.play().catch(() => {}) } }
+    const onRemote = stream => { const a = callAudio(); audio.current = a; a.srcObject = stream; a.volume = 1; a.play().catch(() => {}) }
     if (!CLOUD) {
       ring = setInterval(() => ping('ring'), 2200); ping('ring')
       navigator.mediaDevices?.getUserMedia?.({ audio: true }).then(s => { call.current = { end: () => s.getTracks().forEach(x => x.stop()), local: s } }).catch(() => {})
@@ -118,7 +118,6 @@ export function Voice({ threadId, reqId, answerId }) {
   useEffect(() => { call.current?.local?.getAudioTracks().forEach(x => x.enabled = !mute) }, [mute])
   const label = state === 'calling' ? t('calling') : state === 'connecting' ? '…' : state === 'connected' ? `${t('connected')} · ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}` : state === 'noanswer' ? t('noAnswer') : t('endCall')
   return <div className="callscr">
-    <audio ref={audio} autoPlay playsInline />
     <div className="col" style={{ alignItems: 'center', gap: 16 }}>
       <div className={state === 'calling' ? 'ring' : ''}><Avatar p={{ ...meta.av, online: false }} lg /></div>
       <h1 style={{ color: '#fff', fontSize: 26 }}>{meta.name}</h1>
@@ -138,7 +137,7 @@ export function IncomingCall() {
   const { t, lang } = useT()
   const nav = useNav()
   const ring = useStore(s => s.ringing)
-  useEffect(() => { if (!ring) return; const i = setInterval(() => ping('job'), 2500); ping('job'); return () => clearInterval(i) }, [ring?.id])
+  useEffect(() => { if (!ring) return; const i = setInterval(() => ping('ring'), 2000); ping('ring'); return () => clearInterval(i) }, [ring?.id])
   if (!ring) return null
   return <div className="callscr" style={{ zIndex: 90 }}>
     <div className="col" style={{ alignItems: 'center', gap: 16 }}>

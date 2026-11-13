@@ -22,6 +22,10 @@ export function ProHome() {
     <div className="pad">
       {!pro.cats.length && <button className="card row" style={{ width: '100%', background: '#FFF1C2', textAlign: 'left' }} onClick={() => nav.go('proSettings')}>
         <span style={{ fontSize: 26 }}>👉</span><b className="grow">{t('myCats')}</b><Icon n="right" /></button>}
+      {pro.cats.length > 0 && <button className="mycats" onClick={() => nav.go('proSettings')}>
+        <span className="row" style={{ flexWrap: 'wrap', gap: 6, flex: 1 }}>{pro.cats.map(c => <span key={c} className="mc" style={{ background: catTint(c) }}>{catIcon(c)} {catName(c, lang)}</span>)}</span>
+        <b className="small" style={{ whiteSpace: 'nowrap' }}>＋ {t('editCats')}</b>
+      </button>}
       <button className={'toggle ' + (pro.online ? 'on' : 'off')} onClick={() => api.setOnline(!pro.online)}>
         <div><div style={{ fontSize: 46 }}>{pro.online ? '●' : '○'}</div>{pro.online ? t('online') : t('offline')}</div>
       </button>

@@ -39,20 +39,34 @@ export function useStore(sel = s => s) {
 }
 
 // ---------- effects (sound / vibration) ----------
-let actx
+// iPhone rules: sound only after the first tap; Web Audio is muted by the silent switch, an <audio> element is not.
+let actx, unlocked = false
+const tones = {}
+function wav(notes, dur = 0.16, gap = 0.04, vol = 0.5) {
+  const sr = 22050, per = Math.floor(sr * (dur + gap)), n = per * notes.length, buf = new DataView(new ArrayBuffer(44 + n * 2))
+  const w = (o, str) => [...str].forEach((c, i) => buf.setUint8(o + i, c.charCodeAt(0)))
+  w(0, 'RIFF'); buf.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 1, true)
+  buf.setUint32(24, sr, true); buf.setUint32(28, sr * 2, true); buf.setUint16(32, 2, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 2, true)
+  notes.forEach((f, k) => { for (let i = 0; i < per; i++) { const t = i / sr, on = t < dur, env = on ? Math.min(1, t * 60, (dur - t) * 40) : 0; buf.setInt16(44 + (k * per + i) * 2, on ? Math.sin(2 * Math.PI * f * t) * env * vol * 32767 : 0, true) } })
+  let bin = ''; const u8 = new Uint8Array(buf.buffer); for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i])
+  return 'data:audio/wav;base64,' + btoa(bin)
+}
+const NOTES = { job: [880, 1175, 880, 1175, 1568], ring: [660, 880, 660, 880], soft: [784, 1046] }
+function el(kind) { if (!tones[kind]) { const a = new Audio(wav(NOTES[kind] || NOTES.soft)); a.preload = 'auto'; a.setAttribute('playsinline', ''); tones[kind] = a } return tones[kind] }
+let sharedAudio
+export function callAudio() { if (!sharedAudio) { sharedAudio = document.createElement('audio'); sharedAudio.autoplay = true; sharedAudio.setAttribute('playsinline', ''); document.body.appendChild(sharedAudio) } return sharedAudio }
+export function unlockAudio() {
+  if (unlocked) return
+  unlocked = true
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback' } catch {}
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume() } catch {}
+  for (const k of ['job', 'ring', 'soft']) { const a = el(k); a.muted = true; a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false }).catch(() => { a.muted = false }) }
+  const c = callAudio(); c.muted = true; c.play().catch(() => {}).finally(() => { c.muted = false })
+}
+if (typeof window !== 'undefined') ['touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, unlockAudio, { once: false, passive: true }))
 export function ping(kind = 'soft') {
-  try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)()
-    const notes = kind === 'job' ? [880, 1175, 880, 1175, 1568] : kind === 'ring' ? [660, 880] : [784, 1046]
-    notes.forEach((f, i) => {
-      const o = actx.createOscillator(), g = actx.createGain()
-      o.type = 'sine'; o.frequency.value = f
-      const t = actx.currentTime + i * 0.16
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15)
-      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.16)
-    })
-    if (navigator.vibrate) navigator.vibrate(kind === 'job' ? [300, 120, 300, 120, 500] : 60)
-  } catch {}
+  try { const a = el(kind); a.currentTime = 0; a.play().catch(() => {}) } catch {}
+  try { if (navigator.vibrate) navigator.vibrate(kind === 'job' ? [300, 120, 300, 120, 500] : kind === 'ring' ? [400, 200, 400] : 60) } catch {}
 }
 
 // ---------- pricing ----------
@@ -338,6 +352,12 @@ export const api = {
   _seed(b) { set(s => ({ seeded: true, projects: [...s.projects, ...b.projects], rides: [...s.rides, ...b.rides] })) },
 
   // admin
+  notifyAvail(cat, name) {
+    const msg = '🟢 ' + name + ' · ' + catName(cat, state.lang || 'ka')
+    try { if (typeof Notification !== 'undefined' && Notification.permission === 'granted') new Notification('WEXT', { body: msg, icon: 'icons/icon-192.png' }) } catch {}
+    set({ availNote: { cat, name, ts: now() } })
+  },
+  watchCat(cat) { set({ watchCat: cat }); if (cat && typeof Notification !== 'undefined' && Notification.permission === 'default') Notification.requestPermission().catch(() => {}) },
   setBig(on) { set({ big: !!on }) },
   setConfig(patch) { if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
