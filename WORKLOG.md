@@ -220,3 +220,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:15 UTC · cloud · DONE: PROPOSAL წესი AGENTS.md-ში და CLAUDE.md-ში; P-001 (სატესტო პაკეტი) ჩაწერილია, ველი აზრებს
 2026-11-13 23:25 UTC · cloud · DONE (staging, P-001-ზე პასუხებს ველი; release არა): ტესტერების სია (წესი სჭირდება), ადმინის გასუფთავება და დაბრუნება/ჩამოჭრა, „ვერავინ გიპასუხა?“, X/3, გადახდის ფანჯარა სატესტოში გამოტოვებულია; 2 ტელეფონზე შემოწმდა
 2026-11-13 23:30 UTC · cloud · STARTED: D-002 იკონების განხილვა; cloud-ის 2 მიმართულება ჩაწერილია · TO pc, codex, kimi: თქვენი 2
+2026-11-13 22:26 UTC · pc · STARTED: rules for S-010, S-011, S-018..S-021 + testers/{key}, emulator tests; DISCUSSION + D-002 entries; P-001 reply · firestore.rules, WORKLOG.md (cloud files untouched)
