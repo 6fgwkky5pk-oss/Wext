@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState } from '../store'
 import { CATEGORIES, catName, searchCats, catById } from '../data'
-import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, useNow, toast, Ring } from '../ui'
+import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
 import { TEST_MODE } from '../payments'
 import Map from '../Map'
@@ -28,7 +28,7 @@ export function Home({ install }) {
   return <div className="scroll" style={{ paddingTop: 0 }}>
     <div className="homehead">
       <div className="row between">
-        <div className="locchip"><span className="dot" /><span className="small b">{locReal ? '📍 ' + t('nearMe') : t('locating')}</span></div>
+        <RoleSwitch />
         <button className="iconbtn" style={{ width: 38, height: 38 }} onClick={() => nav.go('bug')} aria-label="bug"><Icon n="bug" s={18} /></button>
       </div>
       <h1 className="hh">{t('whatToday', { name: user.name.split(' ')[0] })} 👋</h1>

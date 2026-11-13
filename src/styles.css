@@ -263,3 +263,6 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .pcard b { font-size: 14px; } .pcard span { font-size: 12px; font-weight: 700; color: var(--mute); }
 .trust { display: flex; gap: 10px; align-items: center; background: #FFF6DA; border-radius: 18px; padding: 12px 14px; font-size: 12.5px; font-weight: 700; color: #6b5200; line-height: 1.4; }
 .stack .av[style*="rgb(17, 17, 17)"], .stack .av[style*="#111"] { background: #2b2b2b !important; }
+.roleswitch { display: inline-flex; background: rgba(17,17,17,.9); border-radius: 999px; padding: 4px; gap: 2px; }
+.roleswitch button { height: 34px; padding: 0 14px; border-radius: 999px; font-weight: 800; font-size: 13.5px; color: #bdbdbd; }
+.roleswitch button.on { background: var(--y); color: #111; }

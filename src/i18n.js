@@ -7,6 +7,7 @@ export const LANGS = [
 ]
 
 const ka = {
+  roleClient: 'კლიენტი', rolePro: 'ოსტატი',
   nearMe: 'შენთან ახლოს',
   whatToday: 'რა გჭირდება დღეს, {name}?',
   liveNow: '{n} ხელოსანი ახლა ხაზზეა · მოვა ~{m} წთ-ში',
@@ -57,6 +58,7 @@ const ka = {
 }
 
 const en = {
+  roleClient: 'Client', rolePro: 'Pro',
   nearMe: 'Near you',
   whatToday: 'What do you need today, {name}?',
   liveNow: '{n} pros online now · arrives in ~{m} min',
@@ -107,6 +109,7 @@ const en = {
 }
 
 const ru = {
+  roleClient: 'Клиент', rolePro: 'Мастер',
   nearMe: 'Рядом с вами',
   whatToday: 'Что нужно сегодня, {name}?',
   liveNow: '{n} мастеров сейчас на линии · приедет ~за {m} мин',
@@ -157,6 +160,7 @@ const ru = {
 }
 
 const de = {
+  roleClient: 'Kunde', rolePro: 'Profi',
   nearMe: 'In deiner Nähe',
   whatToday: 'Was brauchst du heute, {name}?',
   liveNow: '{n} Profis jetzt online · da in ~{m} Min',
@@ -207,6 +211,7 @@ const de = {
 }
 
 const tr = {
+  roleClient: 'Müşteri', rolePro: 'Usta',
   nearMe: 'Yakınında',
   whatToday: 'Bugün neye ihtiyacın var, {name}?',
   liveNow: 'Şu an {n} usta çevrimiçi · ~{m} dk’da gelir',

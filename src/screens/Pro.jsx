@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
 import { CATEGORIES, catName } from '../data'
-import { useT, Icon, Ring, useNow, catIcon, Stepper } from '../ui'
+import { useT, Icon, Ring, useNow, catIcon, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
 export function ProHome() {
@@ -16,8 +16,8 @@ export function ProHome() {
   if (pro.blocked) return <div className="scroll"><div className="empty" style={{ paddingTop: 120 }}><div className="e">⛔</div><h2>{t('blockedMsg')}</h2><p>{t('noShows')}: {pro.noShows}/3</p></div></div>
 
   return <div className="scroll">
-    <div className="top"><div className="grow"><span className="small b mute">{t('proMode')}</span><h1 style={{ fontSize: 24 }} className="ell">{user.name}</h1></div>
-      <button className="iconbtn" onClick={() => nav.go('bug')}><Icon n="bug" s={20} /></button></div>
+    <div className="top"><div className="grow"><RoleSwitch /><h1 style={{ fontSize: 24, marginTop: 10 }} className="ell">{user.name}</h1></div>
+      <button className="iconbtn" style={{ alignSelf: 'flex-start' }} onClick={() => nav.go('bug')}><Icon n="bug" s={20} /></button></div>
     <div className="pad">
       {!pro.cats.length && <button className="card row" style={{ width: '100%', background: '#FFF1C2', textAlign: 'left' }} onClick={() => nav.go('proSettings')}>
         <span style={{ fontSize: 26 }}>👉</span><b className="grow">{t('myCats')}</b><Icon n="right" /></button>}

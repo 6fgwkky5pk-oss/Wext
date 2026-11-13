@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { initials, catById } from './data'
-import { useStore } from './store'
+import { useStore, api } from './store'
 import { makeT } from './i18n'
 
 const P = {
@@ -132,3 +132,13 @@ export function fmtDate(d, lang) {
   try { return x.toLocaleDateString(lang, { day: 'numeric', month: 'long' }) } catch { return x.toDateString() }
 }
 export function fmtTime(ts) { const d = new Date(ts); return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') }
+
+export function RoleSwitch() {
+  const { t } = useT()
+  const role = useStore(s => s.user.role)
+  const set = r => { if (r === role) return; if (r === 'client') api.setOnline(false); api.updateUser({ role: r }) }
+  return <div className="roleswitch">
+    <button className={role === 'client' ? 'on' : ''} onClick={() => set('client')}>🙋 {t('roleClient')}</button>
+    <button className={role === 'pro' ? 'on' : ''} onClick={() => set('pro')}>🧰 {t('rolePro')}</button>
+  </div>
+}
