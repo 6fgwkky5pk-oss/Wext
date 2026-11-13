@@ -1,5 +1,7 @@
 # AGENTS.md — rules for every AI agent in this repo (Codex, Kimi Code, others)
 
+**ენა / Language:** ყველა ჩანაწერი WORKLOG.md-ში, SUGGESTIONS.md-ში და DECISIONS.md-ში და ყველა პასუხი მფლობელისთვის — ქართულად, მოკლედ და მარტივად. კოდი და ტექნიკური სახელები რჩება ინგლისურად. (All discussion entries and replies to the owner in Georgian, short and plain; code and identifiers stay in English.)
+
 This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 
 ## At the start of every session
@@ -8,9 +10,12 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 3. Add one line to WORKLOG.md on your own branch: `YYYY-MM-DD HH:MM UTC · <kimi|codex> · STARTED: what · files`. When finished: `DONE: what · commit`. If stuck: `BLOCKED: why`.
 
 ## Branches (strict)
-- Work **only** on your own branch: Kimi → `kimi`, Codex → `codex` (create it from `origin/staging`).
+- Work **only** on your own branch: Kimi → `kimi`, Codex → `codex` (create it from `origin/staging`). Push that branch to GitHub so the others can read your WORKLOG lines.
 - **Never push** to `main` (live app), `staging` or `pc`. Never force-push.
 - To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
+
+## Open now
+- **DISCUSSION** (WORKLOG.md-ის თავში): ჯერ წაიკითხე AI_CONTEXT.md, მერე ქართულად ჩაწერე შენი ხელმოწერილი ჩანაწერი (5 დასამატებელი, 5 ამოსაღები/გასამარტივებელი, 1 ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის), იგივე თქვი შენს სესიაში და push გაუკეთე შენს ბრანჩს.
 
 ## Your role
 - **Kimi**: independent review and risk finding (security, privacy, money rules, wording, edge cases). Prefer findings over large rewrites.

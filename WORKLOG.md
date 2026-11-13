@@ -6,6 +6,33 @@ Two agents work on WEXT at the same time:
 
 This file is their only channel. **Neutral work status only**: STARTED / DONE / BLOCKED / TO, file names, commit ids, open technical items. Never write here: anyone's words or names, phone numbers, user ids, PINs, keys, passwords, account details. The repo is public and git keeps history. Owner decisions that the other agent needs go into CLAUDE.md as short neutral rules.
 
+## RELEASE STATUS (single source of truth — update on every release or rules change)
+- **Live app:** v12 · `main` 31e6884 · deployed 2026-11-13 21:28 UTC (deploy run success, served `sw.js` = `wext-v12`).
+- **Next on `staging` (not live):** language chip on the first screen, "kran" search order, name label "no surname needed".
+- **Firebase rules published (live):** strict base rules (private phone doc owner-only; requests only to their sides; stats/misses admin-only, stats counters limited); calls only between people who share a job/ride/project; rides/projects edited only by owner; request fields per role incl. deal fields (clientDeal/proDeal).
+- **Firebase rules waiting for the owner's explicit OK:** users `trustSame` + `posOk` + name ≤ 80; bugs/complaints size limits; `phones/{key}` (only with real SMS). **pc: confirm here whether any of these was already published after v12.**
+- **Verified:** order flow offer → accept → both agree → done → rating card, and client no-deal → note to the worker: two headless browser phones on the v12 build against live Firebase (test location far from Georgia, fake numbers); the same flow plus rules in the emulator (pc, 86 checks).
+- **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
+
+## DISCUSSION: რა დავამატოთ / რა ამოვიღოთ (გახსნილია 2026-11-13, მფლობელისთვის)
+**ჯერ წაიკითხე AI_CONTEXT.md ბოლომდე (ნაწილი „Full structure, start to end“), მერე უპასუხე. ქართულად.**
+კითხვა ყველა აგენტს (cloud, pc, codex, kimi): **5 რამ, რაც უნდა დავამატოთ; 5 რამ, რაც უნდა ამოვიღოთ ან გავამარტივოთ; და ერთი ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის.** ჩაწერე შენი ჩანაწერი ქვემოთ, ხელმოწერით, პირადი ინფორმაციის გარეშე. **იგივე პასუხი თქვი შენს სესიაშიც**, რომ მფლობელმა შეადაროს. Codex/Kimi: push გაუკეთე შენს ბრანჩს (`codex` / `kimi`).
+
+### cloud (Claude, staging)
+დავამატოთ:
+1. ნეიტრალური მთვლელი კატეგორიების მიხედვით (გამოძახება შეიქმნა / მიიღეს / რამდენ წამში), რომ პირველივე დღიდან გავზომოთ, ღირს თუ არა სხვა ქალაქში გადასვლა (S-008).
+2. როცა ზარი ვერ შედგა ან არ უპასუხეს: ერთი ღილაკი „მიწერე ჩატში“, შეკვეთის ტექსტით.
+3. ადმინში „დღეს ახალი“: ახალი მომხმარებლები, ახალი შეცდომები, „ვერ შევთანხმდით“ ნიშნები პირველ გვერდზე.
+4. შეცდომის შეტყობინებაზე სურათის მიმაგრება (არასავალდებულო).
+5. კლიენტისთვის მკაფიო ხაზი „ხელოსანი გზაშია“ და რომელ საათზე გამოვიდა.
+ამოვიღოთ / გავამარტივოთ:
+1. სატესტო რეჟიმში გადახდის ფანჯარა საერთოდ გამოვტოვოთ (ფულს მაინც არ იღებს).
+2. 7 დამატებითი ენა დავმალოთ, რომელიც მშობლიურმა ენაზე მოლაპარაკემ არ შეამოწმა; დარჩეს ka/en/ru/de/tr.
+3. ტესტის დროს დავმალოთ საველე სამუშაოების დაფა; გამაყოლე დარჩეს, როგორც გადაწყდა.
+4. ბრიგადის არჩევანი დავმალოთ, სანამ რეალური ბრიგადა არ დარეგისტრირდება.
+5. ხელოსნის სამუშაო ბარათზე ნაკლები ტექსტი (ნაბიჯები + ერთი მთავარი ღილაკი საკმარისია).
+ყველაზე დიდი რისკი: ტესტერები იფიქრებენ, რომ ზარები არ მუშაობს, რადგან აპი დახურულზე ან ჩაკეტილ ეკრანზე არაფერი რეკავს. გამოსავალი: ტესტერის ახსნაში ეს წერია (staging), და ხალხის მოწვევამდე ზარი ორ რეალურ ტელეფონზე უნდა შემოწმდეს.
+
 ## Rule (both agents, every step)
 1. Before every step: `git fetch`, read this file on **both** `origin/staging` and `origin/pc`, act on open **TO:** items for you.
 2. Starting: add `YYYY-MM-DD HH:MM UTC · who · STARTED: what · files`, commit, push right away. Finished: `DONE: what · commit`. Stuck: `BLOCKED: why`.
@@ -41,6 +68,10 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 
 - [ ] **HOLD the rules deploy** (users trustSame/posOk, bugs/complaints limits): v12 is live, but publishing rules needs the owner's separate explicit OK, which is still pending. Cloud writes `Owner OK for rules: given` here when it comes.
 
+- [ ] **DISCUSSION: add / remove** — write your signed entry (see the section at the top).
+
+- [ ] Kimi review S-010, S-011, S-018..S-021 (SUGGESTIONS.md) are rules items: yours to judge; publishing still needs the owner's OK.
+
 ## TO: cloud
 - [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
 
@@ -56,7 +87,7 @@ NO-GO / not verified:
 - Locked screen / closed app: nothing rings (needs push + Capacitor; push needs Blaze).
 - TURN: public openrelay only (unreliable on some mobile networks); own TURN not opened.
 - SMS simulated: anyone can sign in with any number. OK only for a closed test with known testers.
-Verdict: GO for a closed tester group, after the combined release and the rule deploy below. NO-GO for public launch until real SMS, own TURN and push.
+Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-GO for public launch until real SMS, own TURN and push.
 
 ## Real SMS — auth plan (pc)
 - Recommended: Firebase Phone Auth (same project, no separate contract; works on web and later in Capacitor). Needs the Blaze plan (owner adds the card). Price per SMS to Georgia: unknown (check the Firebase pricing page before switching on). Abuse guard: App Check + reCAPTCHA, per-number daily limit.
@@ -65,7 +96,6 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 
 ## Open items
 - Login on a new phone opens a new profile until real SMS exists (rule in CLAUDE.md).
-- Release waiting on `staging` (sw `wext-v12`).
 
 ## Log
 2026-11-13 21:00 UTC · cloud · DONE: v11 live (b8bcd66 is on staging only, not live)
@@ -94,3 +124,12 @@ Verdict: GO for a closed tester group, after the combined release and the rule d
 2026-11-13 22:00 UTC · cloud · DONE: AGENTS.md for kimi/codex (own branches, roles, never push main/staging/pc); roles added here
 2026-11-13 21:47 UTC · kimi · STARTED: independent review — security, privacy, money rules, wording, edge cases · firestore.rules, src/cloud.js, src/store.js, src/screens/*, src/i18n.js
 2026-11-13 22:05 UTC · kimi · DONE: independent review — 14 findings S-001..S-014 in SUGGESTIONS.md (calls redirect, request create caps, client-side payments, no-show block broken, proDeal precedence fix on branch, held label, typicalNote, surge, boards validation, config/stats/privacy minors) · this commit
+2026-11-13 22:05 UTC · cloud · DONE: language chip on the first screen (opens the language list), 'kran' search shows plumber then crane · staging (next release)
+2026-11-13 22:10 UTC · cloud · DONE: DECISIONS (identity before payment, own concept first), SUGGESTIONS S-001..S-007 with status
+2026-11-13 22:12 UTC · cloud · DONE: name label says no surname needed (ka/en/ru/de/tr) · staging (next release)
+2026-11-13 22:15 UTC · cloud · DONE: RELEASE STATUS block (single source), stale release/rules lines removed from ISSUES/HANDOFF; SUGGESTIONS S-008, S-009 · TO pc: confirm the rules state in RELEASE STATUS
+2026-11-13 22:18 UTC · cloud · DONE: tester notice says calls ring only while the app is open · staging (next release)
+2026-11-13 22:20 UTC · cloud · STARTED: DISCUSSION add/remove opened, cloud entry written · TO pc, codex, kimi: add your entries
+2026-11-13 22:30 UTC · cloud · DONE: kimi review merged into SUGGESTIONS as S-010..S-023 with status; fixed on staging: proDeal precedence bug (S-014), 'held' shown as 'on hold, not charged' (S-015), typical price = estimate in en/ru/de/tr (S-016), duplicate availNow keys (S-023)
+2026-11-13 22:40 UTC · cloud · DONE: AI_CONTEXT.md full structure (roles, order lifecycle, screens, data, files, branches, verified); pro-agrees-first flow tested on two phones (passes) · discussion starts after reading it
+2026-11-13 22:45 UTC · cloud · DONE: ენის წესი (ყველა ჩანაწერი ქართულად) AGENTS.md-ში და CLAUDE.md-ში; DISCUSSION ქართულად, cloud-ის ჩანაწერი ქართულად

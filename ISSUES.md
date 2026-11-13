@@ -2,8 +2,8 @@
 
 Updated 2026-11-13 at hand-off. Full context: HANDOFF.md.
 
-## 0. Waiting for release (on `staging`/`pc`, not live)
-Green toggle only in work mode (1ec0b69) · role fixes (4d53c26) · new bottom menu + stats + top-switch dot (e6264ac) · call fixes c094015 and texts/OSM tiles/admin list/rules bc70c15 (pc only). Merge `pc` → `staging`, bump sw to `wext-v8`, release only on Alexander's "გაუშვი".
+## 0. Release status
+See **WORKLOG.md → RELEASE STATUS** (single source of truth for the live version and published rules).
 
 Read CLAUDE.md first. Work on branch `pc`, merge into `staging`, never push `main` without Alexander's "გაუშვი".
 Test only far from Telavi (geo 10,10 or -20,-20) with fresh fake numbers (5550004xx). Never call or send requests to real users.
@@ -30,7 +30,7 @@ Suggested plan:
 ## Login on a new phone (one number = one profile) — found 2026-11-13
 **Cause:** the strict rules (deployed live) block the old `restoreByPhone`: it queried other people's `/private` docs by number (denied) and wrote `movedTo` on old `/users` docs (denied). Console: "restore FirebaseError: Missing or insufficient permissions". So the same number on a new phone opens an empty new profile.
 **Fix (client, on `staging` 54f35d6, not live):** a lookup doc `phones/{sha256('wext-phone:'+last9)}` = `{ uids:[...], uid, at }`. Login reads it by exact key, adopts the best old account (name, worker data) and saves its ids in `aliases`. No writes to other people's docs: the pros list hides an account that a newer account lists in `aliases`.
-**Needs a rules change (waits for Alexander's OK, then pc deploys):**
+**Needs a rules change (only together with real SMS, owner decision):**
 ```
 match /phones/{key} {
   allow get: if signedIn();          // by exact key only
@@ -65,7 +65,7 @@ To check on real phones: two phones in Telavi, compare the km shown with Google 
 ## 3. Other pending
 - Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
 - ✅ Firestore rules deployed 2026-11-13 (see Repo privacy note). ✅ Also deployed 2026-11-13: `stats/misses` admin-only; users may only add/raise up to 3 stats counters per write, never delete. Live rules = `firestore.rules` on `pc` (main gets the file on the next release).
-- ✅ Admin PIN removed from the client (`pc`, 2026-11-13). Admin = only `/admins/{uid}`. ⚠️ Live `main` still has the PIN path and the old rules (any signed-in user can write `config`): fixed only after Alexander creates his `/admins/{uid}` doc, the rules are deployed and `pc` is released.
+- ✅ Admin PIN removed (live since v11). Admin = only `/admins/{uid}`.
 - Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
 - My-pros tab: the call button reuses the old request thread; verify after a job is finished.
 - Test isolation: add a `wext-test` Firebase project or the emulator so tests never touch real users.

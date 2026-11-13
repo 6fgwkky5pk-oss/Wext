@@ -33,6 +33,50 @@ React 18 + Vite 5 PWA. Firebase (Firestore + anonymous auth) for data, strict se
 4. Fair matching: who gets the offer first.
 5. Wording: short, clear Georgian texts.
 
+## Full structure, start to end
+
+### Roles and account
+One phone number = one account. Every account is a **client**; it becomes a **worker** too after the worker registration (services, optional prices, how they work). The top switch `კლიენტი / მუშაობა` changes mode; a red dot shows news in the other mode. A worker can stop working any time (the account stays a client).
+
+### Order lifecycle (client ↔ worker)
+1. **Search**: client types or speaks; search understands slang, Latin typing and typos, in any language. Or taps a category tile.
+2. **Nearby free workers**: map + list of workers with the green button on, sorted by distance; first name, initials avatar, distance, optional price with level (affordable / average / a bit pricey). No phone number is ever shown.
+3. **Booking fee**: client pays the fee (test mode now: no card, no money). The fee is **held**, not charged.
+4. **Dispatch**: the request goes to the 3 nearest free workers (75 s window), then the radius grows 3 → 6 → 12 km. Workers with green off get an SMS-style banner. If nobody: "notify me when someone is free" (honest, no fake workers).
+5. **Accept**: first worker to accept gets the job (transaction); the others see "taken by another worker".
+6. **Contact**: in-app call (internet call) or chat. A call over 20 s, a chat reply or "arrived" counts as real contact → the held fee is **charged**.
+7. **Worker steps**: "on my way" → "arrived" → "done".
+8. **Agreement**: client and worker each press "შევთანხმდით"; it counts only when both did. Either side can press "ვერ შევთანხმდით" → closed; the other side is told.
+9. **Finish**: worker presses "done" → client sees "the worker finished" with stars, or "not finished" with a text box (goes to admin as a complaint), or "later". No answer in 24 h = done.
+10. **Rating**: only after the work is done. Stars and job counts are hidden from clients until the server counts them.
+11. **Cancel**: client can cancel while searching (fee released if no contact).
+12. **No-show**: accepted but not arrived within 1 h; 3 = blocked (server enforcement still open).
+13. **Refunds**: only by facts (no contact → automatic). Buttons never refund; disputes → complaint → admin.
+
+### Screens and bottom menu
+- Client mode: **Home** (search, categories, nearby) · **My workers** (people I used, call again) · **Messages** · **Profile** (activity, payments, language, help, report a problem, stop working).
+- Work mode: **Home** (active jobs with steps, green button, my services) · **Stats** (no money) · **Messages** · **Profile**.
+- Full-screen: request tracking, chat, call, incoming offer, worker registration, admin (opened only for admin accounts).
+
+### Data (Firebase, plain terms)
+- `users/{id}`: public profile — first name, worker services/prices/type, worker position on a ~50 m grid (clients: none).
+- `private/{id}`: phone number, readable only by its owner.
+- `requests/{id}`: one order — category, note, client side, offered workers, accepted worker, steps, deal flags, rating. Readable only by its sides.
+- `threads/{id}/msgs`: chat of one order. `calls/{id}`: call signalling between the two sides only.
+- `config/main`: prices, promo, search words (admin writes). `stats`: demand counters. `complaints`, `bugs`: read by admin only. `admins/{id}`: admin list (set by hand).
+- Login is anonymous Firebase auth + a simulated SMS code.
+
+### Repo files
+- `src/App.jsx` shell, tabs, notes · `src/store.js` app state and actions (`api`) · `src/cloud.js` Firebase reads/writes, listeners, calls · `src/payments.js` test payments · `src/data.js` categories, prices, slang search · `src/i18n.js` + `src/locales/*` texts · `src/icons.js` icons · `src/Map.jsx` map · `src/screens/` Onboarding, Client, Pro, Chat, Profile (+admin), Tabs, Projects (boards).
+- `firestore.rules` security rules · `public/sw.js` service worker (version = release) · `.github/workflows/deploy.yml` deploy.
+- Docs: AI_CONTEXT (this), DECISIONS, SUGGESTIONS, WORKLOG (status + RELEASE STATUS), AGENTS (rules for agents), CLAUDE/HANDOFF/ISSUES (technical).
+
+### Branches and release
+`main` = live (every push deploys). `staging` = next version (cloud Claude). `pc` = Claude Code. `kimi`, `codex` = review branches. Release only after the owner's explicit go; Firebase rules need a separate explicit OK.
+
+### Verified / not verified
+See WORKLOG.md → RELEASE STATUS. In short: order flow verified on two test browser phones and in the emulator; calls on real phones, locked-screen ringing, real SMS and real payments are not.
+
 ## How to give feedback
 Write suggestions as short numbered points: **what**, **why**, **how to check it worked**. Do not invent facts about the code. Say when you are guessing. The owner pastes your answer into `SUGGESTIONS.md`; the developer AIs review each one and mark it accepted or rejected with a reason.
 

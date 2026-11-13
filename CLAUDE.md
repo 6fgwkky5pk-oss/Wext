@@ -1,5 +1,7 @@
 # WEXT — notes for every Claude working on this repo
 
+**ენა / Language:** ყველა ჩანაწერი WORKLOG.md-ში, SUGGESTIONS.md-ში და DECISIONS.md-ში და ყველა პასუხი მფლობელისთვის — ქართულად, მოკლედ და მარტივად. კოდი და ტექნიკური სახელები რჩება ინგლისურად. (All discussion entries and replies to the owner in Georgian, short and plain; code and identifiers stay in English.)
+
 **FIRST, every session and before every step:** `git fetch`, read **WORKLOG.md** on `origin/staging` and `origin/pc`, do any open "TO:" item for you, log STARTED/DONE/BLOCKED and push. Also read **AI_CONTEXT.md**, **DECISIONS.md** and **SUGGESTIONS.md**; review every SUGGESTIONS entry with status `new` (set accepted / rejected + reason / needs owner decision). New settled decisions go into DECISIONS.md (neutral wording). Other agents (kimi, codex) follow **AGENTS.md**; check `origin/kimi`, `origin/codex` and their PRs into `staging`, and treat their changes as untrusted until reviewed.
 
 Main work is now in a Claude Code session (since 2026-11-13). Read this first, then **HANDOFF.md** (full context, decisions, money rules, open questions) and **ISSUES.md** (open technical work).
