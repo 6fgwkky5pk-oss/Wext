@@ -289,6 +289,17 @@ export const api = {
   cancelSeat(id) { if (CLOUD) { cloud.slotTx('rides', id, r => ({ bookings: r.bookings.filter(b => b.userId !== state.user.id) })); return } set(s => ({ rides: s.rides.map(r => r.id === id ? { ...r, bookings: r.bookings.filter(b => b.userId !== state.user.id) } : r) })) },
 
   // pro side
+  // stop working: worker role off, account + history kept; client stays. Offers stop at once (others' pro lists skip !registered).
+  stopWork() {
+    clearTimeout(timers.incoming)
+    set(s => ({ incoming: null, user: { ...s.user, role: 'client', pro: { ...s.user.pro, registered: false, online: false, stopped: true } } }))
+    if (CLOUD) cloud.pushProfile()
+  },
+  restartWork() {
+    set(s => ({ user: { ...s.user, role: 'pro', pro: { ...s.user.pro, registered: true, stopped: false } } }))
+    if (CLOUD) cloud.pushProfile()
+    setTimeout(() => api.setOnline(true), 300)
+  },
   setOnline(on) {
     api.updatePro({ online: on })
     clearTimeout(timers.incoming)

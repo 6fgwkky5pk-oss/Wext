@@ -12,6 +12,8 @@ export function Profile({ install }) {
   const nav = useNav()
   const user = useStore(s => s.user)
   const [langSheet, setLangSheet] = useState(false)
+  const [stopAsk, setStopAsk] = useState(false)
+  const activeJobs = useStore(s => (s.proJobs || []).filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status)).length)
   const [taps, setTaps] = useState(0)
   // admin = server-side list /admins/{uid}, enforced by firestore.rules. No PIN in the client.
   // Offline demo (no Firebase config): admin opens only in a local dev build (npm run dev).
@@ -35,6 +37,7 @@ export function Profile({ install }) {
         <Row ic={<span style={{ fontSize: 18, fontWeight: 900 }}>Aa</span>} label={t('bigText')} right={<span className={'tgl' + (big ? ' on' : '')}><i /></span>} onClick={() => api.setBig(!big)} />
         <Row ic={<Icon n="globe" s={20} />} label={t('language')} right={<span className="mute small b">{LANGS.find(l => l.code === lang).label}</span>} onClick={() => setLangSheet(true)} />
         <Row ic={<Icon n="swap" s={20} />} label={isPro ? '🙋 ' + t('roleClient') : '💼 ' + t('rolePro')} onClick={() => { api.updateUser({ role: isPro ? 'client' : 'pro' }); nav.home() }} />
+        {user.pro?.registered && <Row ic="⏹" label={t('stopWork')} onClick={() => setStopAsk(true)} />}
         {isPro && user.pro?.registered && <Row ic="🧰" label={t('myCats') + ' · ' + t('profileType')} onClick={() => nav.go('proSettings')} />}
         {user.card && <Row ic={<Icon n="card" s={20} />} label={`${t('savedCard')} · ${user.card.label}`} onClick={() => { api.updateUser({ card: null }); toast('✓') }} />}
         {install && <Row ic={<Icon n="dl" s={20} />} label={t('install')} onClick={install} />}
@@ -44,6 +47,10 @@ export function Profile({ install }) {
       </div>
       <p className="tiny mute center" style={{ marginTop: 18 }} onClick={() => { const n = taps + 1; setTaps(n); if (n >= 5) { setTaps(0); openAdmin() } }}>WEXT 0.1 · {t('tagline')}</p>
     </div>
+    {stopAsk && <Sheet onClose={() => setStopAsk(false)}><h2>{t('stopWorkQ')}</h2>
+      {activeJobs > 0 ? <p className="b" style={{ color: 'var(--red)' }}>{t('stopWorkBusy')}</p> : <p className="mute b">{t('stopWorkNote')}</p>}
+      <div className="grid2" style={{ marginTop: 12 }}><button className="btn outline" onClick={() => setStopAsk(false)}>{t('cancel')}</button>
+        <button className="btn primary" disabled={activeJobs > 0} onClick={() => { api.stopWork(); setStopAsk(false); nav.home(); toast('✓ ' + t('stopWorkDone')) }}>{t('stopWorkBtn')}</button></div></Sheet>}
     {langSheet && <LangSheet lang={lang} t={t} onClose={() => setLangSheet(false)} />}
   </div>
 }
