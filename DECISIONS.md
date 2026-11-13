@@ -21,3 +21,5 @@ Neutral wording only: no names, no personal data, no secrets. Re-open a decision
 - 2026-11-13 · Worker identity before payment: first name (or nickname) is visible, no surname is ever asked for or shown; the initials avatar is the default; a photo, if added later, is optional only. Phone numbers are never shown (calls go through the app).
 - 2026-11-13 · WEXT keeps its own concept and is refined to full quality first. Other AIs' concepts are a source of ideas only, tracked in SUGGESTIONS.md with a status.
 - 2026-11-13 · One single booking price at the start; surge by shortage stays off for the tests and is revisited after the first tester data (S-017).
+- 2026-11-13 · ტესტ-რეჟიმში გადახდის ფანჯარა რჩება: ჯავშნის საფასური ჩანს, გადახდა აშკარად სატესტოა (ბარათის ველები არ არის), რომ გავიგოთ, ესმით თუ არა ტესტერებს საფასური (P-001 პ.4).
+- 2026-11-13 · „მხოლოდ ტესტერები“ ჩართულისას სიის შემოწმება თუ ვერ მოხერხდა, შესვლა ჩერდება გასაგები შეტყობინებით. ნომრის ჰეში ფლობის დადასტურებად არ ითვლება. ადმინის „დაბრუნება / ჩამოჭრა“ მოითხოვს მიზეზს და ერთ შეკვეთაზე ერთხელ სრულდება.

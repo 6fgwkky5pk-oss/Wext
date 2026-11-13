@@ -97,6 +97,7 @@ export function Admin() {
   const [misses, setMisses] = useState({})
   useEffect(() => CLOUD && tab === 'words' ? cloud.listenMisses(setMisses) : undefined, [tab])
   const adminUsers = useStore(s => s.adminUsers) || []
+  const isB = id => CLOUD && adminUsers.length ? !!adminUsers.find(u => u.id === id)?.pro?.blocked : blocked.includes(id)
   const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
   const adminReqs = adminReqsCloud || myReqs
   const live = adminUsers.filter(u => !u.movedTo)
@@ -147,7 +148,7 @@ export function Admin() {
             <div className="row between"><b>{c.reason}</b><span className="tiny mute">{fmtDate(c.ts, lang)}</span></div>
             <div className="small" style={{ marginTop: 6 }}>{t('client')}: <b>{c.byName}</b> {byUser[c.byId] >= 3 && <span className="badge r">⚑ {t('flagged')} ({byUser[c.byId]})</span>}</div>
             {p && <div className="row between" style={{ marginTop: 8 }}><span className="small">{p.name} · {catName(p.cat, lang)}</span>
-              <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'red')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>}
+              <button className={'btn sm ' + (isB(p.id) ? 'outline' : 'red')} onClick={() => api.toggleBlock(p.id)}>{isB(p.id) ? t('unblock') : t('block')}</button></div>}
           </div> })}
       </div>}
 
@@ -156,10 +157,7 @@ export function Admin() {
         {[...adminReqs].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 60).map(r => <div key={r.id} className="card">
           <div className="row between"><b>{catName(r.cat, lang)} · {r.clientName || '—'}</b><span className="tiny mute">{fmtDate(r.createdAt, lang)}</span></div>
           <div className="small" style={{ marginTop: 4 }}>{r.status}{r.proName ? ' · ' + r.proName : ''}{r.adminPay ? ' · ' + (r.adminPay === 'refund' ? '↩️ ' + t('refundBtn') : '💳 ' + t('chargeBtn')) : ''}</div>
-          <div className="grid2" style={{ marginTop: 8 }}>
-            <button className="btn sm light" onClick={() => api.adminPay(r.id, 'refund')}>↩️ {t('refundBtn')}</button>
-            <button className="btn sm outline" onClick={() => api.adminPay(r.id, 'capture')}>💳 {t('chargeBtn')}</button>
-          </div>
+          {r.adminPay ? <div className="tiny mute b" style={{ marginTop: 4 }}>{t('payWhy')}: {r.adminPayWhy || '—'}</div> : <AdminPay id={r.id} />}
         </div>)}
       </div>}
 
@@ -169,11 +167,11 @@ export function Admin() {
         <h3>{t('pros')} · {proUsers.length}</h3>
         {proUsers.map(p => <div key={p.id} className="prorow"><Avatar p={p} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{p.name}</b><span className="tiny mute b">{(p.cats?.length ? p.cats : [p.cat || p.pro?.cats?.[0]]).filter(Boolean).map(c => catName(c, lang)).join(', ') || (p.pro?.cats || []).map(c => catName(c, lang)).join(', ')} · ★{p.rating || '—'} · {p.online ? '🟢' : '⚪'}{p.noShows ? ' · ⚠️' + p.noShows : ''}{complaints.filter(c => c.proId === p.id).length ? ' · ⚑' + complaints.filter(c => c.proId === p.id).length : ''}{nd(r => r.proId === p.id) ? ' · ✕' + nd(r => r.proId === p.id) : ''}</span></div>
           <button className="btn sm outline" onClick={() => api.clearUser(p.id)}>{t('clearUser')}</button>
-          <button className={'btn sm ' + (blocked.includes(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{blocked.includes(p.id) ? t('unblock') : t('block')}</button></div>)}
+          <button className={'btn sm ' + (isB(p.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(p.id)}>{isB(p.id) ? t('unblock') : t('block')}</button></div>)}
         {clientUsers.length > 0 && <h3 style={{ marginTop: 14 }}>{t('clients')} · {clientUsers.length}</h3>}
         {clientUsers.map(u => <div key={u.id} className="prorow"><Avatar p={{ name: u.name || '?', hue: 38, type: 'individual' }} /><div className="grow"><b className="ell" style={{ display: 'block' }}>{u.name || '—'}</b>{nd(r => r.clientId === u.id) > 0 && <span className={'tiny b ' + (nd(r => r.clientId === u.id) >= 3 ? 'badge r' : 'mute')}>✕ {t('noDeal')}: {nd(r => r.clientId === u.id)}</span>}</div>
           <button className="btn sm outline" onClick={() => api.clearUser(u.id)}>{t('clearUser')}</button>
-          <button className={'btn sm ' + (blocked.includes(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{blocked.includes(u.id) ? t('unblock') : t('block')}</button></div>)}
+          <button className={'btn sm ' + (isB(u.id) ? 'outline' : 'light')} onClick={() => api.toggleBlock(u.id)}>{isB(u.id) ? t('unblock') : t('block')}</button></div>)}
       </div>}
 
       {tab === 'words' && <div className="card col">
@@ -213,15 +211,31 @@ function DemandList() {
   </div>
 }
 
+function AdminPay({ id }) {
+  const { t } = useT()
+  const [why, setWhy] = useState(''), [done, setDone] = useState(false), [busy, setBusy] = useState(false)
+  const go = async how => { if (done || busy) return; if (!why.trim()) { toast(t('payWhyNeed')); return } setBusy(true); const res = await api.adminPay(id, how, why); setBusy(false); if (res === 'ok') setDone(true); else toast(t(res === 'taken' ? 'payTaken' : 'payFail')) }
+  if (done) return <div className="tiny mute b" style={{ marginTop: 4 }}>✓ {why}</div>
+  return <>
+    <input className="inp" style={{ height: 40, marginTop: 8 }} maxLength={200} placeholder={t('payWhy')} value={why} onChange={e => setWhy(e.target.value)} />
+    <div className="grid2" style={{ marginTop: 8 }}>
+      <button className="btn sm light" disabled={!why.trim() || busy} onClick={() => go('refund')}>↩️ {t('refundBtn')}</button>
+      <button className="btn sm outline" disabled={!why.trim() || busy} onClick={() => go('capture')}>💳 {t('chargeBtn')}</button>
+    </div></>
+}
+
 function TestersAdmin({ cfg }) {
   const { t } = useT()
   const [ph, setPh] = useState('')
   const on = !!cfg.testersOnly
+  const [works, setWorks] = useState(undefined) // true = check works, false = rule not live (on => nobody can sign in)
+  useEffect(() => { if (CLOUD) cloud.testerAllowed('000000000').then(x => setWorks(x !== null)) }, [])
   const act = async add => { const ok = await api.setTester(ph, add); toast(ok ? '✓ ' + (add ? t('testerAdded') : t('testerRemoved')) : t('testerBad')); if (ok) setPh('') }
   return <div className="card col">
     <h3>🧪 {t('testers')}</h3>
     <p className="tiny mute b" style={{ margin: 0 }}>{t('testersNote')}</p>
     <button className={'btn ' + (on ? 'green' : 'outline')} onClick={() => api.setConfig({ testersOnly: !on })}>{on ? t('testersOn') : t('testersOff')}</button>
+    {works !== undefined && <div className={'card small b'} style={{ background: works ? '#DDF6E6' : '#FFE3E3' }}>{works ? '✓ ' + t('filterWorks') : '⚠️ ' + t(on ? 'filterBrokenOn' : 'filterBroken')}</div>}
     <input className="inp" type="tel" inputMode="tel" placeholder="5XX XX XX XX" value={ph} onChange={e => setPh(e.target.value)} />
     <div className="grid2"><button className="btn light" onClick={() => act(false)}>{t('testerRemove')}</button><button className="btn primary" onClick={() => act(true)}>{t('testerAdd')}</button></div>
   </div>
