@@ -12,7 +12,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, signInAnonymously, onAuthStateChanged, connectAuthEmulator } from 'firebase/auth'
 import {
   getFirestore, collection, doc, setDoc, addDoc, updateDoc, onSnapshot, query, where, runTransaction,
-  arrayUnion, increment, getDoc, orderBy, limit, connectFirestoreEmulator,
+  arrayUnion, increment, getDoc, getDocs, orderBy, limit, connectFirestoreEmulator,
 } from 'firebase/firestore'
 import firebaseConfig from './firebase-config'
 
@@ -58,9 +58,28 @@ export function onLogin() {
   const u = ctx.get().user
   if (!uid || !u) return
   if (u.id !== uid) ctx.set(s => ({ user: { ...s.user, id: uid } }))
-  setDoc(doc(db, 'private', uid), { phone: u.phone }, { merge: true }).catch(() => {})
+  const p9 = String(u.phone || '').replace(/\D/g, '').slice(-9)
+  setDoc(doc(db, 'private', uid), { phone: u.phone, p9 }, { merge: true }).catch(() => {})
+  if (!u.pro?.registered && p9.length >= 9 && !u.restoredFrom) restoreByPhone(u.phone, p9)
   pushProfile()
   listenUser()
+}
+
+// Same phone on a new device / reinstalled home-screen app = same person: carry over the worker profile.
+async function restoreByPhone(phone, p9) {
+  try {
+    const ids = new Set()
+    for (const q of [query(collection(db, 'private'), where('p9', '==', p9)), query(collection(db, 'private'), where('phone', '==', phone))]) {
+      const snap = await getDocs(q); snap.forEach(d => d.id !== uid && ids.add(d.id))
+    }
+    let best = null
+    for (const id of ids) { const d = await getDoc(doc(db, 'users', id)); const x = d.data(); if (x?.pro?.registered && !x.movedTo && (!best || (x.updatedAt || 0) > (best.x.updatedAt || 0))) best = { id, x } }
+    if (!best) return
+    const old = best.x.pro
+    ctx.set(s => ({ user: { ...s.user, restoredFrom: best.id, pro: { ...s.user.pro, ...old, online: true } } }))
+    pushProfile()
+    updateDoc(doc(db, 'users', best.id), { movedTo: uid, 'pro.online': false, 'pro.registered': false }).catch(() => {})
+  } catch (e) { console.warn('restore', e) }
 }
 
 // ---------- listeners ----------
