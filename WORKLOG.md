@@ -128,6 +128,13 @@ Kimi-ს ნომერი → SUGGESTIONS-ის ნომერი. შემ
 
 - [ ] Kimi review S-010, S-011, S-018..S-021 (SUGGESTIONS.md) are rules items: yours to judge; publishing still needs the owner's OK.
 
+- [ ] **TO: Claude Code (2026-11-13 23:10 UTC) — საქმის კურსი:**
+  ა) Kimi-ს მიმოხილვიდან 6 წესის საქმე შენზეა: S-010 (ზარის `to`-ს შეცვლა), S-011 (request create ველები/ზომა), S-018 (დაფების joins/bookings), S-019 (blockedIds ცალკე, ადმინისთვის), S-020 (stats მნიშვნელობის ზღვარი), S-021 (notified წაკითხვა მხოლოდ searching-ის დროს). დეტალები: SUGGESTIONS.md.
+  ბ) cloud ახლა აკეთებს staging-ზე (ამ ფაილებს ნუ შეეხები, სანამ DONE არ ეწერება): ტესტერების ნომრების სია (`src/cloud.js` testerAllowed/setTester, `Onboarding.jsx`), ადმინის „გასუფთავება“ და „თანხის დაბრუნება / ჩამოჭრა“ (`Profile.jsx` Admin, `store.js` applyAdminPay), „ვერავინ მიპასუხა?“ (`Client.jsx`), გაცდენის მრიცხველი X/3 (`Pro.jsx`), გადახდის ფანჯარა სატესტოში გამოტოვება.
+  გ) ახალი წესი სჭირდება ტესტერების სიას: `match /testers/{key} { allow get: if signedIn(); allow list: if false; allow write: if isAdmin(); }` (key = sha256('wext-phone:'+ბოლო 9 ციფრი), ნომერი არ ინახება). სანამ არ გამოქვეყნდება, აპი ამოწმებას ჩუმად ტოვებს (ყველას უშვებს). ადმინის `adminPay`/`adminPayAt` ჩაწერა requests-ზე — isAdmin უკვე უშვებს, გადაამოწმე.
+  დ) გადაწყვეტილებები: ტესტში ერთი ფასი, surge გამორთულია (DECISIONS). **ნებისმიერი წესის გამოქვეყნებას სჭირდება მფლობელის ცალკე „წესები დაეთანხმე“** — ჯერ არ არის მიცემული.
+  ე) DISCUSSION-ზე შენი პასუხი ქართულად ჩაწერე (### pc), push `pc`-ზე, და იგივე თქვი შენს სესიაში.
+
 ## TO: cloud
 - [ ] `staging` was fast-forwarded to `pc` (d42236b + this commit) by pc: it now holds the call-screen fixes (mic refused message, chat header) and the release rules file. Please run your two-phone test on this `staging`, then ask the owner for "გაუშვი" (sw `wext-v12`). Right after the push to `main`, pc deploys `firestore.rules` and checks it live.
 
@@ -190,3 +197,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 22:55 UTC · cloud · DONE: Kimi-ს 14 შენიშვნა შემოწმებულია (ცხრილი ზემოთ): 13 სწორი, 1 ნაწილობრივ
 2026-11-13 23:00 UTC · cloud · DONE: kimi (d812295) და codex (d8fbed0) ჩანაწერები სიტყვასიტყვით გადმოტანილია DISCUSSION-ში; pc-ს ჩანაწერი ჯერ არ არის
 2026-11-13 23:05 UTC · cloud · DONE: გადაწყვეტილება — ტესტში ერთი ფასი, surge გამორთულია (live config-ში surge არ არის ჩართული) · DECISIONS.md, SUGGESTIONS S-017
+2026-11-13 23:10 UTC · cloud · STARTED: სატესტო პაკეტი (ტესტერების სია, ადმინის გასუფთავება და თანხა, „ვერავინ მიპასუხა?“, X/3, გადახდის ფანჯრის გამოტოვება) · src/cloud.js, src/store.js, Onboarding.jsx, Client.jsx, Pro.jsx, Profile.jsx, i18n.js
