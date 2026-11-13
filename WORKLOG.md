@@ -422,3 +422,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:50 UTC · cloud · STARTED: release v13 მფლობელის თანხმობით (P-002; სამივე აგენტის შენიშვნები გასწორებულია) · main fast-forward staging-ზე · TO pc: წესების ნაწილი B — მხოლოდ მფლობელის ცალკე OK-ით
 2026-11-13 23:55 UTC · cloud · DONE: v13 ლაივშია (main a830952, deploy success, gh-pages sw = wext-v13) · TO pc: წესების ნაწილი B მზადაა გამოსაქვეყნებლად მფლობელის ცალკე OK-ით
 2026-11-14 00:00 UTC · cloud · DONE: D-003 იკონები შეჩერებულია მფლობელის გადაწყვეტილებით (მოგვიანებით გაგრძელდება); აპში იკონები უცვლელია · CLAUDE.md ავტოს სია განახლდა
+2026-11-13 23:16 UTC · pc · STARTED: მფლობელის „წესები დაეთანხმე“ — წესების ნაწილი B (სრული firestore.rules) გამოქვეყნება, v13 ლაივშია · Firebase console
