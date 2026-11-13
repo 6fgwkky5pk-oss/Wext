@@ -115,6 +115,8 @@ export function CallNow({ cat: initCat, group }) {
   const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
   const user = useStore(s => s.user)
+  const locReal = useStore(s => s.locReal)
+  const askLoc = () => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Safari → Location'), { enableHighAccuracy: true, timeout: 15000 })
 
   if (!cat) {
     const res0 = searchCats(q, lang).filter(c => !group || q || c.g === group)
@@ -159,7 +161,7 @@ export function CallNow({ cat: initCat, group }) {
         <div className="row between" style={{ marginTop: 12 }}><h3>{t('nearby')} · {online.length}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
         <div className="list" style={{ marginTop: 12 }}>
           {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}
-            <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ marginTop: 12 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button></div>}
+            {(CLOUD ? pros.length : online.length) > 0 && <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ marginTop: 12 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button>}</div>}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
         {TYPICAL[cat] && <div className="typical"><span>🏷️ {t('typical')}</span><b>{TYPICAL[cat][0]}–{TYPICAL[cat][1]} ₾{TYPICAL[cat][2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[TYPICAL[cat][2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
@@ -170,9 +172,15 @@ export function CallNow({ cat: initCat, group }) {
       </div>
     </div>
     <div className="dock">
-      <button className="btn primary" style={{ height: 62 }} disabled={!(CLOUD ? pros.length : online.length)} onClick={send}>
+      {!(CLOUD ? pros.length : online.length) ? <>
+        <div className="docknote">{!locReal ? t('noLocWhy') : t('noProsWhy')}</div>
+        {!locReal
+          ? <button className="btn yellow" style={{ height: 62 }} onClick={askLoc}>📍 {t('turnLocOn')}</button>
+          : <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ height: 62 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button>}
+      </> :
+      <button className="btn primary" style={{ height: 62 }} onClick={send}>
         <Icon n="bolt" />{bundle && !brig ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
-      </button>
+      </button>}
     </div>
     {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig, photo, voice }); nav.replace('request', { id }) }} />}
   </>
