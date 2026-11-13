@@ -81,8 +81,9 @@ export function Admin() {
   const adminUsers = useStore(s => s.adminUsers) || []
   const adminReqsCloud = useStore(s => s.adminReqs), myReqs = useStore(s => s.requests)
   const adminReqs = adminReqsCloud || myReqs
-  const proUsers = adminUsers.length ? adminUsers.filter(u => u.pro?.registered) : pros
-  const clientUsers = adminUsers.filter(u => !u.pro?.registered)
+  const live = adminUsers.filter(u => !u.movedTo)
+  const proUsers = adminUsers.length ? live.filter(u => u.pro?.registered) : pros
+  const clientUsers = live.filter(u => !u.pro?.registered)
   const nd = f => adminReqs.filter(r => r.status === 'nodeal' && f(r)).length
   const contacted = adminReqs.filter(r => r.contacted || ['arrived', 'done'].includes(r.status))
   const Stat = ({ n, l, e }) => <div className="card center" style={{ padding: 14 }}><div style={{ fontSize: 22 }}>{e}</div><div style={{ fontSize: 28, fontWeight: 900 }}>{n}</div><div className="tiny mute b">{l}</div></div>

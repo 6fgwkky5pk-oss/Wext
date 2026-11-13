@@ -119,6 +119,7 @@ export const api = {
   setLang(lang) { set({ lang }); document.documentElement.lang = lang },
   setLocDenied() { if (!state.locReal) set({ locDenied: true }) },
   me() { return CLOUD ? cloud.myId() : 'me' },
+  isMe(id) { return CLOUD ? cloud.isMe(id) : id === 'me' },
   setLoc(loc, real, acc) {
     if (real && state.locReal && state.loc && distKm(state.loc, loc) < 0.05 && !(acc && state.locAcc && acc < state.locAcc / 2)) return
     const patch = { loc, locReal: !!real, locAcc: real ? Math.round(acc || 0) : null, locDenied: false, region: regionFor(loc).id }
@@ -360,7 +361,7 @@ if (CLOUD) {
   set({ pros: [], requests: state.requests.filter(r => r.id && !r.id.startsWith('r_')), incoming: null })
   cloud.initCloud({ set, get: () => state, api, ping, dist: distKm })
   // pros: own blocked flag comes from admin block list
-  subs.add(() => { const u = state.user; if (u?.pro && state.blockedIds.includes(u.id) !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: s.blockedIds.includes(u.id), online: false } } })) })
+  subs.add(() => { const u = state.user; if (!u?.pro) return; const bl = [u.id, ...(u.aliases || [])].some(x => state.blockedIds.includes(x)); if (bl !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: bl, online: false } } })) })
   // keep "online" fresh so stale pros drop off
   setInterval(() => { if (state.user?.pro?.online) cloud.pushProfile() }, 5 * 60e3)
 }

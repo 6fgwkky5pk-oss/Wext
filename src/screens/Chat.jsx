@@ -19,11 +19,11 @@ function useThreadMeta(threadId) {
     const me = api.me() === 'me' ? s.user?.id : api.me()
     if (kind === 'p') {
       const p = s.projects.find(x => x.id === id), j = p?.joins.find(x => x.userId === joiner)
-      const own = p?.ownerId === me, name = own ? j?.name : p?.ownerName
+      const own = api.isMe(p?.ownerId), name = own ? j?.name : p?.ownerName
       return { name: name || '—', av: { name: name || '?', hue: 120, type: 'individual' }, cat: p?.cat, other: own ? joiner : p?.ownerId, title: p?.title }
     }
     const r = s.rides.find(x => x.id === id), b = r?.bookings.find(x => x.userId === joiner)
-    const own = r?.driverId === me, name = own ? b?.name : r?.driver
+    const own = api.isMe(r?.driverId), name = own ? b?.name : r?.driver
     return { name: name || '—', av: { name: name || '?', hue: 210, type: 'individual' }, cat: null, other: own ? joiner : r?.driverId, title: r ? `${r.from} → ${r.to}` : '' }
   }
   const j = s.proJobs.find(x => x.threadId === threadId)
@@ -72,9 +72,9 @@ export function Chat({ threadId }) {
     </div>
     <div className="msgs">
       {(th?.msgs || []).map(m => m.kind === 'missed'
-        ? <div key={m.id} className="sys">📞 <b>{t('missedCall')}</b><br />{m.from === api.me() ? t('missedSent') : t('missedAuto', { name: m.name || meta.name, cat: catName(m.cat || meta.cat, lang) })}
+        ? <div key={m.id} className="sys">📞 <b>{t('missedCall')}</b><br />{api.isMe(m.from) ? t('missedSent') : t('missedAuto', { name: m.name || meta.name, cat: catName(m.cat || meta.cat, lang) })}
             <div style={{ marginTop: 8 }}><button className="btn sm primary" onClick={() => nav.go('voice', { threadId, reqId: meta.reqId })}><Icon n="phone" s={16} />{t('callBack')}</button></div></div>
-        : <div key={m.id} className={'bub' + (m.from === api.me() ? ' me' : '')}>{m.text}<div className="t">{fmtTime(m.ts)}</div></div>)}
+        : <div key={m.id} className={'bub' + (api.isMe(m.from) ? ' me' : '')}>{m.text}<div className="t">{fmtTime(m.ts)}</div></div>)}
       <div ref={end} />
     </div>
     <div className="composer">

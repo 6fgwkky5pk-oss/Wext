@@ -49,36 +49,52 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, ...(s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, aliases: u.aliases || [], ...(s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
   }, 400)
 }
-export function onLogin() {
+export async function onLogin() {
   const u = ctx.get().user
   if (!uid || !u) return
   if (u.id !== uid) ctx.set(s => ({ user: { ...s.user, id: uid } }))
-  const p9 = String(u.phone || '').replace(/\D/g, '').slice(-9)
+  const p9 = normPhone(u.phone)
   setDoc(doc(db, 'private', uid), { phone: u.phone, p9 }, { merge: true }).catch(() => {})
-  if (!u.pro?.registered && p9.length >= 9 && !u.restoredFrom) restoreByPhone(u.phone, p9)
+  if (p9.length >= 9) await restoreByPhone(u.phone, p9)
+  myIds = [uid, ...(ctx.get().user?.aliases || [])].slice(0, 10)
   pushProfile()
   listenUser()
 }
+export const normPhone = ph => String(ph || '').replace(/\D/g, '').slice(-9)
+let myIds = []
+export const isMe = id => !!id && (id === uid || myIds.includes(id))
 
-// Same phone on a new device / reinstalled home-screen app = same person: carry over the worker profile.
+// One phone number = one person. Any earlier account with the same number (other phone, reinstalled app)
+// is folded into this one: profile, worker data, request/job history, chats.
 async function restoreByPhone(phone, p9) {
   try {
     const ids = new Set()
     for (const q of [query(collection(db, 'private'), where('p9', '==', p9)), query(collection(db, 'private'), where('phone', '==', phone))]) {
       const snap = await getDocs(q); snap.forEach(d => d.id !== uid && ids.add(d.id))
     }
-    let best = null
-    for (const id of ids) { const d = await getDoc(doc(db, 'users', id)); const x = d.data(); if (x?.pro?.registered && !x.movedTo && (!best || (x.updatedAt || 0) > (best.x.updatedAt || 0))) best = { id, x } }
+    if (!ids.size) return
+    let best = null; const all = new Set()
+    for (const id of ids) {
+      const x = (await getDoc(doc(db, 'users', id))).data(); if (!x) continue
+      all.add(id); (x.aliases || []).forEach(a => a !== uid && all.add(a))
+      const score = (x.pro?.registered ? 1e15 : 0) + (x.updatedAt || 0)
+      if (!best || score > best.score) best = { id, x, score }
+    }
     if (!best) return
-    const old = best.x.pro
-    ctx.set(s => ({ user: { ...s.user, restoredFrom: best.id, pro: { ...s.user.pro, ...old, online: true } } }))
-    pushProfile()
-    updateDoc(doc(db, 'users', best.id), { movedTo: uid, 'pro.online': false, 'pro.registered': false }).catch(() => {})
+    const cur = ctx.get().user
+    const known = new Set(cur.aliases || [])
+    const fresh = [...all].filter(a => !known.has(a))
+    if (!fresh.length) return
+    const x = best.x
+    ctx.set(s => ({ user: { ...s.user, aliases: [...known, ...fresh], restoredFrom: best.id,
+      name: x.name || s.user.name, hue: x.hue ?? s.user.hue,
+      pro: x.pro?.registered ? { ...s.user.pro, ...x.pro, online: true } : s.user.pro } }))
+    fresh.forEach(id => updateDoc(doc(db, 'users', id), { movedTo: uid, 'pro.online': false, 'pro.registered': false }).catch(() => {}))
   } catch (e) { console.warn('restore', e) }
 }
 
@@ -100,7 +116,7 @@ function listenUser() {
     const now = Date.now()
     const pros = []
     snap.forEach(d => {
-      const u = d.data(); if (d.id === uid || !u.pro?.registered || !u.pos) return
+      const u = d.data(); if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
@@ -110,7 +126,7 @@ function listenUser() {
     ctx.set({ pros })
   }))
   // my requests as a client
-  sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', '==', uid)), snap => {
+  sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', 'in', myIds.length ? myIds : [uid])), snap => {
     const prev = ctx.get().requests
     const reqs = []
     snap.forEach(d => reqs.push({ id: d.id, ...d.data() }))
@@ -144,7 +160,7 @@ function listenUser() {
     ctx.ping(viaSms ? 'soft' : 'job')
   }))
   // jobs I accepted as a pro
-  sub('myJobs', onSnapshot(query(collection(db, 'requests'), where('proId', '==', uid)), snap => {
+  sub('myJobs', onSnapshot(query(collection(db, 'requests'), where('proId', 'in', myIds.length ? myIds : [uid])), snap => {
     const s = ctx.get(), loc = s.loc
     const jobs = []
     snap.forEach(d => {
@@ -161,11 +177,11 @@ function listenUser() {
   // boards
   sub('projects', onSnapshot(query(collection(db, 'projects'), where('region', '==', region)), snap => {
     const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ projects: a })
-    a.forEach(p => (p.joins || []).forEach(j => { if (p.ownerId === uid || j.userId === uid) listenThread(`p_${p.id}_${j.userId}`, null, 'board') }))
+    a.forEach(p => (p.joins || []).forEach(j => { if (isMe(p.ownerId) || isMe(j.userId)) listenThread(`p_${p.id}_${j.userId}`, null, 'board') }))
   }))
   sub('rides', onSnapshot(query(collection(db, 'rides'), where('region', '==', region)), snap => {
     const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ rides: a })
-    a.forEach(r => (r.bookings || []).forEach(b => { if (r.driverId === uid || b.userId === uid) listenThread(`d_${r.id}_${b.userId}`, null, 'board') }))
+    a.forEach(r => (r.bookings || []).forEach(b => { if (isMe(r.driverId) || isMe(b.userId)) listenThread(`d_${r.id}_${b.userId}`, null, 'board') }))
   }))
   // incoming internet calls
   sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', '==', uid)), snap => {
@@ -198,12 +214,12 @@ export function listenThread(tid, reqId, side) {
   threadSubs[tid] = onSnapshot(query(collection(db, 'threads', tid, 'msgs'), orderBy('ts')), snap => {
     const msgs = []; snap.forEach(d => msgs.push({ id: d.id, ...d.data() }))
     const s = ctx.get(), last = (s.lastRead || {})[tid] || 0
-    const unread = msgs.filter(m => m.from !== uid && m.ts > last).length
+    const unread = msgs.filter(m => !isMe(m.from) && m.ts > last).length
     const prev = s.chats[tid]?.msgs.length || 0
     ctx.set(st => ({ chats: { ...st.chats, [tid]: { id: tid, msgs, unread } } }))
-    if (msgs.length > prev && prev > 0 && msgs[msgs.length - 1].from !== uid) ctx.ping('soft')
+    if (msgs.length > prev && prev > 0 && !isMe(msgs[msgs.length - 1].from)) ctx.ping('soft')
     // a reply from the pro is a real contact → capture the client's hold
-    if (side === 'client' && msgs.some(m => m.from !== uid && m.kind !== 'missed')) ctx.api.registerContact(reqId, 'chat')
+    if (side === 'client' && msgs.some(m => !isMe(m.from) && m.kind !== 'missed')) ctx.api.registerContact(reqId, 'chat')
   })
 }
 

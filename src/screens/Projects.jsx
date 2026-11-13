@@ -15,7 +15,7 @@ export function Projects({ cat, create }) {
   const [tab, setTab] = useState('open')
   const [form, setForm] = useState(create ? { cat: cat || 'harvest' } : null)
   const [join, setJoin] = useState(null)
-  const list = (tab === 'open' ? all : all.filter(p => p.ownerId === user.id || p.joins.some(j => j.userId === user.id)))
+  const list = (tab === 'open' ? all : all.filter(p => api.isMe(p.ownerId) || p.joins.some(j => api.isMe(j.userId))))
     .filter(p => !cat || create || p.cat === cat).sort((a, b) => a.date.localeCompare(b.date))
   return <>
     <div className="scroll">
@@ -24,7 +24,7 @@ export function Projects({ cat, create }) {
         <div className="seg"><button className={tab === 'open' ? 'on' : ''} onClick={() => setTab('open')}>{t('openProjects')}</button><button className={tab === 'mine' ? 'on' : ''} onClick={() => setTab('mine')}>{t('myProjects')}</button></div>
         {!list.length && <div className="empty"><div className="e">🍇</div>{t('none')}</div>}
         {list.map(p => {
-          const n = taken(p), left = p.people - n, me = p.joins.find(j => j.userId === user.id), own = p.ownerId === user.id
+          const n = taken(p), left = p.people - n, me = p.joins.find(j => api.isMe(j.userId)), own = api.isMe(p.ownerId)
           return <div key={p.id} className="card">
             <div className="row" style={{ alignItems: 'flex-start' }}>
               <span className="av" style={{ background: '#FFF1C2', fontSize: 26 }}>{catIcon(p.cat)}</span>
@@ -108,7 +108,7 @@ export function Rides() {
         <button className="btn yellow" onClick={() => setForm(true)}><Icon n="car" />{t('postRide')}</button>
         {!list.length && <div className="empty"><div className="e">🚗</div>{t('none')}</div>}
         {list.map(r => {
-          const tk = r.bookings.reduce((a, b) => a + b.n, 0), left = r.seats - tk, me = r.bookings.find(b => b.userId === user.id), own = r.driverId === user.id
+          const tk = r.bookings.reduce((a, b) => a + b.n, 0), left = r.seats - tk, me = r.bookings.find(b => api.isMe(b.userId)), own = api.isMe(r.driverId)
           return <div key={r.id} className="card">
             <div className="row between" style={{ alignItems: 'flex-start' }}>
               <div className="grow">

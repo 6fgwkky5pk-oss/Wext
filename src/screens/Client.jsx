@@ -322,8 +322,8 @@ export function Activity() {
   const user = useStore(s => s.user)
   const mine = [
     ...reqs.map(r => ({ ts: r.createdAt, k: 'r', r })),
-    ...projects.filter(p => p.ownerId === user.id || p.joins.some(j => j.userId === user.id)).map(p => ({ ts: p.createdAt, k: 'p', p })),
-    ...rides.filter(r => r.driverId === user.id || r.bookings.some(b => b.userId === user.id)).map(r => ({ ts: r.createdAt, k: 'd', d: r })),
+    ...projects.filter(p => api.isMe(p.ownerId) || p.joins.some(j => api.isMe(j.userId))).map(p => ({ ts: p.createdAt, k: 'p', p })),
+    ...rides.filter(r => api.isMe(r.driverId) || r.bookings.some(b => api.isMe(b.userId))).map(r => ({ ts: r.createdAt, k: 'd', d: r })),
   ].sort((a, b) => b.ts - a.ts)
   const st = { searching: t('searching'), accepted: t('accepted'), arrived: t('arrivedOk'), done: t('jobDone'), cancelled: t('cancel'), nopros: t('noPros'), expired: '—' }
   return <div className="scroll">
