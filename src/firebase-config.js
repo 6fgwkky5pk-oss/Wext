@@ -1,3 +1,9 @@
-// Paste the Firebase web config here (Project settings → Your apps → Web). Not secret.
-// When this is null the app runs fully on-device with a sample pro network.
-export default null
+// Firebase web config (public by design; access is controlled by firestore.rules)
+export default {
+  apiKey: 'AIzaSyDGTmZRT8YojZWvVH8iri_rZlm1rMD7ZXc',
+  authDomain: 'wext-af650.firebaseapp.com',
+  projectId: 'wext-af650',
+  storageBucket: 'wext-af650.firebasestorage.app',
+  messagingSenderId: '852751015638',
+  appId: '1:852751015638:web:b0b5f4964b84151e497377',
+}
