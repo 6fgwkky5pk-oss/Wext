@@ -1,0 +1,32 @@
+rules_version = '2';
+// Production rules for WEXT (replace "test mode" rules before the 30-day test window ends).
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function me(id) { return signedIn() && request.auth.uid == id; }
+
+    match /users/{uid}    { allow read: if signedIn(); allow write: if me(uid); }
+    match /private/{uid}  { allow read, write: if me(uid); }
+    match /config/{id}    { allow read: if true; allow write: if signedIn(); } // TODO: restrict to admin uids
+    match /requests/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;
+      allow update: if signedIn() && (resource.data.clientId == request.auth.uid
+        || resource.data.proId == request.auth.uid
+        || request.auth.uid in resource.data.notified);
+    }
+    match /threads/{tid}/msgs/{m} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+    }
+    match /calls/{id} {
+      allow read, update: if signedIn() && (resource == null || request.auth.uid in [resource.data.from, resource.data.to]);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+      match /{sub}/{c} { allow read, write: if signedIn(); }
+    }
+    match /projects/{id}  { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.ownerId == request.auth.uid; }
+    match /rides/{id}     { allow read, create, update: if signedIn(); allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
+    match /complaints/{id} { allow create: if signedIn(); allow read: if signedIn(); }
+    match /bugs/{id}       { allow create: if signedIn(); allow read: if signedIn(); }
+  }
+}
