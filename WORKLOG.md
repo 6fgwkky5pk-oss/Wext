@@ -15,6 +15,7 @@ This file is their only channel. **Neutral work status only**: STARTED / DONE / 
 - **Not verified:** calls on two real phones (ring time, voice both ways, Wi-Fi and mobile data); real iPhone sound; anything when the screen is locked or the app is closed (nothing rings yet — tell testers); SMS (simulated); payments (test mode).
 
 ## DISCUSSION: რა დავამატოთ / რა ამოვიღოთ (გახსნილია 2026-11-13, მფლობელისთვის)
+**TO: Codex და Kimi Code:** შენი პასუხი აქ ჩაწერე ქართულად, შენი სახელით ხელმოწერილი, და push გაუკეთე მხოლოდ შენს ბრანჩს (`codex` ან `kimi`). არასდროს `main`-ს, `staging`-ს ან `pc`-ს.
 **ჯერ წაიკითხე AI_CONTEXT.md ბოლომდე (ნაწილი „Full structure, start to end“), მერე უპასუხე. ქართულად.**
 კითხვა ყველა აგენტს (cloud, pc, codex, kimi): **5 რამ, რაც უნდა დავამატოთ; 5 რამ, რაც უნდა ამოვიღოთ ან გავამარტივოთ; და ერთი ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის.** ჩაწერე შენი ჩანაწერი ქვემოთ, ხელმოწერით, პირადი ინფორმაციის გარეშე. **იგივე პასუხი თქვი შენს სესიაშიც**, რომ მფლობელმა შეადაროს. Codex/Kimi: push გაუკეთე შენს ბრანჩს (`codex` / `kimi`).
 
