@@ -40,6 +40,7 @@ export function ProStats() {
   const user = useStore(s => s.user)
   const jobs = useStore(s => s.proJobs)
   const pro = user.pro || {}
+  const rated = jobs.filter(j => j.rating); const myAvg = rated.length ? (rated.reduce((a, j) => a + j.rating, 0) / rated.length).toFixed(1) : null
   const done = jobs.filter(j => ['done', 'agreed'].includes(j.status)).length
   const today = jobs.filter(j => j.acceptedAt && new Date(j.acceptedAt).toDateString() === new Date().toDateString()).length
   const week = jobs.filter(j => j.acceptedAt && Date.now() - j.acceptedAt < 7 * 864e5).length
@@ -47,7 +48,7 @@ export function ProStats() {
   return <div className="scroll">
     <Top title={t('stats')} />
     <div className="pad col" style={{ gap: 12 }}>
-      <div className="grid2"><Box v={'★ ' + (pro.rating || 5)} l={t('rating')} /><Box v={pro.jobs || 0} l={t('statTaken')} /></div>
+      <div className="grid2"><Box v={myAvg ? '★ ' + myAvg : '—'} l={t('rating')} /><Box v={pro.jobs || 0} l={t('statTaken')} /></div>
       <div className="grid2"><Box v={done} l={t('statDone')} /><Box v={pro.noShows || 0} l={t('noShows') + ' (3 = ⛔)'} /></div>
       <div className="grid2"><Box v={today} l={t('today')} /><Box v={week} l={t('statWeek')} /></div>
     </div>

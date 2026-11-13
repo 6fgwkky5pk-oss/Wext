@@ -294,7 +294,7 @@ export function RequestTrack({ id }) {
         <div className="row" style={{ marginTop: 16, gap: 14 }}>
           <Avatar p={pro} lg />
           <div className="grow"><h2>{pro.name}</h2>
-            <div className="meta"><span className="stars">★ {pro.rating}</span><span>· {pro.jobs} {t('jobs')}</span></div>
+            
             <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={pro} /></div></div>
         </div>
         <button className="btn primary bigcall" style={{ marginTop: 16 }} onClick={() => nav.go('voice', { threadId: r.threadId, reqId: r.id })}><Icon n="phone" />{t('callBig')}</button>

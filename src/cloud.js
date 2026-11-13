@@ -40,7 +40,9 @@ export async function initCloud(c) {
   if (ctx.get().user) onLogin()
 }
 
-const round = p => p && [Math.round(p[0] * 1000) / 1000, Math.round(p[1] * 1000) / 1000]
+// positions are published on a ~50 m grid only
+const round = p => p && [Math.round(p[0] * 2000) / 2000, Math.round(p[1] * 2000) / 2000]
+export const roundPos = round
 
 // ---------- profile ----------
 let pushT
@@ -50,7 +52,7 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, pro: (({ rating, jobs, noShows, blocked, verified, ...rest }) => rest)(u.pro || {}), aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
   }, 400)
@@ -130,12 +132,9 @@ function listenUser() {
   sub('pros', onSnapshot(query(collection(db, 'users'), where('region', '==', region)), snap => {
     const now = Date.now()
     const pros = []
-    // an account folded into a newer one (same phone, listed in its aliases) is not shown and gets no offers
-    const docs = []; snap.forEach(d => docs.push([d.id, d.data()]))
-    const newer = {}; docs.forEach(([, u]) => (u.aliases || []).forEach(a => { newer[a] = Math.max(newer[a] || 0, u.updatedAt || 0) }))
-    docs.forEach(([id, u]) => {
-      const d = { id }
-      if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || (newer[id] || 0) > (u.updatedAt || 0)) return
+    // (aliases of other accounts are NOT trusted here: anyone could list a real pro's id and hide him)
+    snap.forEach(d => {
+      const u = d.data(); if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
@@ -188,7 +187,7 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, outcomeBy: r.outcomeBy || null, doneAt: r.doneAt || null, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, rating: r.rating || null, outcomeBy: r.outcomeBy || null, doneAt: r.doneAt || null, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
       if (bothYes(r)) updateDoc(doc(db, 'requests', d.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
     })
@@ -259,7 +258,7 @@ export function logoutCloud() {
 
 // ---------- writes ----------
 export async function createRequest(r) {
-  const ref = await addDoc(collection(db, 'requests'), { ...r, clientId: uid, createdAt: Date.now() })
+  const ref = await addDoc(collection(db, 'requests'), { ...r, pos: round(r.pos), clientId: uid, createdAt: Date.now() })
   return ref.id
 }
 export const updateRequest = (id, patch) => updateDoc(doc(db, 'requests', id), patch).catch(console.error)
