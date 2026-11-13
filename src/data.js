@@ -52,8 +52,6 @@ export const CATEGORIES = [
     syn: 'საბურავი ბორბალი ვულკანიზაცია დაეშვა шина колесо шиномонтаж прокол tire tyre flat wheel reifen lastik' },
   { id: 'battery', g: 'road', icon: '🔋', kind: 'instant', n: { ka: 'აკუმულატორი', en: 'Battery jump', ru: 'Аккумулятор', de: 'Starthilfe', tr: 'Akü takviye', uk: 'Акумулятор', es: 'Batería', fr: 'Batterie' },
     syn: 'აკუმულატორი დაჯდა არ ქოქავს аккумулятор прикурить сел battery jump start starthilfe batterie akü' },
-  { id: 'fuel', g: 'road', icon: '⛽', kind: 'instant', n: { ka: 'საწვავი', en: 'Fuel delivery', ru: 'Доставка топлива', de: 'Kraftstoff', tr: 'Yakıt', uk: 'Пальне', es: 'Combustible', fr: 'Carburant' },
-    syn: 'საწვავი ბენზინი დიზელი გამითავდა бензин топливо закончился fuel gas petrol diesel benzin yakıt' },
 ]
 
 export const GROUPS = [
