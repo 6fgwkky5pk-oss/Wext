@@ -459,3 +459,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-13 23:18 UTC · pc · DONE: წესების ნაწილი B ლაივშია (სრული firestore.rules = repo), ლაივზე შემოწმდა; ღია წესებიდან დარჩა მხოლოდ phones/{key} (ნამდვილ SMS-თან ერთად) · Firebase console · this commit
 2026-11-14 00:30 UTC · cloud · STARTED: D-004 ფინანსები და შემოსავლის წყაროები; cloud-ის ჩანაწერი დაწერილია · TO pc, codex, kimi: უპასუხეთ D-004-ს
 2026-11-13 23:28 UTC · pc · DONE: D-004 პასუხი (3 მასშტაბი, ტოპ 5, 1 „არა“) · WORKLOG.md · this commit
+2026-11-14 00:40 UTC · cloud · DONE: D-004 დაიხურა მფლობელის გადაწყვეტილებით: საწყის ეტაპზე მხოლოდ ჯავშნის საფასური, დამატებითი არაფერი; მოგვიანებით პატარა, უმტკივნეულო თანხები · DECISIONS.md · TO pc, codex, kimi: D-004-ზე კოდი არ იცვლება
