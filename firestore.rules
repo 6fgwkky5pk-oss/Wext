@@ -8,7 +8,8 @@ service cloud.firestore {
     function callSide(c) { return request.auth.uid == c.from || request.auth.uid == c.to; }
     function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
     // a request is visible only to its client, its accepted pro, pros it was offered to, and admins
-    function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || request.auth.uid in r.get('notified', []); }
+    // [B] offered pros see it only while it is still searching (their query must add where status == 'searching')
+    function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || (request.auth.uid in r.get('notified', []) && r.status == 'searching'); }
     // chat ids: t_{requestId} (client + accepted pro), p_{projectId}_{userId} (owner + that user), d_{rideId}_{userId} (driver + that user)
     function threadSide(tid) { return sideOf(tid, request.auth.uid); }
     function sideOf(tid, u) {
@@ -20,6 +21,34 @@ service cloud.firestore {
     function statsOk() {
       let old = resource == null ? {} : resource.data;
       return request.resource.data.keys().hasAll(old.keys()) && request.resource.data.diff(old).affectedKeys().size() <= 3;
+    }
+    // [B] stats/cats: the writer names the keys it raises in _k (1-2 keys) and each goes up by 1..3 only
+    function bumpOk(o, n, k) { return k is string && k != '_k' && n.get(k, 0) is int && n.get(k, 0) > o.get(k, 0) && n.get(k, 0) <= o.get(k, 0) + 3; }
+    function catsOk() {
+      let o = resource == null ? {} : resource.data;
+      let n = request.resource.data;
+      let k = n.get('_k', []);
+      return k is list && k.size() >= 1 && k.size() <= 2 && n.keys().hasAll(o.keys())
+        && n.diff(o).affectedKeys().hasOnly(k.concat(['_k'])) && bumpOk(o, n, k[0]) && (k.size() < 2 || bumpOk(o, n, k[1]));
+    }
+    // a new request: fixed fields, starts empty and searching, text and media size limits
+    function reqCreateOk() {
+      let n = request.resource.data;
+      return n.clientId == request.auth.uid && n.get('proId', null) == null && n.status == 'searching'
+        && n.get('notified', []).size() == 0 && n.get('log', []).size() == 0
+        && n.keys().hasOnly(['cat', 'note', 'photo', 'voice', 'status', 'brigade', 'payId', 'radius', 'notified', 'log', 'proId', 'clientName', 'pos', 'posReal', 'region', 'clientId', 'createdAt'])
+        && shortText(n, 'note', 1000) && shortText(n, 'clientName', 80) && shortText(n, 'cat', 40)
+        && (n.get('photo', null) == null || (n.photo is string && n.photo.size() <= 400000))
+        && (n.get('voice', null) == null || (n.voice is string && n.voice.size() <= 400000));
+    }
+    // boards: a non-owner may only add, change or remove their own single entry; other people's entries stay as they are
+    function slotOk(o, n, f, cap) {
+      let add = n.removeAll(o);
+      let rem = o.removeAll(n);
+      return add.size() <= 1 && rem.size() <= 1 && n.size() == o.size() - rem.size() + add.size()
+        && (rem.size() == 0 || rem[0].userId == request.auth.uid)
+        && (add.size() == 0 || (add[0].userId == request.auth.uid && add[0].keys().hasOnly(['userId', 'name', 'count', 'type', 'n'])
+          && add[0].get(f, 0) is int && add[0].get(f, 0) >= 1 && add[0].get(f, 0) <= cap && shortText(add[0], 'name', 80) && shortText(add[0], 'type', 30)));
     }
     function inJob(r, u) { return u == r.clientId || u == r.get('proId', null); }
     // trust numbers are never changed by the user: rating, jobs, no-shows, blocked, verified (admins only)
@@ -38,10 +67,13 @@ service cloud.firestore {
       let n = request.resource.data;
       let ch = n.diff(r).affectedKeys();
       let u = request.auth.uid;
-      return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'clientDeal', 'clientDealAt', 'notified', 'current', 'windowEnds', 'log', 'radius']))
+      // the client's dispatch adds at most 8 pros per step, 100 in total, and never removes one
+      return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'clientDeal', 'clientDealAt', 'notified', 'current', 'windowEnds', 'log', 'radius'])
+          && n.get('notified', []).hasAll(r.get('notified', [])) && n.get('notified', []).size() <= r.get('notified', []).size() + 8
+          && n.get('notified', []).size() <= 100 && n.get('current', []).size() <= 8 && n.get('log', []).size() <= 100)
         || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt', 'proDeal', 'proDealAt']))
         || (u in r.get('notified', []) && r.status == 'searching' && n.status == 'accepted' && n.proId == u && ch.hasOnly(['status', 'proId', 'proName', 'eta', 'acceptedAt', 'threadId']))
-        || (u in r.get('notified', []) && ch.hasOnly(['declined']));
+        || (u in r.get('notified', []) && r.status == 'searching' && ch.hasOnly(['declined']) && n.declined.size() <= r.get('declined', []).size() + 1);
     }
 
     match /users/{uid}    { allow read: if signedIn(); allow write: if (me(uid) && trustSame() && posOk() && shortText(request.resource.data, 'name', 80)) || isAdmin(); }
@@ -51,10 +83,12 @@ service cloud.firestore {
     // stats/cats = demand counters (everyone reads); stats/misses = searches that found nothing (people's own words: admin only).
     // Users may only add/raise up to 3 counters per write and never delete them; deleting is for admins.
     match /stats/{id}     { allow read: if signedIn() && (id == 'cats' || isAdmin());
-      allow write: if isAdmin() || (signedIn() && id in ['cats', 'misses'] && statsOk()); }
+      allow write: if isAdmin() || (signedIn() && ((id == 'misses' && statsOk()) || (id == 'cats' && catsOk()))); }
+    // closed test: allowed numbers as sha256 keys (no numbers stored); one exact key can be checked, the list cannot be read
+    match /testers/{key}  { allow get: if signedIn(); allow list: if false; allow write: if isAdmin(); }
     match /requests/{id} {
       allow read: if signedIn() && (reqSide(resource.data) || isAdmin());
-      allow create: if signedIn() && request.resource.data.clientId == request.auth.uid && request.resource.data.get('proId', null) == null;
+      allow create: if signedIn() && reqCreateOk();
       allow update: if signedIn() && (reqUpdateOk() || isAdmin());
     }
     match /threads/{tid}/msgs/{m} {
@@ -64,7 +98,8 @@ service cloud.firestore {
     match /calls/{id} {
       // only the two sides may read a call (it holds network addresses)
       allow read: if signedIn() && callSide(resource.data);
-      allow update: if signedIn() && callSide(resource.data);
+      // after creation only the state and the answer change: who calls whom is fixed
+      allow update: if signedIn() && callSide(resource.data) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state', 'answer']);
       // a call may only go to someone I share a job, ride or project with
       allow create: if signedIn() && request.resource.data.from == request.auth.uid && request.resource.data.threadId is string
         && sideOf(request.resource.data.threadId, request.auth.uid) && sideOf(request.resource.data.threadId, request.resource.data.to);
@@ -72,10 +107,10 @@ service cloud.firestore {
     }
     // only the owner/driver edits a project/ride; others may only join or book a seat
     match /projects/{id}  { allow read: if signedIn(); allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update: if signedIn() && ((resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joins']));
+      allow update: if signedIn() && ((resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid) || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joins']) && slotOk(resource.data.get('joins', []), request.resource.data.joins, 'count', 100)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid; }
     match /rides/{id}     { allow read: if signedIn(); allow create: if signedIn() && request.resource.data.driverId == request.auth.uid;
-      allow update: if signedIn() && ((resource.data.driverId == request.auth.uid && request.resource.data.driverId == request.auth.uid) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookings']));
+      allow update: if signedIn() && ((resource.data.driverId == request.auth.uid && request.resource.data.driverId == request.auth.uid) || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookings']) && slotOk(resource.data.get('bookings', []), request.resource.data.bookings, 'n', 10)));
       allow delete: if signedIn() && resource.data.driverId == request.auth.uid; }
     // complaints and bug reports: written by the sender as themselves, with size limits; read by admins only
     match /complaints/{id} { allow read: if isAdmin();
