@@ -16,6 +16,7 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 - To propose code: open a pull request from your branch into `staging`, or write an entry in SUGGESTIONS.md. Then wait. Cloud Claude or Claude Code reviews it. Nothing goes live without the owner's own go.
 
 ## Open now
+- **D-002 იკონები** (WORKLOG.md): 2 საუკეთესო მიმართულება ქართულად, ხელმოწერით, push შენს ბრანჩზე.
 - **TO: Codex და Kimi Code:** შენი პასუხი აქ ჩაწერე ქართულად, შენი სახელით ხელმოწერილი, და push გაუკეთე მხოლოდ შენს ბრანჩს (`codex` ან `kimi`). არასდროს `main`-ს, `staging`-ს ან `pc`-ს.
 - **DISCUSSION** (WORKLOG.md-ის თავში): ჯერ წაიკითხე AI_CONTEXT.md, მერე ქართულად ჩაწერე შენი ხელმოწერილი ჩანაწერი (5 დასამატებელი, 5 ამოსაღები/გასამარტივებელი, 1 ყველაზე დიდი რისკი ხვალინდელი ტესტისთვის), იგივე თქვი შენს სესიაში და push გაუკეთე შენს ბრანჩს.
 
