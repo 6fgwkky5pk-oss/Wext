@@ -10,7 +10,7 @@ export function ProHome() {
   const user = useStore(s => s.user)
   const jobs = useStore(s => s.proJobs)
   const pro = user.pro
-  const active = jobs.filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status))
+  const active = jobs.filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status) && !j.proDoneAt)
   const todayN = jobs.filter(j => new Date(j.acceptedAt).toDateString() === new Date().toDateString()).length
 
   if (!pro.registered) return <ProJoin />
