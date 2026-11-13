@@ -98,6 +98,7 @@ export function Voice({ threadId, reqId, answerId }) {
   useEffect(() => {
     let ring, tm, tick
     const onState = st => {
+      if (st === 'answered') { clearInterval(ring); clearTimeout(tm); setState('connecting'); tm = setTimeout(() => { setState('failed'); finish() }, 25000) }
       if (st === 'connected') { setState('connected'); clearInterval(ring); clearTimeout(tm); const t0 = Date.now(); tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); setSecs(s); if (s === 20 && reqId) api.registerContact(reqId, 'call') }, 1000) }
       if (['declined', 'ended', 'failed'].includes(st)) { setState('ended'); finish() }
     }
@@ -107,16 +108,33 @@ export function Voice({ threadId, reqId, answerId }) {
       navigator.mediaDevices?.getUserMedia?.({ audio: true }).then(s => { call.current = { end: () => s.getTracks().forEach(x => x.stop()), local: s } }).catch(() => {})
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish() }, 12000)
     } else if (answerId) {
+      tm = setTimeout(() => { setState('failed'); finish() }, 25000)
       cloud.answerCall({ callId: answerId, onState, onRemote }).then(c => { call.current = c }).catch(() => { setState('ended'); finish() })
+    } else if (cloud.callFrom(getState().ringing, meta.other)) {
+      // the other person is already calling me: answer that call instead of starting a second one
+      const r = getState().ringing; api.clearRinging(); done.current = true
+      setTimeout(() => nav.replace('voice', { threadId, reqId, answerId: r.id }), 0)
     } else {
+      api.setOutgoing(meta.other)
       ring = setInterval(() => ping('ring'), 2200); ping('ring')
       cloud.startCall({ to: meta.other, threadId, reqId, fromName: getState().user.name, onState, onRemote }).then(c => { call.current = c }).catch(() => { setState('ended'); finish() })
       tm = setTimeout(() => { clearInterval(ring); setState('noanswer'); api.missedCall(threadId, reqId, t); finish('missed') }, 30000)
     }
-    return () => { clearInterval(ring); clearTimeout(tm); clearInterval(tick); if (!done.current) { done.current = true; call.current?.end() } }
+    const bye = () => { if (!done.current) { done.current = true; call.current?.end() } }
+    window.addEventListener('pagehide', bye)
+    return () => { window.removeEventListener('pagehide', bye); clearInterval(ring); clearTimeout(tm); clearInterval(tick); api.setOutgoing(null); if (!done.current) { done.current = true; call.current?.end() } }
   }, [])
+  // both pressed "call" at the same moment: one side gives way and answers the other's call
+  const ringing = useStore(s => s.ringing)
+  useEffect(() => {
+    if (!CLOUD || answerId || state !== 'calling' || !cloud.callFrom(ringing, meta.other)) return
+    if ((cloud.myId() || '') > ringing.from) {
+      const r = ringing; api.clearRinging(); done.current = true; call.current?.end('ended'); api.setOutgoing(null)
+      nav.replace('voice', { threadId, reqId, answerId: r.id })
+    }
+  }, [ringing?.id, state])
   useEffect(() => { call.current?.local?.getAudioTracks().forEach(x => x.enabled = !mute) }, [mute])
-  const label = state === 'calling' ? t('calling') : state === 'connecting' ? '…' : state === 'connected' ? `${t('connected')} · ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}` : state === 'noanswer' ? t('noAnswer') : t('endCall')
+  const label = state === 'calling' ? t('calling') : state === 'connecting' ? '…' : state === 'connected' ? `${t('connected')} · ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}` : state === 'noanswer' ? t('noAnswer') : state === 'failed' ? t('callFailed') : t('endCall')
   return <div className="callscr">
     <div className="col" style={{ alignItems: 'center', gap: 16 }}>
       <div className={state === 'calling' ? 'ring' : ''}><Avatar p={{ ...meta.av, online: false }} lg /></div>
@@ -136,7 +154,8 @@ export function Voice({ threadId, reqId, answerId }) {
 export function IncomingCall() {
   const { t, lang } = useT()
   const nav = useNav()
-  const ring = useStore(s => s.ringing)
+  const ring0 = useStore(s => s.ringing), outgoing = useStore(s => s.outgoing)
+  const ring = ring0 && !(CLOUD && cloud.callFrom(ring0, outgoing)) ? ring0 : null
   useEffect(() => { if (!ring) return; const i = setInterval(() => ping('ring'), 2000); ping('ring'); return () => clearInterval(i) }, [ring?.id])
   if (!ring) return null
   return <div className="callscr" style={{ zIndex: 90 }}>

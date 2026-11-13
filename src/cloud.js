@@ -67,6 +67,7 @@ export async function onLogin() {
 }
 export const normPhone = ph => String(ph || '').replace(/\D/g, '').slice(-9)
 let myIds = []
+export const callFrom = (c, id) => !!c && !!id && (c.from === id || (c.fromIds || []).includes(id))
 export const isMe = id => !!id && (id === uid || myIds.includes(id))
 
 // One phone number = one person. Any earlier account with the same number (other phone, reinstalled app)
@@ -159,7 +160,7 @@ function listenUser() {
     const loc = s.loc || best.pos
     const dist = ctx.dist(loc, best.pos)
     const viaSms = !s.user.pro.online
-    ctx.set({ incoming: { id: best.id, cat: best.cat, dist: +dist.toFixed(1), note: best.note, photo: best.photo || null, voice: best.voice || null, client: best.clientName, pos: best.pos, viaSms, opened: !viaSms, expires: Date.now() + (viaSms ? 300000 : 75000) } })
+    ctx.set({ incoming: { id: best.id, cat: best.cat, dist: best.posReal === false ? null : +dist.toFixed(1), note: best.note, photo: best.photo || null, voice: best.voice || null, client: best.clientName, pos: best.pos, viaSms, opened: !viaSms, expires: Date.now() + (viaSms ? 300000 : 75000) } })
     ctx.ping(viaSms ? 'soft' : 'job')
   }))
   // jobs I accepted as a pro
@@ -168,7 +169,7 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: +(loc ? ctx.dist(loc, r.pos) : 0).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status === 'cancelled' ? 'cancelled' : r.status, acceptedAt: r.acceptedAt, threadId: r.threadId })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
     })
     jobs.sort((a, b) => b.acceptedAt - a.acceptedAt)
@@ -189,7 +190,7 @@ function listenUser() {
   // incoming internet calls
   sub('calls', onSnapshot(query(collection(db, 'calls'), where('to', 'in', myIds.length ? myIds : [uid])), snap => {
     let ring = null
-    snap.forEach(d => { const c = d.data(); if (c.state === 'ringing' && Date.now() - c.ts < 40000) ring = { id: d.id, ...c } })
+    snap.forEach(d => { const c = d.data(); if (c.state === 'ringing' && Date.now() - c.ts < 35000) ring = { id: d.id, ...c } })
     const cur = ctx.get().ringing
     if (ring && cur?.id !== ring.id) ctx.set({ ringing: ring })
     if (!ring && cur) ctx.set({ ringing: null })
@@ -260,7 +261,7 @@ export const setConfig = patch => setDoc(doc(db, 'config', 'main'), patch, { mer
 
 // ---------- WebRTC internet calls (Firestore signaling) ----------
 // STUN finds a direct path; TURN relays audio when mobile networks block direct paths (free public relay, replace with own later)
-const ICE = { iceServers: [
+const ICE = { iceCandidatePoolSize: 4, iceServers: [
   { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
   { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
 ] }
@@ -273,11 +274,12 @@ export async function startCall({ to, threadId, reqId, fromName, onState, onRemo
   pc.onicecandidate = e => e.candidate && addDoc(collection(callRef, 'cc'), e.candidate.toJSON())
   pc.onconnectionstatechange = () => onState(pc.connectionState)
   const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
-  await setDoc(callRef, { from: uid, fromName, to, threadId, reqId: reqId || null, offer: { type: offer.type, sdp: offer.sdp }, state: 'ringing', ts: Date.now() })
+  await setDoc(callRef, { from: uid, fromIds: [uid, ...myIds.filter(x => x !== uid)], fromName, to, threadId, reqId: reqId || null, offer: { type: offer.type, sdp: offer.sdp }, state: 'ringing', ts: Date.now() })
   const u1 = onSnapshot(callRef, d => {
     const c = d.data(); if (!c) return
     if (c.answer && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(c.answer))
-    if (c.state === 'declined' || c.state === 'ended') onState(c.state)
+    if (c.state === 'answered') onState('answered')
+    if (c.state === 'declined' || c.state === 'ended' || c.state === 'busy') onState(c.state === 'busy' ? 'declined' : c.state)
   })
   const u2 = onSnapshot(collection(callRef, 'ac'), s => s.docChanges().forEach(ch => ch.type === 'added' && pc.addIceCandidate(new RTCIceCandidate(ch.doc.data())).catch(() => {})))
   return { id: callRef.id, pc, local, end: (state = 'ended') => { u1(); u2(); updateDoc(callRef, { state }).catch(() => {}); pc.close(); local.getTracks().forEach(t => t.stop()) } }
@@ -285,6 +287,7 @@ export async function startCall({ to, threadId, reqId, fromName, onState, onRemo
 export async function answerCall({ callId, onState, onRemote }) {
   const callRef = doc(db, 'calls', callId)
   const c = (await getDoc(callRef)).data()
+  if (!c || c.state !== 'ringing') throw new Error('call gone')
   const pc = new RTCPeerConnection(ICE)
   const local = await navigator.mediaDevices.getUserMedia({ audio: true })
   local.getTracks().forEach(t => pc.addTrack(t, local))

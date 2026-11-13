@@ -155,4 +155,4 @@ export const catTint = id => TINT[gOf(id)]
 export const groupTint = g => TINT[g]
 export const catIconHtml = (id, color) => iconSvg(CAT_ICON[id], color || HUE[gOf(id)], '20px')
 
-export const fmtKm = (d, t) => d == null ? '' : d < 1 ? Math.max(50, Math.round(d * 1000 / 50) * 50) + ' ' + t('m') : (d < 10 ? d.toFixed(1) : Math.round(d)) + ' ' + t('km')
+export const fmtKm = (d, t) => d == null ? '? ' + t('km') : d < 1 ? Math.max(50, Math.round(d * 1000 / 50) * 50) + ' ' + t('m') : (d < 10 ? d.toFixed(1) : Math.round(d)) + ' ' + t('km')

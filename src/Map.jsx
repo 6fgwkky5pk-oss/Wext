@@ -17,6 +17,7 @@ export default function Map({ center, pros = [], focus, onPick, zoom = 14 }) {
     L.marker(center, { icon: L.divIcon({ className: '', html: '<div class="mepin"></div>', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(g)
     const pts = [center]
     pros.forEach(p => {
+      if (p.posUnknown || !p.pos) return
       const sel = focus === p.id
       const bg = !p.online ? '#bdb7aa' : sel ? '#111' : '#FFC21A'
       const m = L.marker(p.pos, { icon: L.divIcon({ className: '', html: `<div class="pin" style="background:${bg}"><span>${catIconHtml(p.cat, sel ? '#fff' : '#111')}</span></div>`, iconSize: [36, 36], iconAnchor: [18, 36] }), zIndexOffset: sel ? 1000 : 0 }).addTo(g)

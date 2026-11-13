@@ -73,7 +73,7 @@ export function Incoming() {
   if (!inc) return null
   if (!inc.opened) return <button className="smsbar" onClick={() => api.openSms()}>
     <span className="smsic">💬</span>
-    <span className="grow" style={{ textAlign: 'left' }}><b>SMS · WEXT</b><br />{t('smsJob', { cat: catName(inc.cat, lang), d: inc.dist })}</span>
+    <span className="grow" style={{ textAlign: 'left' }}><b>SMS · WEXT</b><br />{t('smsJob', { cat: catName(inc.cat, lang), d: inc.dist ?? '?' })}</span>
     <span className="btn sm yellow">{t('open')}</span>
   </button>
   return <div className="incoming">

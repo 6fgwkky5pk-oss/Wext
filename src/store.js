@@ -177,7 +177,7 @@ export const api = {
       set(s => ({ payments: [bundle, ...s.payments] }))
     }
     if (CLOUD) {
-      const id = await cloud.createRequest({ cat, note: note || '', photo: photo || null, voice: voice || null, status: 'searching', brigade, payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
+      const id = await cloud.createRequest({ cat, note: note || '', photo: photo || null, voice: voice || null, status: 'searching', brigade, payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, posReal: !!state.locReal, region: state.region || 'ge' })
       set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, photo, voice, brigade, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
       api._dispatch(id)
       return id
@@ -362,6 +362,7 @@ export const api = {
   setConfig(patch) { if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
   toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
   clearRinging() { set({ ringing: null }) },
+  setOutgoing(to) { set({ outgoing: to }) },
   setAdmin(on) { set(s => ({ user: { ...s.user, admin: on } })); if (CLOUD && on) cloud.listenAdmin() },
 }
 
