@@ -33,7 +33,7 @@ To check on real phones: two phones in Telavi, compare the km shown with Google 
 
 ## 3. Other pending
 - Real SMS login (provider not chosen) · real payments (TBC/BOG, no contract) · per-service working hours · terms/privacy texts.
-- Firestore rules: strict `firestore.rules` is in the repo; confirm it is deployed in the Firebase console.
+- ✅ Firestore rules deployed 2026-11-13 (see Repo privacy note). Next: `stats/misses` (search terms people typed) is readable by every signed-in user; make it admin-only. `stats` is writable by anyone (stats can be spoiled).
 - ✅ Admin PIN removed from the client (`pc`, 2026-11-13). Admin = only `/admins/{uid}`. ⚠️ Live `main` still has the PIN path and the old rules (any signed-in user can write `config`): fixed only after Alexander creates his `/admins/{uid}` doc, the rules are deployed and `pc` is released.
 - Map tiles: OSM standard tiles are not for heavy production use; pick a provider before launch.
 - My-pros tab: the call button reuses the old request thread; verify after a job is finished.
@@ -62,4 +62,4 @@ Rules: Alexander opens every account and enters the card himself; keys/secrets o
 
 ## Repo privacy (decided with Alexander, 2026-11-13)
 The repo stays **public for now**. Next stage: make it private. Two ways: GitHub Pro (~$4/month, Alexander opens it with the company card), or move hosting to Firebase Hosting and then make the repo private. Until then, keep the rule: no secrets, PINs, keys or real phone numbers in git.
-Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `pc` are **not deployed yet**.
+Admin: `/admins/vw1Xf…` (Alexander's phone) was created in the Firebase console on 2026-11-13. Firestore rules from `main` (v10) were **deployed on 2026-11-13** and checked live: strangers cannot list requests, chats or calls, or change prices; own requests and config still load.
