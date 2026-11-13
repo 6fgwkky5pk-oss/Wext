@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from 'react'
 import { seedPros, distKm, catName, regionFor } from './data'
 import { payments } from './payments'
+import * as cloud from './cloud'
+export const CLOUD = cloud.CLOUD
 
 const KEY = 'wext:v1'
 const uid = () => Math.random().toString(36).slice(2, 10)
@@ -11,7 +13,7 @@ const DAY = 864e5
 
 const defaultConfig = {
   baseFee: 5, promoFee: 1, promoEnd: '2027-02-13', surgeCap: 2, surgeManual: false,
-  rideFee: 1, projFee: 1, surgeThreshold: 2,
+  rideFee: 1, projFee: 1, surgeThreshold: 2, surgeMode: 'off',
 }
 
 function load() {
@@ -57,9 +59,10 @@ export function ping(kind = 'soft') {
 export function promoActive(cfg = state.config) { return new Date(cfg.promoEnd + 'T23:59:59') > new Date() }
 export function surgeFor(cat) {
   const cfg = state.config
-  if (cfg.surgeManual) return cfg.surgeCap
+  if (cfg.surgeMode === 'on' || (cfg.surgeManual && !cfg.surgeMode)) return cfg.surgeCap
+  if (cfg.surgeMode !== 'auto') return 1
   const loc = state.loc || [41.92, 45.47]
-  const near = (state.pros || []).filter(p => p.cat === cat && p.online && distKm(loc, p.pos) < 4 && !state.blockedIds.includes(p.id)).length
+  const near = (state.pros || []).filter(p => (p.cats || [p.cat]).includes(cat) && p.online && distKm(loc, p.pos) < 4 && !state.blockedIds.includes(p.id)).length
   if (near >= cfg.surgeThreshold) return 1
   return Math.min(cfg.surgeCap, near === 0 ? 1.5 : 1.3)
 }
@@ -95,22 +98,29 @@ const REPLIES = {
 // ---------- API ----------
 export const api = {
   setLang(lang) { set({ lang }); document.documentElement.lang = lang },
+  me() { return CLOUD ? cloud.myId() : 'me' },
   setLoc(loc, real) {
-    const patch = { loc, locReal: !!real }
+    const patch = { loc, locReal: !!real, region: regionFor(loc).id }
+    if (CLOUD) { set(patch); cloud.pushProfile(); return }
     if (!state.pros || !state.prosCenter || distKm(state.prosCenter, loc) > 30) { patch.pros = seedPros(loc); patch.prosCenter = loc }
     set(patch)
   },
   login(phone, name, role) {
-    const user = { id: 'u_' + uid(), phone, name, role, createdAt: now(), pro: { type: 'individual', cats: [], members: 1, online: false, noShows: 0, blocked: false, rating: 5, jobs: 0 } }
+    const user = { id: CLOUD ? cloud.myId() : 'u_' + uid(), phone, name, role, hue: Math.floor(Math.random() * 360), createdAt: now(), pro: { type: 'individual', cats: [], members: 1, online: false, noShows: 0, blocked: false, rating: 5, jobs: 0 } }
     set({ user })
+    if (CLOUD) cloud.onLogin()
   },
-  logout() { set({ user: null }) },
-  updateUser(patch) { set(s => ({ user: { ...s.user, ...patch } })) },
-  updatePro(patch) { set(s => ({ user: { ...s.user, pro: { ...s.user.pro, ...patch } } })) },
+  logout() {
+    if (CLOUD && state.user?.pro?.online) { api.updatePro({ online: false }) }
+    if (CLOUD) cloud.logoutCloud()
+    set({ user: null, requests: [], proJobs: [], chats: {}, incoming: null })
+  },
+  updateUser(patch) { set(s => ({ user: { ...s.user, ...patch } })); if (CLOUD) cloud.pushProfile() },
+  updatePro(patch) { set(s => ({ user: { ...s.user, pro: { ...s.user.pro, ...patch } } })); if (CLOUD) cloud.pushProfile() },
 
   nearbyPros(cat, radius = 50) {
     const loc = state.loc || [41.92, 45.47]
-    return (state.pros || []).filter(p => (!cat || p.cat === cat) && !state.blockedIds.includes(p.id))
+    return (state.pros || []).filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id))
       .map(p => ({ ...p, dist: distKm(loc, p.pos) })).filter(p => p.dist <= radius).sort((a, b) => (b.online - a.online) || a.dist - b.dist)
   },
 
@@ -127,6 +137,12 @@ export const api = {
       bundle = { id: pay.id, cat, amount: price.amount, status: 'held', contacts: 0, createdAt: now() }
       set(s => ({ payments: [bundle, ...s.payments] }))
     }
+    if (CLOUD) {
+      const id = await cloud.createRequest({ cat, note: note || '', status: 'searching', payId: bundle.id, radius: 3, notified: [], log: [], proId: null, clientName: state.user.name, pos: state.loc, region: state.region || 'ge' })
+      set(s => s.requests.some(r => r.id === id) ? {} : { requests: [{ id, cat, note, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], log: [] }, ...s.requests] })
+      api._dispatch(id)
+      return id
+    }
     const req = { id: 'r_' + uid(), cat, note, status: 'searching', createdAt: now(), payId: bundle.id, radius: 3, notified: [], proId: null, log: [] }
     set(s => ({ requests: [req, ...s.requests] }))
     api._dispatch(req.id)
@@ -134,21 +150,24 @@ export const api = {
   },
 
   _req(id) { return state.requests.find(r => r.id === id) },
-  _updReq(id, patch) { set(s => ({ requests: s.requests.map(r => r.id === id ? { ...r, ...(typeof patch === 'function' ? patch(r) : patch) } : r) })) },
+  _updReq(id, patch) {
+    if (CLOUD) { const r = api._req(id); const p = typeof patch === 'function' ? patch(r || {}) : patch; const { contacted, ...rest } = p; if (Object.keys(rest).length) cloud.updateRequest(id, rest); set(s => ({ requests: s.requests.map(x => x.id === id ? { ...x, ...p } : x) })); return }
+    set(s => ({ requests: s.requests.map(r => r.id === id ? { ...r, ...(typeof patch === 'function' ? patch(r) : patch) } : r) })) },
 
   // dispatch: nearest 3 online pros, 75s window, then expand radius 3 -> 6 -> 12 km
   _dispatch(id) {
     const r = api._req(id); if (!r || r.status !== 'searching') return
     const cand = api.nearbyPros(r.cat, r.radius).filter(p => p.online && !r.notified.includes(p.id)).slice(0, 3)
-    if (!cand.length) {
-      if (r.radius >= 12) { api._updReq(id, { status: 'nopros' }); api._releaseIfUnused(r.payId); return }
+    const sms = api.nearbyPros(r.cat, r.radius).filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
+    if (!cand.length && !(CLOUD && sms.length)) {
+      if (r.radius >= 12) { if (CLOUD && r.notified.length && now() - r.createdAt < 5 * 60e3) { later(id, 30000, () => api._dispatch(id)); return } api._updReq(id, { status: 'nopros' }); api._releaseIfUnused(r.payId); return }
       const radius = r.radius === 3 ? 6 : 12
       api._updReq(id, x => ({ radius, log: [...x.log, { k: 'radius', r: radius }] }))
       later(id, 1800, () => api._dispatch(id))
       return
     }
-    const sms = api.nearbyPros(r.cat, r.radius).filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
-    api._updReq(id, x => ({ notified: [...x.notified, ...cand.map(c => c.id), ...sms.map(c => c.id)], current: cand.map(c => c.id), windowEnds: now() + 75000, log: [...x.log, { k: 'notify', n: cand.length }, ...(sms.length ? [{ k: 'sms', n: sms.length }] : [])] }))
+    api._updReq(id, x => ({ notified: [...x.notified, ...cand.map(c => c.id), ...sms.map(c => c.id)], current: cand.map(c => c.id), windowEnds: now() + 75000, log: [...x.log, ...(cand.length ? [{ k: 'notify', n: cand.length }] : []), ...(sms.length ? [{ k: 'sms', n: sms.length }] : [])] }))
+    if (CLOUD) { later(id, 75000, () => { const rr = api._req(id); if (rr?.status === 'searching') { const radius = rr.radius >= 12 ? 12 : rr.radius === 3 ? 6 : 12; api._updReq(id, { radius }); api._dispatch(id) } }); return }
     // local simulation: one of them accepts in 4–10s
     later(id, 4000 + Math.random() * 6000, () => {
       const rr = api._req(id); if (!rr || rr.status !== 'searching') return
@@ -171,7 +190,7 @@ export const api = {
   // real contact = chat reply from pro, call > 20s, or GPS arrived → capture the hold
   async registerContact(reqId, how) {
     const r = api._req(reqId); if (!r || r.contacted) return
-    api._updReq(reqId, { contacted: how })
+    if (CLOUD) set(s => ({ requests: s.requests.map(x => x.id === reqId ? { ...x, contacted: how } : x) })); else api._updReq(reqId, { contacted: how })
     const p = state.payments.find(x => x.id === r.payId); if (!p) return
     if (p.status === 'held') await payments.capture(p.id)
     set(s => ({ payments: s.payments.map(x => x.id === p.id ? { ...x, status: 'captured', contacts: x.contacts + 1 } : x) }))
@@ -188,18 +207,21 @@ export const api = {
   finish(reqId, rating) { api._updReq(reqId, { status: 'done', rating }) },
 
   sendMsg(threadId, text) {
+    if (CLOUD) { cloud.sendMsg(threadId, { text }); return }
     pushMsg(threadId, { from: 'me', text })
   },
-  readThread(threadId) { set(s => s.chats[threadId] ? { chats: { ...s.chats, [threadId]: { ...s.chats[threadId], unread: 0 } } } : {}) },
+  readThread(threadId) { if (CLOUD) set(s => ({ lastRead: { ...(s.lastRead || {}), [threadId]: now() } })); set(s => s.chats[threadId] ? { chats: { ...s.chats, [threadId]: { ...s.chats[threadId], unread: 0 } } } : {}) },
   missedCall(threadId, reqId, t) {
     const r = api._req(reqId)
     // the other side receives: t('missedAuto') with a call-back button (delivered through the backend)
-    pushMsg(threadId, { from: 'system', kind: 'missed', text: t('missedSent') })
+    if (CLOUD) { cloud.sendMsg(threadId, { kind: 'missed', name: state.user?.name, cat: r?.cat || null, text: '' }); return }
+    pushMsg(threadId, { from: 'me', kind: 'missed', text: '' })
   },
 
   // projects / field work (N-slot mechanic)
-  createProject(p) { const proj = { id: 'pj_' + uid(), ownerId: state.user.id, ownerName: state.user.name, joins: [], createdAt: now(), ...p }; set(s => ({ projects: [proj, ...s.projects] })); return proj.id },
+  createProject(p) { if (CLOUD) { cloud.addItem('projects', { ...p, ownerId: state.user.id, ownerName: state.user.name, joins: [], createdAt: now(), region: state.region || 'ge' }); return } const proj = { id: 'pj_' + uid(), ownerId: state.user.id, ownerName: state.user.name, joins: [], createdAt: now(), ...p }; set(s => ({ projects: [proj, ...s.projects] })); return proj.id },
   joinProject(id, count) {
+    if (CLOUD) { const me = state.user; cloud.slotTx('projects', id, p => { const joins = p.joins.filter(j => j.userId !== me.id); const taken = joins.reduce((a, j) => a + j.count, 0); const c = Math.min(count, p.people - taken); if (c <= 0) return null; return { joins: [...joins, { userId: me.id, name: me.name, count: c, type: me.pro.type }] } }); return }
     set(s => ({ projects: s.projects.map(p => {
       if (p.id !== id) return p
       const taken = p.joins.reduce((a, j) => a + j.count, 0)
@@ -207,27 +229,31 @@ export const api = {
       return { ...p, joins: [...p.joins.filter(j => j.userId !== state.user.id), { userId: state.user.id, name: state.user.name, count: c, type: state.user.pro.type }] }
     }) }))
   },
-  leaveProject(id) { set(s => ({ projects: s.projects.map(p => p.id === id ? { ...p, joins: p.joins.filter(j => j.userId !== state.user.id) } : p) })) },
+  leaveProject(id) { if (CLOUD) { cloud.slotTx('projects', id, p => ({ joins: p.joins.filter(j => j.userId !== state.user.id) })); return } set(s => ({ projects: s.projects.map(p => p.id === id ? { ...p, joins: p.joins.filter(j => j.userId !== state.user.id) } : p) })) },
 
   // rides (same N-slot mechanic)
-  createRide(r) { const ride = { id: 'rd_' + uid(), driverId: state.user.id, driver: state.user.name, bookings: [], createdAt: now(), ...r }; set(s => ({ rides: [ride, ...s.rides] })) },
+  createRide(r) { if (CLOUD) { cloud.addItem('rides', { ...r, driverId: state.user.id, driver: state.user.name, bookings: [], createdAt: now(), region: state.region || 'ge' }); return } const ride = { id: 'rd_' + uid(), driverId: state.user.id, driver: state.user.name, bookings: [], createdAt: now(), ...r }; set(s => ({ rides: [ride, ...s.rides] })) },
   bookSeat(id, n = 1) {
+    if (CLOUD) { const me = state.user; cloud.slotTx('rides', id, r => { const b = r.bookings.filter(x => x.userId !== me.id); if (b.reduce((a, x) => a + x.n, 0) + n > r.seats) return null; return { bookings: [...b, { userId: me.id, name: me.name, n }] } }); return }
     set(s => ({ rides: s.rides.map(r => {
       if (r.id !== id) return r
       const taken = r.bookings.reduce((a, b) => a + b.n, 0); if (taken + n > r.seats) return r
       return { ...r, bookings: [...r.bookings.filter(b => b.userId !== state.user.id), { userId: state.user.id, name: state.user.name, n }] }
     }) }))
   },
-  cancelSeat(id) { set(s => ({ rides: s.rides.map(r => r.id === id ? { ...r, bookings: r.bookings.filter(b => b.userId !== state.user.id) } : r) })) },
+  cancelSeat(id) { if (CLOUD) { cloud.slotTx('rides', id, r => ({ bookings: r.bookings.filter(b => b.userId !== state.user.id) })); return } set(s => ({ rides: s.rides.map(r => r.id === id ? { ...r, bookings: r.bookings.filter(b => b.userId !== state.user.id) } : r) })) },
 
   // pro side
   setOnline(on) {
     api.updatePro({ online: on })
-    clearTimeout(timers.incoming); set({ incoming: null })
+    clearTimeout(timers.incoming)
+    if (CLOUD) { if (state.incoming) set(s => ({ incoming: { ...s.incoming, viaSms: !on, opened: true } })); return }
+    set({ incoming: null })
     api._scheduleIncoming()
   },
   // Online (green) pros get the job in-app. Offline (red) pros get an SMS; opening it and accepting turns them green.
   _scheduleIncoming() {
+    if (CLOUD) return
     const off = !state.user?.pro.online
     later('incoming', off ? 25000 + Math.random() * 20000 : 8000 + Math.random() * 10000, () => {
       const u = state.user; if (!u || u.role !== 'pro' || !u.pro.registered || u.pro.blocked || state.incoming) return
@@ -246,6 +272,11 @@ export const api = {
     const inc = state.incoming; if (!inc) return
     set({ incoming: null })
     if (accept && !state.user.pro.online) api.updatePro({ online: true })
+    if (CLOUD) {
+      if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, eta: Math.max(4, Math.round(inc.dist * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }) })
+      else { set(s => ({ declined: [...(s.declined || []), inc.id] })); cloud.declineRequest(inc.id) }
+      return
+    }
     if (accept) {
       const job = { ...inc, status: 'accepted', acceptedAt: now(), threadId: 't_' + inc.id }
       set(s => ({ proJobs: [job, ...s.proJobs], user: { ...s.user, pro: { ...s.user.pro, jobs: s.user.pro.jobs + 1 } } }))
@@ -253,8 +284,8 @@ export const api = {
     } else api._scheduleIncoming()
   },
   openSms() { set(s => s.incoming ? { incoming: { ...s.incoming, opened: true, expires: now() + 75000 } } : {}); ping('job') },
-  proArrived(jobId) { set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
-  proDone(jobId) { set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'done' } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
+  proArrived(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'arrived', arrivedAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
+  proDone(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'done' }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'done' } : j) })); if (state.user.pro.online) api._scheduleIncoming() },
   // No-show: accepted but no GPS "arrived" within 1h. 3 → automatic block.
   checkNoShows() {
     const late = state.proJobs.filter(j => j.status === 'accepted' && now() - j.acceptedAt > 3600e3)
@@ -268,16 +299,18 @@ export const api = {
   // trust & safety
   complain(reqId, proId, reason) {
     const byId = state.user?.id
+    if (CLOUD) { cloud.addItem('complaints', { reqId, proId, reason, byId, byName: state.user?.name }); return }
     set(s => ({ complaints: [{ id: uid(), reqId, proId, reason, byId, byName: s.user?.name, ts: now() }, ...s.complaints] }))
   },
-  reportBug(text, screen) { set(s => ({ bugs: [{ id: uid(), text, screen, ts: now(), by: s.user?.name, ua: navigator.userAgent }, ...s.bugs] })) },
+  reportBug(text, screen) { if (CLOUD) { cloud.addItem('bugs', { text, screen: screen || '', by: state.user?.name || '', ua: navigator.userAgent }); return } set(s => ({ bugs: [{ id: uid(), text, screen, ts: now(), by: s.user?.name, ua: navigator.userAgent }, ...s.bugs] })) },
 
   _seed(b) { set(s => ({ seeded: true, projects: [...s.projects, ...b.projects], rides: [...s.rides, ...b.rides] })) },
 
   // admin
-  setConfig(patch) { set(s => ({ config: { ...s.config, ...patch } })) },
-  toggleBlock(id) { set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
-  setAdmin(on) { set(s => ({ user: { ...s.user, admin: on } })) },
+  setConfig(patch) { if (CLOUD) cloud.setConfig(patch); set(s => ({ config: { ...s.config, ...patch } })) },
+  toggleBlock(id) { if (CLOUD) { const b = state.blockedIds.includes(id) ? state.blockedIds.filter(x => x !== id) : [...state.blockedIds, id]; cloud.setConfig({ blockedIds: b }); return } set(s => ({ blockedIds: s.blockedIds.includes(id) ? s.blockedIds.filter(x => x !== id) : [...s.blockedIds, id] })) },
+  clearRinging() { set({ ringing: null }) },
+  setAdmin(on) { set(s => ({ user: { ...s.user, admin: on } })); if (CLOUD && on) cloud.listenAdmin() },
 }
 
 // expire hold automatically if a request never got a real contact within 2h
@@ -290,3 +323,13 @@ setInterval(() => {
 if (state.user?.role === 'pro') setTimeout(() => api._scheduleIncoming(), 3000)
 // resume in-flight searches after reload
 state.requests.filter(r => r.status === 'searching').forEach(r => setTimeout(() => api._dispatch(r.id), 1000))
+
+// realtime backend
+if (CLOUD) {
+  set({ pros: [], requests: state.requests.filter(r => r.id && !r.id.startsWith('r_')), incoming: null })
+  cloud.initCloud({ set, get: () => state, api, ping, dist: distKm })
+  // pros: own blocked flag comes from admin block list
+  subs.add(() => { const u = state.user; if (u?.pro && state.blockedIds.includes(u.id) !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: s.blockedIds.includes(u.id), online: false } } })) })
+  // keep "online" fresh so stale pros drop off
+  setInterval(() => { if (state.user?.pro?.online) cloud.pushProfile() }, 5 * 60e3)
+}

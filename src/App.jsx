@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { api, useStore, getState } from './store'
+import { api, useStore, getState, CLOUD } from './store'
 import { regionFor, REGIONS } from './data'
 import { detectLang } from './i18n'
 import { I18nProvider, useT, Icon, Toaster, Sheet } from './ui'
 import { Nav } from './nav'
 import Onboarding from './screens/Onboarding'
 import { Home, CallNow, RequestTrack, Activity } from './screens/Client'
-import { ChatList, Chat, Voice } from './screens/Chat'
+import { ChatList, Chat, Voice, IncomingCall } from './screens/Chat'
 import { Projects, Rides, seedBoards } from './screens/Projects'
 import { ProHome, Incoming, ProSettings } from './screens/Pro'
 import { Profile, BugReport, Admin } from './screens/Profile'
@@ -45,7 +45,7 @@ function Shell() {
 
   useEffect(() => {
     const s = getState()
-    if (user && !s.seeded) { const b = seedBoards(regionFor(s.loc || REGIONS[0].center).id); api._seed?.(b) }
+    if (user && !s.seeded && !CLOUD) { const b = seedBoards(regionFor(s.loc || REGIONS[0].center).id); api._seed?.(b) }
   }, [user])
 
   // Android/browser back button support
@@ -79,6 +79,7 @@ function Shell() {
         <div className="tabbar">{tabs.map(([k, ic, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon n={ic} s={24} />{l}{k === 'chats' && unread > 0 && <span className="dotn">{unread}</span>}</button>)}</div>
       </>}
       {isPro && <Incoming />}
+      <IncomingCall />
       {iosHelp && <Sheet onClose={() => setIosHelp(false)}><div className="center" style={{ fontSize: 48 }}>📲</div><h2 className="center">{t('install')}</h2><p className="center b" style={{ fontSize: 17, lineHeight: 1.5 }}>{t('installIos')}</p><button className="btn primary" onClick={() => setIosHelp(false)}>{t('done')}</button></Sheet>}
       <Toaster />
     </div>

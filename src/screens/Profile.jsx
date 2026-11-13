@@ -78,7 +78,7 @@ export function Admin() {
         <div className="grid2"><div className="field"><label>{t('baseFee')}</label>{N('baseFee')}</div><div className="field"><label>{t('promoFee')}</label>{N('promoFee')}</div></div>
         <div className="field"><label>{t('promoEnd')} {promoActive(f) ? '🟢' : '⚪'}</label><input className="inp" type="date" value={f.promoEnd} onChange={e => setF({ ...f, promoEnd: e.target.value })} /></div>
         <div className="grid2"><div className="field"><label>{t('surgeCap')}</label>{N('surgeCap', 0.1)}</div><div className="field"><label>{t('surgeNow')}</label>
-          <button className={'btn sm ' + (f.surgeManual ? 'red' : 'outline')} style={{ width: '100%', height: 54 }} onClick={() => setF({ ...f, surgeManual: !f.surgeManual })}>{f.surgeManual ? 'ON' : 'AUTO'}</button></div></div>
+          <button className={'btn sm ' + (f.surgeMode === 'on' ? 'red' : f.surgeMode === 'auto' ? 'yellow' : 'outline')} style={{ width: '100%', height: 54 }} onClick={() => setF({ ...f, surgeManual: false, surgeMode: f.surgeMode === 'off' || !f.surgeMode ? 'auto' : f.surgeMode === 'auto' ? 'on' : 'off' })}>{(f.surgeMode || 'off').toUpperCase()}</button></div></div>
         <div className="grid2"><div className="field"><label>{t('projFee')}</label>{N('projFee')}</div><div className="field"><label>{t('rideFee')}</label>{N('rideFee')}</div></div>
         <button className="btn primary" onClick={() => { api.setConfig(f); toast('✅ ' + t('saved')) }}>{t('save')}</button>
       </div>}

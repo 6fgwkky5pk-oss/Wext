@@ -34,10 +34,12 @@ export function Projects({ cat, create }) {
             </div>
             <div style={{ marginTop: 12 }} className="row between small b"><span>{n}/{p.people} {t('workers')}</span><span className={left ? '' : 'mute'}>{left ? t('spotsLeft', { n: left }) : t('full')}</span></div>
             <div className="progress" style={{ marginTop: 6 }}><i style={{ width: `${(n / p.people) * 100}%` }} /></div>
-            {p.joins.length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 10 }}>{p.joins.map(j => <span key={j.userId} className="badge">{j.name}{j.count > 1 ? ` +${j.count - 1}` : ''}</span>)}</div>}
+            {p.joins.length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 10 }}>{p.joins.map(j => own
+              ? <button key={j.userId} className="badge y" style={{ padding: '6px 10px' }} onClick={() => nav.go('chat', { threadId: `p_${p.id}_${j.userId}` })}>💬 {j.name}{j.count > 1 ? ` +${j.count - 1}` : ''}</button>
+              : <span key={j.userId} className="badge">{j.name}{j.count > 1 ? ` +${j.count - 1}` : ''}</span>)}</div>}
             <div style={{ marginTop: 12 }}>
               {own ? <span className="badge y">★ {t('myProjects')}</span>
-                : me ? <div className="row"><span className="badge g" style={{ padding: '8px 12px' }}>✓ {t('applied')} · {me.count}</span><button className="btn sm outline" onClick={() => api.leaveProject(p.id)}>{t('cancel')}</button></div>
+                : me ? <div className="row"><span className="badge g" style={{ padding: '8px 12px' }}>✓ {t('applied')} · {me.count}</span><button className="btn sm yellow" onClick={() => nav.go('chat', { threadId: `p_${p.id}_${user.id}` })}><Icon n="chat" s={16} /></button><button className="btn sm outline" onClick={() => api.leaveProject(p.id)}>{t('cancel')}</button></div>
                 : left > 0 && <button className="btn yellow sm" style={{ width: '100%' }} onClick={() => setJoin(p)}>{t('joinMe')} / {t('joinTeam')}</button>}
             </div>
           </div>
@@ -122,8 +124,8 @@ export function Rides() {
               <div className="seats">{Array.from({ length: r.seats }).map((_, i) => <i key={i} className={i < tk ? 't' : ''} />)}</div>
             </div>
             <div style={{ marginTop: 12 }}>
-              {own ? <span className="badge y">★ {t('driver')} · {tk}/{r.seats}</span>
-                : me ? <div className="row"><span className="badge g" style={{ padding: '8px 12px' }}>✓ {t('booked')}</span><button className="btn sm outline" onClick={() => api.cancelSeat(r.id)}>{t('cancel')}</button></div>
+              {own ? <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}><span className="badge y">★ {t('driver')} · {tk}/{r.seats}</span>{r.bookings.map(b => <button key={b.userId} className="badge y" style={{ padding: '6px 10px' }} onClick={() => nav.go('chat', { threadId: `d_${r.id}_${b.userId}` })}>💬 {b.name}</button>)}</div>
+                : me ? <div className="row"><span className="badge g" style={{ padding: '8px 12px' }}>✓ {t('booked')}</span><button className="btn sm yellow" onClick={() => nav.go('chat', { threadId: `d_${r.id}_${user.id}` })}><Icon n="chat" s={16} /></button><button className="btn sm outline" onClick={() => api.cancelSeat(r.id)}>{t('cancel')}</button></div>
                 : left > 0 ? <button className="btn primary sm" style={{ width: '100%' }} onClick={() => { api.bookSeat(r.id, 1); toast('✅ ' + t('booked') + ' · ' + t('fee') + ' ' + money(fee.amount)) }}>{t('bookSeat')} · {t('fee')} {money(fee.amount)}</button>
                 : <span className="badge">{t('full')}</span>}
             </div>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { api, useStore, priceFor, money, promoActive, getState } from '../store'
+import { api, useStore, priceFor, money, promoActive, getState, CLOUD } from '../store'
 import { CATEGORIES, catName, searchCats, catById } from '../data'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -147,7 +147,7 @@ export function CallNow({ cat: initCat }) {
       </div>
     </div>
     <div className="dock">
-      <button className="btn primary" style={{ height: 62 }} disabled={!online.length} onClick={send}>
+      <button className="btn primary" style={{ height: 62 }} disabled={!(CLOUD ? pros.length : online.length)} onClick={send}>
         <Icon n="bolt" />{bundle ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
       </button>
     </div>
@@ -196,12 +196,12 @@ export function RequestTrack({ id }) {
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const now = useNow()
   const [rate, setRate] = useState(false), [comp, setComp] = useState(false)
-  const pro = r?.proId ? { ...pros.find(p => p.id === r.proId), icon: catIcon(r.cat) } : null
+  const pro = r?.proId ? { name: r.proName || '—', rating: 5, jobs: 0, type: 'individual', hue: 30, pos: loc, ...(pros || []).find(p => p.id === r.proId), icon: catIcon(r.cat) } : null
   const mapPros = useMemo(() => pro ? [pro] : [], [r?.proId])
 
   // simulated GPS arrival of the pro (real build: pro app GPS geofence)
   useEffect(() => {
-    if (r?.status !== 'accepted') return
+    if (CLOUD || r?.status !== 'accepted') return
     const tm = setTimeout(() => { api.markArrived(id); }, 45000)
     return () => clearTimeout(tm)
   }, [r?.status])
