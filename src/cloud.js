@@ -49,7 +49,7 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, pos: round(s.loc) || null, region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, pro: u.pro, ...(s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
   }, 400)
@@ -103,7 +103,7 @@ function listenUser() {
       const u = d.data(); if (d.id === uid || !u.pro?.registered || !u.pos) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], members: u.pro.members || 1,
-        verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, hue: u.hue ?? 30,
+        verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
         online: !!u.pro.online && now - (u.updatedAt || 0) < 6 * 3600e3,
       })
     })

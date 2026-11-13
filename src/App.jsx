@@ -19,9 +19,11 @@ function useLocation() {
     const s = getState()
     if (!s.loc) api.setLoc(REGIONS[0].center, false)
     if (!s.lang) api.setLang(detectLang())
-    navigator.geolocation?.getCurrentPosition(
-      p => api.setLoc([p.coords.latitude, p.coords.longitude], true),
-      () => {}, { enableHighAccuracy: true, timeout: 12000, maximumAge: 600000 })
+    // live GPS: high accuracy, follows the phone (updates when moved ~50 m)
+    const id = navigator.geolocation?.watchPosition(
+      p => api.setLoc([p.coords.latitude, p.coords.longitude], true, p.coords.accuracy),
+      () => api.setLocDenied(), { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 })
+    return () => id != null && navigator.geolocation.clearWatch(id)
   }, [])
 }
 

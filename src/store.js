@@ -117,10 +117,12 @@ export const api = {
     set(s => { const st = { ...(s.catStats || {}) }; keys.forEach(k => st[k] = (st[k] || 0) + n); return { catStats: st } })
   },
   setLang(lang) { set({ lang }); document.documentElement.lang = lang },
+  setLocDenied() { if (!state.locReal) set({ locDenied: true }) },
   me() { return CLOUD ? cloud.myId() : 'me' },
-  setLoc(loc, real) {
-    const patch = { loc, locReal: !!real, region: regionFor(loc).id }
-    if (CLOUD) { set(patch); cloud.pushProfile(); return }
+  setLoc(loc, real, acc) {
+    if (real && state.locReal && state.loc && distKm(state.loc, loc) < 0.05 && !(acc && state.locAcc && acc < state.locAcc / 2)) return
+    const patch = { loc, locReal: !!real, locAcc: real ? Math.round(acc || 0) : null, locDenied: false, region: regionFor(loc).id }
+    if (CLOUD) { set(patch); if (real) cloud.pushProfile(); return }
     if (!state.pros || !state.prosCenter || distKm(state.prosCenter, loc) > 30) { patch.pros = seedPros(loc); patch.prosCenter = loc }
     set(patch)
   },

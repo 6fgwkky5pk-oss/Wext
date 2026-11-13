@@ -73,7 +73,7 @@ export function ProRow({ p, onClick, right }) {
     <Avatar p={p} />
     <div className="grow">
       <div className="row" style={{ gap: 6 }}><b className="ell">{p.name}</b></div>
-      <div className="meta"><span className="stars">★ {p.rating}</span><span>· {p.jobs} {t('jobs')}</span>{p.dist != null && <span>· {p.dist.toFixed(1)} {t('km')}</span>}</div>
+      <div className="meta"><span className="stars">★ {p.rating}</span><span>· {p.jobs} {t('jobs')}</span>{p.dist != null && <span>· {p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}</div>
       <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={p} /></div>
     </div>
     {right}
@@ -154,3 +154,5 @@ export function GroupIcon({ g, size = '1em', color }) { return <Glyph spec={GROU
 export const catTint = id => TINT[gOf(id)]
 export const groupTint = g => TINT[g]
 export const catIconHtml = (id, color) => iconSvg(CAT_ICON[id], color || HUE[gOf(id)], '20px')
+
+export const fmtKm = (d, t) => d == null ? '' : d < 1 ? Math.max(50, Math.round(d * 1000 / 50) * 50) + ' ' + t('m') : (d < 10 ? d.toFixed(1) : Math.round(d)) + ' ' + t('km')

@@ -398,3 +398,4 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .tgl.on{background:var(--green)}.tgl.on i{left:21px}
 .app.big{zoom:1.15}
 .dealrow .btn{font-size:14.5px;padding:0 8px;gap:5px;min-width:0;white-space:nowrap}
+.locwarn{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #E5484D;color:#B4232A;border-radius:16px;padding:10px 12px;font-weight:800;font-size:13.5px;text-align:left}

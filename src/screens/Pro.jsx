@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
 import { CATEGORIES, catName } from '../data'
-import { useT, Icon, Ring, useNow, catIcon, catTint, Stepper, RoleSwitch } from '../ui'
+import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
 export function ProHome() {
@@ -30,7 +30,7 @@ export function ProHome() {
       {!pro.online && <p className="center small b mute" style={{ marginTop: -6 }}>💬 {t('offlineSms')}</p>}
 
       {active.map(j => <div key={j.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--ink)' }}>
-        <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{t('away', { d: j.dist })}{j.note ? ' · ' + j.note : ''}</div></div></div>
+        <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{fmtKm(j.dist, t)}{j.note ? ' · ' + j.note : ''}</div></div></div>
         {j.photo && <img src={j.photo} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 14, marginTop: 8 }} />}
         {j.voice && <audio src={j.voice} controls style={{ width: '100%', marginTop: 8 }} />}
         <div className="grid2" style={{ marginTop: 12 }}>
@@ -77,7 +77,7 @@ export function Incoming() {
     {inc.viaSms && <div className="center small b" style={{ marginTop: 6 }}>🔴 → 🟢 {t('acceptGoesOnline')}</div>}
     <div className="center" style={{ fontSize: 72, marginTop: 18 }}>{catIcon(inc.cat)}</div>
     <h1 className="center" style={{ fontSize: 30 }}>{catName(inc.cat, lang)}</h1>
-    <p className="center b" style={{ fontSize: 18, margin: '8px 0 0' }}>📍 {t('away', { d: inc.dist })} · {inc.client}</p>
+    <p className="center b" style={{ fontSize: 18, margin: '8px 0 0' }}>📍 {fmtKm(inc.dist, t)} · {inc.client}</p>
     {inc.note && <div className="card center b" style={{ marginTop: 16 }}>“{inc.note}”</div>}
     {(inc.photo || inc.voice) && <div className="col" style={{ marginTop: 12, gap: 8 }}>
       {inc.photo && <img src={inc.photo} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 16 }} />}
