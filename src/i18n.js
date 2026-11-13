@@ -7,6 +7,13 @@ export const LANGS = [
 ]
 
 const ka = {
+  nearMe: 'შენთან ახლოს',
+  whatToday: 'რა გჭირდება დღეს, {name}?',
+  liveNow: '{n} ხელოსანი ახლა ხაზზეა · მოვა ~{m} წთ-ში',
+  findPro: 'მოძებნე ხელოსანი',
+  popular: 'პოპულარული',
+  nearNow: 'შენთან ახლოს ახლა',
+  trustLine: 'თანხა ჩამოიჭრება მხოლოდ მაშინ, როცა ხელოსანი რეალურად დაგიკავშირდება',
   missedSent: 'არ უპასუხა. მას გაეგზავნა შეტყობინება, რომ დაურეკე და გადმოგირეკოს.',
   perDay: 'დღეში',
   tagline: 'ხელოსანი ერთ შეხებაში',
@@ -50,6 +57,13 @@ const ka = {
 }
 
 const en = {
+  nearMe: 'Near you',
+  whatToday: 'What do you need today, {name}?',
+  liveNow: '{n} pros online now · arrives in ~{m} min',
+  findPro: 'Find a pro',
+  popular: 'Popular',
+  nearNow: 'Near you right now',
+  trustLine: 'You are charged only when a pro actually contacts you',
   missedSent: 'No answer. They got a message that you called and should call you back.',
   perDay: 'per day',
   tagline: 'Help in one tap',
@@ -93,6 +107,13 @@ const en = {
 }
 
 const ru = {
+  nearMe: 'Рядом с вами',
+  whatToday: 'Что нужно сегодня, {name}?',
+  liveNow: '{n} мастеров сейчас на линии · приедет ~за {m} мин',
+  findPro: 'Найти мастера',
+  popular: 'Популярное',
+  nearNow: 'Рядом прямо сейчас',
+  trustLine: 'Деньги списываются только когда мастер реально свяжется с вами',
   missedSent: 'Нет ответа. Ему отправлено сообщение, что вы звонили, с просьбой перезвонить.',
   perDay: 'в день',
   tagline: 'Мастер в одно касание',
@@ -136,6 +157,13 @@ const ru = {
 }
 
 const de = {
+  nearMe: 'In deiner Nähe',
+  whatToday: 'Was brauchst du heute, {name}?',
+  liveNow: '{n} Profis jetzt online · da in ~{m} Min',
+  findPro: 'Profi finden',
+  popular: 'Beliebt',
+  nearNow: 'Jetzt in deiner Nähe',
+  trustLine: 'Belastet wird nur, wenn ein Profi dich wirklich kontaktiert',
   missedSent: 'Keine Antwort. Er/sie wurde benachrichtigt, dass du angerufen hast, und soll zurückrufen.',
   perDay: 'pro Tag',
   tagline: 'Hilfe mit einem Tipp',
@@ -179,6 +207,13 @@ const de = {
 }
 
 const tr = {
+  nearMe: 'Yakınında',
+  whatToday: 'Bugün neye ihtiyacın var, {name}?',
+  liveNow: 'Şu an {n} usta çevrimiçi · ~{m} dk’da gelir',
+  findPro: 'Usta bul',
+  popular: 'Popüler',
+  nearNow: 'Şu an yakınında',
+  trustLine: 'Ücret yalnızca usta seninle gerçekten iletişime geçince çekilir',
   missedSent: 'Yanıt yok. Aradığın ve geri araması gerektiği bildirildi.',
   perDay: 'günlük',
   tagline: 'Tek dokunuşla usta',

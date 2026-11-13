@@ -1,10 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, promoActive, getState } from '../store'
 import { CATEGORIES, catName, searchCats, catById } from '../data'
-import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, useNow, toast, Ring } from '../ui'
+import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, fmtDate, promoText, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
 import { TEST_MODE } from '../payments'
 import Map from '../Map'
+
+const TINT = { plumber: '#E0F0FF', electric: '#FFF3BF', appliance: '#E6FCF5', handyman: '#FFE3E3', painter: '#F3F0FF', tiler: '#FFF0E0', carpenter: '#F4EBDD', locksmith: '#FFF9DB', cleaning: '#E3FAFC', windows: '#E7F5FF', harvest: '#F3E8FF', land: '#EBFBEE', garden: '#E6FCF5', firewood: '#FFF0E0', movers: '#F1F3F5' }
+const go = (nav, c) => nav.go(c.kind === 'field' ? 'projects' : 'call', { cat: c.id, create: c.kind === 'field' })
 
 export function Home({ install }) {
   const { t, lang } = useT()
@@ -12,60 +15,72 @@ export function Home({ install }) {
   const user = useStore(s => s.user)
   const locReal = useStore(s => s.locReal)
   const cfg = useStore(s => s.config)
+  const pros = useStore(s => s.pros)
+  const blocked = useStore(s => s.blockedIds)
   const [q, setQ] = useState('')
   const res = useMemo(() => searchCats(q, lang), [q, lang])
   const p = priceFor('handyman')
   const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived'].includes(r.status)))
+  const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, blocked])
+  const eta = near.length ? Math.max(5, Math.round(near[0].dist * 3 + 5)) : null
+  const featured = useMemo(() => { const seen = new Set(); return near.filter(x => !seen.has(x.cat) && seen.add(x.cat)).slice(0, 8) }, [near])
 
-  return <div className="scroll">
-    <div className="top" style={{ paddingBottom: 4 }}>
-      <div className="grow">
-        <div className="locchip"><span className="dot" />{locReal ? <Icon n="pin" s={16} /> : null}<span className="small mute b">{locReal ? t('nearby') : t('locating')}</span></div>
-        <h1 style={{ fontSize: 24, marginTop: 4 }} className="ell">{t('hello')}, {user.name.split(' ')[0]} 👋</h1>
+  return <div className="scroll" style={{ paddingTop: 0 }}>
+    <div className="homehead">
+      <div className="row between">
+        <div className="locchip"><span className="dot" /><span className="small b">{locReal ? '📍 ' + t('nearMe') : t('locating')}</span></div>
+        <button className="iconbtn" style={{ width: 38, height: 38 }} onClick={() => nav.go('bug')} aria-label="bug"><Icon n="bug" s={18} /></button>
       </div>
-      <button className="iconbtn" onClick={() => nav.go('bug')} aria-label="bug"><Icon n="bug" s={20} /></button>
+      <h1 className="hh">{t('whatToday', { name: user.name.split(' ')[0] })} 👋</h1>
+      <div className="search" style={{ marginTop: 14 }}><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
     </div>
 
-    <div className="pad col" style={{ gap: 14, marginTop: 8 }}>
-      <div className="search"><Icon n="search" s={20} /><input placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+    {q ? <div className="pad list" style={{ marginTop: 14 }}>
+      {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => go(nav, c)}>
+        <span className="av" style={{ background: TINT[c.id], fontSize: 24 }}>{c.icon}</span>
+        <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
+      {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
+    </div> : <>
+      <div className="pad" style={{ marginTop: -46, position: 'relative', zIndex: 2 }}>
+        {active && <button className="card row" onClick={() => nav.go('request', { id: active.id })} style={{ textAlign: 'left', marginBottom: 10, border: '2px solid var(--ink)' }}>
+          <span style={{ fontSize: 26 }}>{catIcon(active.cat)}</span>
+          <div className="grow"><b>{catName(active.cat, lang)}</b><div className="small b" style={{ color: 'var(--green)' }}>{active.status === 'searching' ? t('searching') : t('accepted')}</div></div>
+          <Icon n="right" />
+        </button>}
+        <button className="callcard" onClick={() => nav.go('call')}>
+          {p.promo && <span className="promo y">🔥 {promoText(t, cfg.promoEnd, lang)}</span>}
+          <h2>⚡ {t('callNow')}</h2>
+          <div className="live">
+            <div className="stack">{[...near].sort((a, b) => (a.type === 'company') - (b.type === 'company')).slice(0, 4).map(x => <Avatar key={x.id} p={{ ...x, online: false }} />)}</div>
+            <span>{near.length ? t('liveNow', { n: near.length, m: eta }) : t('callNowSub')}</span>
+          </div>
+          <div className="cta"><span><b className="pr">{money(p.amount)}</b>{p.old && <s>{money(p.old)}</s>} · {t('findPro')}</span><span className="ar"><Icon n="right" /></span></div>
+          {p.surge > 1 && <span className="badge r" style={{ marginTop: 10 }}>⚡ {t('highDemand')} ×{p.surge}</span>}
+        </button>
+      </div>
 
-      {q ? <div className="list">
-        {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => nav.go(c.kind === 'field' ? 'projects' : 'call', { cat: c.id, create: c.kind === 'field' })}>
-          <span className="av" style={{ background: '#FFF1C2', fontSize: 24 }}>{c.icon}</span>
-          <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><Icon n="right" s={18} /></button>)}
-        {!res.length && <div className="empty"><div className="e">🔎</div>{t('none')}</div>}
-      </div> : <>
-      {active && <button className="card row" onClick={() => nav.go('request', { id: active.id })} style={{ textAlign: 'left', background: '#111', color: '#fff' }}>
-        <span style={{ fontSize: 26 }}>{catIcon(active.cat)}</span>
-        <div className="grow"><b>{catName(active.cat, lang)}</b><div className="small" style={{ color: 'var(--y)' }}>{active.status === 'searching' ? t('searching') : t('accepted')}</div></div>
-        <Icon n="right" />
-      </button>}
+      <div className="sec"><h3>{t('popular')}</h3></div>
+      <div className="hscroll">
+        {CATEGORIES.filter(c => c.kind === 'instant').map(c => <button key={c.id} className="ctile" onClick={() => go(nav, c)}><i style={{ background: TINT[c.id] }}>{c.icon}</i>{c.n[lang] || c.n.en}</button>)}
+      </div>
 
-      <button className="hero" onClick={() => nav.go('call')}>
-        <Bolt className="bolt" />
-        {p.promo && <span className="promo">🔥 {t('promoUntil', { d: fmtDate(cfg.promoEnd, lang) })}</span>}
-        <h1 style={{ marginTop: p.promo ? 12 : 0 }}>{t('callNow')}</h1>
-        <div className="sub">{t('callNowSub')}</div>
-        <div className="go">
-          <div><span className="price">{money(p.amount)}</span>{p.old && <span className="old">{money(p.old)}</span>}
-            {p.surge > 1 && <span className="badge r" style={{ marginLeft: 8 }}>⚡ {t('highDemand')}</span>}</div>
-          <span className="arrow"><Icon n="right" /></span>
+      {featured.length > 0 && <><div className="sec"><h3>{t('nearNow')} <span className="livedot" /></h3></div>
+      <div className="hscroll">
+        {featured.map(x => <button key={x.id} className="pcard" onClick={() => nav.go('call', { cat: x.cat })}>
+          <Avatar p={x} /><b className="ell">{x.name}{x.verified ? ' ✓' : ''}</b>
+          <span>⭐ {x.rating} · {x.dist.toFixed(1)} {t('km')}</span><span>{catIcon(x.cat)} {catName(x.cat, lang)}</span>
+        </button>)}
+      </div></>}
+
+      <div className="pad col" style={{ marginTop: 18, gap: 12 }}>
+        <div className="grid2">
+          <button className="tile" onClick={() => nav.go('projects')}><span className="emoji">🍇</span><div><h3>{t('projects')}</h3><p>{t('projectsSub')}</p></div></button>
+          <button className="tile" onClick={() => nav.go('rides')}><span className="emoji">🚗</span><div><h3>{t('ride')}</h3><p>{t('rideSub')}</p></div></button>
         </div>
-      </button>
-
-      <div className="grid2">
-        <button className="tile" onClick={() => nav.go('projects')}><span className="emoji">🍇</span><div><h3>{t('projects')}</h3><p>{t('projectsSub')}</p></div></button>
-        <button className="tile" onClick={() => nav.go('rides')}><span className="emoji">🚗</span><div><h3>{t('ride')}</h3><p>{t('rideSub')}</p></div></button>
+        <div className="trust">🔒 <span>{t('trustLine')}</span></div>
+        {install && <InstallCard onClick={install} />}
       </div>
-      {install && <InstallCard onClick={install} />}
-
-      <h3 style={{ marginTop: 4 }}>{t('categories')}</h3>
-      <div className="cats">
-        {CATEGORIES.map(c => <button key={c.id} className="cat" onClick={() => nav.go(c.kind === 'field' ? 'projects' : 'call', { cat: c.id, create: c.kind === 'field' })}>
-          <span className="ic">{c.icon}</span>{c.n[lang] || c.n.en}</button>)}
-      </div>
-      </>}
-    </div>
+    </>}
   </div>
 }
 

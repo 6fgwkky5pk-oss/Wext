@@ -120,6 +120,11 @@ export function Toaster() {
 export const catIcon = id => catById(id)?.icon || '🔧'
 const KA_M = ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი', 'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი']
 const RU_M = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+const KA_UNTIL = ['იანვრამდე', 'თებერვლამდე', 'მარტამდე', 'აპრილამდე', 'მაისამდე', 'ივნისამდე', 'ივლისამდე', 'აგვისტომდე', 'სექტემბრამდე', 'ოქტომბრამდე', 'ნოემბრამდე', 'დეკემბრამდე']
+export function promoText(t, d, lang) {
+  if (lang === 'ka') { const x = new Date(d + 'T12:00:00'); return `აქცია ${x.getDate()} ${KA_UNTIL[x.getMonth()]}` }
+  return t('promoUntil', { d: fmtDate(d, lang) })
+}
 export function fmtDate(d, lang) {
   const x = typeof d === 'string' && d.length === 10 ? new Date(d + 'T12:00:00') : new Date(d)
   if (lang === 'ka') return `${x.getDate()} ${KA_M[x.getMonth()]}`
