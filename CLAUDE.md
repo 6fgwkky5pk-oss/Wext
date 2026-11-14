@@ -30,7 +30,7 @@ Owner decisions (neutral rules):
 React 18 + Vite 5 PWA (`base: './'`). State: `src/store.js` (useSyncExternalStore, `api` facade). Firebase (project `wext-af650`, Firestore europe-west3, Spark plan, anonymous auth) in `src/cloud.js`; `CLOUD` mode when config exists. Calls: WebRTC with Firestore signalling, STUN + public TURN.
 Local test: `npm run build && cd dist && python3 -m http.server 4321`.
 **Testing on live Firebase:** use geolocation far from Georgia (10,10 or -20,-20) and fresh fake numbers (5550002xx–5550004xx; never 555999000/555777888) — real users live in Telavi; never send requests/calls to them (incident 2026-11-13, see HANDOFF.md §9).
-**Release state:** live = sw `wext-v14` (T-007 single handyman entry, owner go 2026-11-14 00:11 UTC). Next sw version `wext-v15`.
+**Release state:** live = sw `wext-v14` (T-007 one handyman entry, owner go 2026-11-14). Next sw version `wext-v15`.
 
 ## Product (agreed decisions)
 - One model everywhere: a worker turns the **green** button on when free; client sees nearby free workers, books, pays only a **booking fee**; the job itself is paid directly.
