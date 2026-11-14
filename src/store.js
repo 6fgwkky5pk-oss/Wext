@@ -5,6 +5,7 @@ import { seedPros, distKm, catName, regionFor, catById, CATEGORIES, GROUPS, TYPI
 import { payments } from './payments'
 import * as cloud from './cloud'
 export const CLOUD = cloud.CLOUD
+export const DEMO = cloud.DEMO
 
 const KEY = 'wext:v1'
 const uid = () => Math.random().toString(36).slice(2, 10)
@@ -148,6 +149,7 @@ export const api = {
   setLoc(loc, real, acc) {
     if (real && state.locReal && state.loc && distKm(state.loc, loc) < 0.05 && !(acc && state.locAcc && acc < state.locAcc / 2)) return
     const patch = { loc, locReal: !!real, locAcc: real ? Math.round(acc || 0) : null, locDenied: false, region: regionFor(loc).id }
+    if (DEMO) api._bots(loc)
     if (CLOUD) {
       set(patch); cloud.relistenPros()
       // only workers publish a position; write again only after a real move (300 m) or 10 min, not on every GPS tick
@@ -171,9 +173,15 @@ export const api = {
   updateUser(patch) { if (typeof patch.name === 'string') patch = { ...patch, name: clean(patch.name, 40) }; set(s => ({ user: { ...s.user, ...patch } })); if (CLOUD) cloud.pushProfile() },
   updatePro(patch) { set(s => ({ user: { ...s.user, pro: { ...s.user.pro, ...patch } } })); if (CLOUD) cloud.pushProfile() },
 
+  // test mode: ~80 bots around me (memory only), regenerated when I move far
+  _bots(loc) {
+    if (state.demoBots?.length && state.botsCenter && distKm(state.botsCenter, loc) < 30) return
+    set({ demoBots: seedPros(loc).map(p => ({ ...p, id: 'bot_' + p.id, name: '🤖 ' + p.name, bot: true })), botsCenter: loc })
+  },
   nearbyPros(cat, radius = 50) {
     const loc = state.loc || [41.92, 45.47]
-    return (state.pros || []).filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id))
+    const all = DEMO ? [...(state.pros || []), ...(state.demoBots || [])] : (state.pros || [])
+    return all.filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id))
       .map(p => ({ ...p, dist: distKm(loc, p.pos) })).filter(p => p.dist <= radius).sort((a, b) => (b.online - a.online) || a.dist - b.dist)
   },
 
@@ -217,7 +225,7 @@ export const api = {
   // dispatch: nearest 3 online pros, 75s window, then expand radius 3 -> 6 -> 12 km
   _dispatch(id) {
     const r = api._req(id); if (!r || r.status !== 'searching') return
-    const pool = api.nearbyPros(r.cat, r.radius).filter(p => !r.brigade || p.type !== 'individual')
+    const pool = api.nearbyPros(r.cat, r.radius).filter(p => !p.bot && (!r.brigade || p.type !== 'individual')) // bots never get orders
     const cand = pool.filter(p => p.online && !r.notified.includes(p.id)).slice(0, 3)
     const sms = pool.filter(p => !p.online && !r.notified.includes(p.id)).slice(0, 5)
     if (!cand.length && !(CLOUD && sms.length)) {
@@ -427,6 +435,28 @@ setInterval(() => {
   state.requests.filter(r => r.status === 'accepted' && !r.contacted && now() - r.acceptedAt > 2 * 3600e3).forEach(r => { api._updReq(r.id, { status: 'expired' }); api._releaseIfUnused(r.payId) })
   if (state.user?.pro?.registered) api.checkNoShows()
 }, 30000)
+
+// test mode: enter (copy my profile into a separate offline state) / leave
+export function setDemo(on) {
+  try {
+    if (on) localStorage.setItem('wext:demo', '1')
+    else localStorage.removeItem('wext:demo')
+  } catch {}
+  location.reload()
+}
+// test mode: every minute some bots go free/busy and bot clients book bot workers
+if (DEMO) {
+  const NAMES = ['ნინო', 'გიორგი', 'მარიამ', 'ლევან', 'თამარ', 'დავით', 'ანა', 'ირაკლი']
+  const STEPS = ['accepted', 'arrived', 'done']
+  const tick = () => {
+    const pros = (state.demoBots || []).map(p => Math.random() < 0.15 ? { ...p, online: !p.online } : p)
+    const free = pros.filter(p => p.online)
+    const ev = [...Array(1 + Math.floor(Math.random() * 3))].map(() => { const p = free[Math.floor(Math.random() * free.length)]
+      return p && { id: Math.random().toString(36).slice(2), at: now(), client: '🤖 ' + NAMES[Math.floor(Math.random() * NAMES.length)], pro: p.name, cat: p.cat, st: STEPS[Math.floor(Math.random() * 3)] } }).filter(Boolean)
+    set(s => ({ demoBots: pros, demoFeed: [...ev, ...(s.demoFeed || [])].slice(0, 30) }))
+  }
+  setTimeout(() => { api._bots(state.loc || [41.92, 45.47]); tick() }, 3000); setInterval(tick, 60e3)
+}
 
 // resume pro network after reload
 if (state.user?.pro?.registered) setTimeout(() => api._scheduleIncoming(), 3000)

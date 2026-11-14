@@ -54,7 +54,7 @@ export const useT = () => useContext(I18n)
 export function Avatar({ p, lg }) {
   const bg = p.type === 'company' ? '#111' : `hsl(${p.hue ?? 30} 70% 46%)`
   return <div className={'av' + (lg ? ' lg' : '')} style={{ background: bg }}>
-    {p.type === 'company' ? <span style={{ color: '#FFC21A' }}>{p.name[0]}</span> : initials(p.name)}
+    {p.type === 'company' ? <span style={{ color: '#FFC21A' }}>{Array.from(String(p.name).replace(/^🤖\s*/u, ''))[0]}</span> : initials(p.name)}
     {p.online && <i className="on" />}
   </div>
 }

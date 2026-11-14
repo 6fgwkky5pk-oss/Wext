@@ -214,6 +214,7 @@ export function seedPros(center) {
 }
 
 export function initials(name) {
+  name = String(name || '').replace(/^🤖\s*/u, '')
   const p = name.replace(/ს ბრიგადა$/, '').split(' ')
   return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase()
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { api, useStore, getState, CLOUD } from './store'
+import { api, useStore, getState, CLOUD, DEMO, setDemo } from './store'
 import { regionFor, REGIONS } from './data'
 import { TEST_MODE } from './payments'
 import { detectLang } from './i18n'
@@ -112,6 +112,7 @@ function Shell() {
 
   return <Nav.Provider value={nav}>
     <div className={'app' + (big ? ' big' : '')} data-theme={THEME}>
+      {DEMO && <button className="demobar" onClick={() => setDemo(false)}>🧪 {t('demoBar')} · <u>{t('demoExit')}</u></button>}
       {Screen ? <Screen key={top.k} {...top.params} /> : <>
         {tab === 'home' && (isPro ? <ProHome /> : <Home install={installFn} />)}
         {tab === 'mypros' && <MyPros />}

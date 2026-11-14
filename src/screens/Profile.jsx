@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { api, CLOUD, useStore, money, promoActive, getState, groupOrder } from '../store'
+import { api, CLOUD, useStore, money, promoActive, getState, groupOrder, setDemo } from '../store'
 import { LANGS } from '../i18n'
 import { catName, CATEGORIES, GROUPS, groupName, TYPICAL, SLANG } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
@@ -112,6 +112,7 @@ export function Admin() {
   return <div className="scroll nopad">
     <Top title={t('admin')} onBack={nav.back} />
     <div className="pad col">
+      <button className="btn outline" onClick={() => setDemo(true)}>🧪 {t('demoOn')}</button>
       <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['words', t('words')], ['bugs', t('bugs')], ['orders', t('orders')], ['testers', t('testers')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
 
       {tab === 'stats' && <div className="grid2">

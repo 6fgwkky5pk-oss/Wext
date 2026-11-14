@@ -17,6 +17,9 @@ import {
 import firebaseConfig from './firebase-config'
 import { setExtraSyn } from './data'
 
+// test mode (admin switch, this phone only): simulated workers ("bots") are shown next to the real ones.
+// Bots live only in this phone's memory: never written to the database, never sent an order.
+export const DEMO = (() => { try { return localStorage.getItem('wext:demo') === '1' } catch { return false } })()
 export const CLOUD = !!(firebaseConfig && firebaseConfig.apiKey)
 let app, auth, db
 let ctx // { set, get, api }

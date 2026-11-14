@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
+import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, DEMO, groupOrder, catRank } from '../store'
 import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh, priceLevel, guessHandy } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
@@ -24,7 +24,8 @@ export function Home({ install }) {
   useEffect(() => { if (q.trim().length < 3 || res.length) return; const id = setTimeout(() => api.missSearch(q), 2500); return () => clearTimeout(id) }, [q, res.length])
   const p = priceFor('handyman')
   const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status)))
-  const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, blocked])
+  const bots = useStore(s => s.demoBots)
+  const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, bots, blocked])
   const eta = near.length ? Math.max(5, Math.round(near[0].dist * 3 + 5)) : null
   const featured = useMemo(() => { const seen = new Set(); return near.filter(x => !seen.has(x.cat) && seen.add(x.cat)).slice(0, 8) }, [near])
 
@@ -81,11 +82,26 @@ export function Home({ install }) {
             <span className="e" style={{ background: groupTint(id) }}><GroupIcon g={id} size="32px" /></span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
           </button>)}
         </div>
+        {DEMO && <DemoFeed />}
         {p.promo && <div className="h7promo">🔥 {promoText(t, cfg.promoEnd, lang)} · <b>{money(p.amount)}</b> <s>{money(cfg.baseFee)}</s></div>}
         <div className="trust">🔒 <span>{t('trustLine')}</span></div>
         {install && <InstallCard onClick={install} />}
       </>}
     </div>
+  </div>
+}
+
+const NONE = []
+// test mode: what the bots are doing (refreshes every minute)
+function DemoFeed() {
+  const { t, lang } = useT()
+  const feed = useStore(s => s.demoFeed) || NONE
+  const pros = useStore(s => s.demoBots) || NONE
+  const ST = { accepted: t('accepted'), arrived: t('arrivedOk'), done: '✓' }
+  return <div className="card col" style={{ gap: 8 }}>
+    <b>🤖 {t('demoFeed')} · {pros.filter(p => p.online).length} / {pros.length} 🟢</b>
+    {feed.slice(0, 6).map(e => <div key={e.id} className="row small" style={{ gap: 8 }}><span style={{ fontSize: 18 }}>{catIcon(e.cat)}</span>
+      <span className="grow ell"><b>{e.client}</b> → {e.pro} · {catName(e.cat, lang)}</span><span className="mute b">{ST[e.st]}</span></div>)}
   </div>
 }
 
@@ -116,7 +132,8 @@ export function CallNow({ cat: initCat, group }) {
   const [focus, setFocus] = useState(null)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
-  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: ((p.prices || {})[cat] || [])[0] || null, priceUnit: (TYPICAL[cat] || [])[2], priceLvl: priceLevel(((p.prices || {})[cat] || [])[0], typicalFor(cat)) })) : [], [cat, loc, blocked, brig])
+  const allPros = useStore(s => s.pros), bots = useStore(s => s.demoBots)
+  const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: ((p.prices || {})[cat] || [])[0] || null, priceUnit: (TYPICAL[cat] || [])[2], priceLvl: priceLevel(((p.prices || {})[cat] || [])[0], typicalFor(cat)) })) : [], [cat, loc, blocked, brig, allPros, bots])
   const online = pros.filter(p => p.online)
   const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
