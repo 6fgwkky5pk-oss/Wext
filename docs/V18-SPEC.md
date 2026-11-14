@@ -39,6 +39,7 @@ Already coded on staging: `config.bots.on` absent = ON for everyone; cities tbs 
 ## C3. Location you can see (owner 13:51: people sitting together could not see each other — the workers' phones sent a coarse network location in another city)
 - Home (client and work mode), under the top bar: „📍 შენ: <nearest city/region name>“ (+ „±N კმ“ when accuracy > 1 km). Tap = ask for location again (same as the 📍 button).
 - If `locAcc` > 2000 m: yellow warning „მდებარეობა უხეშია — ჩართე ზუსტი მდებარეობა (Settings → Privacy → Location Services → Safari/WEXT → Precise Location)“ — for workers also on the green-toggle screen.
+- „ქალაქის ხელით არჩევა“: under the warning and in the 📍 sheet, a searchable city list (the bot cities + every region centre from B). Choosing one sets `loc` = city centre, `locManual: true`, shown as „📍 შენ: ≈ <ქალაქი> (ხელით)“; a later precise GPS fix (accuracy < 500 m) replaces it. Workers with a manual city publish that point (rounded to 1 km).
 - Publish `locAcc` (rounded to 100 m) on the worker doc (rules: number 0–100000) so admin can see coarse positions; admin users tab shows „±N კმ“.
 - Test: `tests/e2e/brigade-visible.cjs` (brigade member near the client → client sees the brigade with ~1 km distance; brigadier offer lists the nearest member) must pass.
 
