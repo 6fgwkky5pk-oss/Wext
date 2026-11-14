@@ -37,6 +37,7 @@ Already coded on staging: `config.bots.on` absent = ON for everyone; cities tbs 
 - Sheet on short screens (≤ 660 px): keep the action buttons visible — make the sheet's last button row `position: sticky; bottom: 0` with the sheet background.
 
 ## C3. Location you can see (owner 13:51: people sitting together could not see each other — the workers' phones sent a coarse network location in another city)
+- The 📍 button exists only on the client home today — add it to the work-mode home top bar too.
 - Home (client and work mode), under the top bar: „📍 შენ: <nearest city/region name>“ (+ „±N კმ“ when accuracy > 1 km). Tap = ask for location again (same as the 📍 button).
 - If `locAcc` > 2000 m: yellow warning „მდებარეობა უხეშია — ჩართე ზუსტი მდებარეობა (Settings → Privacy → Location Services → Safari/WEXT → Precise Location)“ — for workers also on the green-toggle screen.
 - „ქალაქის ხელით არჩევა“: under the warning and in the 📍 sheet, a searchable city list (the bot cities + every region centre from B). Choosing one sets `loc` = city centre, `locManual: true`, shown as „📍 შენ: ≈ <ქალაქი> (ხელით)“; a later precise GPS fix (accuracy < 500 m) replaces it. Workers with a manual city publish that point (rounded to 1 km).
