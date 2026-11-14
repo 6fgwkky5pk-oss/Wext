@@ -9,7 +9,8 @@ service cloud.firestore {
     function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
     // a request is visible only to its client, its accepted pro, pros it was offered to, and admins
     // [B] offered pros see it only while it is still searching (their query must add where status == 'searching')
-    function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || (request.auth.uid in r.get('notified', []) && r.status == 'searching'); }
+    // [D-008] the brigade member sent to the job (crewMemberId) also sees it
+    function reqSide(r) { return request.auth.uid == r.clientId || request.auth.uid == r.get('proId', null) || request.auth.uid == r.get('crewMemberId', null) || (request.auth.uid in r.get('notified', []) && r.status == 'searching'); }
     // chat ids: t_{requestId} (client + accepted pro), p_{projectId}_{userId} (owner + that user), d_{rideId}_{userId} (driver + that user)
     function threadSide(tid) { return sideOf(tid, request.auth.uid); }
     function sideOf(tid, u) {
@@ -71,8 +72,15 @@ service cloud.firestore {
       return (u == r.clientId && ch.hasOnly(['status', 'agreedAt', 'closedAt', 'outcomeBy', 'arrivedAt', 'rating', 'doneAt', 'clientDeal', 'clientDealAt', 'notified', 'current', 'windowEnds', 'log', 'radius'])
           && n.get('notified', []).hasAll(r.get('notified', [])) && n.get('notified', []).size() <= r.get('notified', []).size() + 8
           && n.get('notified', []).size() <= 100 && n.get('current', []).size() <= 8 && n.get('log', []).size() <= 100)
-        || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt', 'proDeal', 'proDealAt']))
-        || (u in r.get('notified', []) && r.status == 'searching' && n.status == 'accepted' && n.proId == u && ch.hasOnly(['status', 'proId', 'proName', 'eta', 'acceptedAt', 'threadId']))
+        // [D-008] the brigadier (accepted pro) may also send one of his members: crewMemberId/Name/Dist and a new eta
+        || (u == r.get('proId', null) && ch.hasOnly(['status', 'onWayAt', 'arrivedAt', 'agreedAt', 'closedAt', 'outcomeBy', 'proDoneAt', 'proDeal', 'proDealAt', 'crewMemberId', 'crewMemberName', 'crewMemberDist', 'eta'])
+          && shortText(n, 'crewMemberName', 80))
+        || (u in r.get('notified', []) && r.status == 'searching' && n.status == 'accepted' && n.proId == u && ch.hasOnly(['status', 'proId', 'proName', 'eta', 'acceptedAt', 'threadId', 'crewMemberId', 'crewMemberName', 'crewMemberDist'])
+          && shortText(n, 'crewMemberName', 80))
+        // [D-008] the sent member may only step back: clear the three member fields and add himself to crewDeclined
+        || (u == r.get('crewMemberId', null) && ch.hasOnly(['crewMemberId', 'crewMemberName', 'crewMemberDist', 'crewDeclined'])
+          && n.get('crewMemberId', null) == null && n.get('crewMemberName', null) == null && n.get('crewMemberDist', null) == null
+          && n.get('crewDeclined', []).hasAll(r.get('crewDeclined', [])) && n.get('crewDeclined', []).removeAll(r.get('crewDeclined', [])) == [u])
         || (u in r.get('notified', []) && r.status == 'searching' && ch.hasOnly(['declined']) && n.declined.size() <= r.get('declined', []).size() + 1);
     }
 
