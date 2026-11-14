@@ -154,7 +154,7 @@ export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), { ...O
 
 // pros near me: only registered pros in the geohash cells around my position.
 // Docs written before gh4 existed get it when the pro opens the app (or by a one-time admin backfill).
-let proCells = '', proDocs = new Map()
+let proCells = '', proDocs = new Map(), oldDocs = new Map()
 export function relistenPros(force) {
   if (!uid || !ctx) return
   const s = ctx.get(), cells = cellsAround(s.loc || [41.92, 45.47]), key = cells.join(',')
@@ -163,11 +163,16 @@ export function relistenPros(force) {
   sub('pros', onSnapshot(query(collection(db, 'users'), where('pro.registered', '==', true), where('gh4', 'in', cells)), snap => {
     proDocs = new Map(); snap.forEach(d => proDocs.set(d.id, d.data())); ctx.set({ prosRead: snap.size }); buildPros()
   }, console.error))
+  // TEMPORARY (remove in v17, after the one-time gh4 backfill): registered pros whose doc has no gh4 yet.
+  // Reads registered pros of the region only (never clients), so old workers do not vanish until they open the new version.
+  sub('prosOld', onSnapshot(query(collection(db, 'users'), where('region', '==', s.region || 'ge'), where('pro.registered', '==', true)), snap => {
+    oldDocs = new Map(); snap.forEach(d => { const u = d.data(); if (!u.gh4) oldDocs.set(d.id, u) }); buildPros()
+  }, console.error))
 }
 function buildPros() {
     const now = Date.now()
     const pros = []
-    const all = proDocs
+    const all = new Map([...oldDocs, ...proDocs])
     // (aliases of other accounts are NOT trusted here: anyone could list a real pro's id and hide him)
     all.forEach((u, id) => { const d = { id }
       if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || u.pro.blocked) return
