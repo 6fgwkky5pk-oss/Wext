@@ -25,7 +25,8 @@ export function Home({ install }) {
   const p = priceFor('handyman')
   const active = useStore(s => s.requests.find(r => ['searching', 'accepted', 'arrived', 'agreed'].includes(r.status)))
   const bots = useStore(s => s.demoBots)
-  const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, bots, blocked])
+  const myLoc = useStore(s => s.loc)
+  const near = useMemo(() => api.nearbyPros(null, 8).filter(x => x.online), [pros, bots, blocked, myLoc])
   const eta = near.length ? Math.max(5, Math.round(near[0].dist * 3 + 5)) : null
   const featured = useMemo(() => { const seen = new Set(); return near.filter(x => !seen.has(x.cat) && seen.add(x.cat)).slice(0, 8) }, [near])
 
@@ -129,7 +130,7 @@ export function CallNow({ cat: initCat, group }) {
   const [exCat] = useState(() => { const h = ['plumber', 'electric', 'appliance', 'carpenter', 'locksmith']; return h[Math.floor(Math.random() * h.length)] })
   const [photo, setPhoto] = useState(null), [voice, setVoice] = useState(null)
   const [pay, setPay] = useState(false)
-  const [focus, setFocus] = useState(null)
+  const [focus, setFocus] = useState(null), [showAll, setShowAll] = useState(false)
   const loc = useStore(s => s.loc) || [41.92, 45.47]
   const blocked = useStore(s => s.blockedIds)
   const allPros = useStore(s => s.pros), bots = useStore(s => s.demoBots)
@@ -225,7 +226,8 @@ export function CallNow({ cat: initCat, group }) {
           {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}
             </div>}
           {online.length === 0 && (CLOUD ? pros.length : online.length) > 0 && <NotifyToggle cat={cat} />}
-          {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
+          {pros.slice(0, showAll ? 200 : 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
+          {!showAll && pros.length > 8 && <button className="btn outline sm" style={{ alignSelf: 'center' }} onClick={() => setShowAll(true)}>{t('showAll', { n: pros.length })}</button>}
         </div>
         {typ && <div className="typical"><span>🏷️ {t('typical')}</span><b>{typ[0]}–{typ[1]} ₾{typ[2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', m100: 'perM100', pc: 'perPc', m3: 'perM3' }[typ[2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
         {cat === 'driver' && <div className="hold" style={{ marginTop: 12 }}><span>🪪</span><span>{t('driverLicense')}</span></div>}
