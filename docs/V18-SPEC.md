@@ -43,6 +43,9 @@ Already coded on staging: `config.bots.on` absent = ON for everyone; cities tbs 
 - Publish `locAcc` (rounded to 100 m) on the worker doc (rules: number 0–100000) so admin can see coarse positions; admin users tab shows „±N კმ“.
 - Test: `tests/e2e/brigade-visible.cjs` (brigade member near the client → client sees the brigade with ~1 km distance; brigadier offer lists the nearest member) must pass.
 
+- Every location request uses `enableHighAccuracy: true`, `maximumAge: 0`; a worker's first position after registration waits up to 10 s for a fix < 500 m before publishing (else publishes and shows the coarse warning).
+- New test (add to `tests/e2e/`, emulator): a client, an individual worker and a brigade (with one member) in the same place (±200 m) — after each registration the client sees the new worker/brigade in the right service list within 5 s, with the right distance; a client ~70 km away does not see them and sees the location line „📍 შენ: …“.
+
 ## D. Checks before release (all must pass, emulator only — see `tests/e2e/README.md`)
 1. `npm run build` ok. 2. `tests/e2e/bots-isolation.cjs` → ALL PASS; `tests/e2e/brigade-visible.cjs` prints the brigade in the client list and the member in the offer. 3. `tests/e2e/overlap-audit.cjs` → no findings except the sticky-header lines. 4. Manual look at 3 screenshots: new group tiles, avatar picker, a bot price in the list. 5. Firestore rules emulator suite still green.
 
