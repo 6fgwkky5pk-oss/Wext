@@ -90,6 +90,7 @@ export function priceFor(cat, kind = 'instant', brigade = false) {
 }
 // approximate price range per service (not binding): admin override in config.typical, else the default in data.js
 export const typicalFor = cat => { const o = state.config?.typical?.[cat]; const d = TYPICAL[cat]; if (o && o[0] && o[1]) return [o[0], o[1], d?.[2]]; return d || null }
+let lastPosPush = null
 export const currency = () => regionFor(state.loc || [41.92, 45.47])
 export const money = n => `${Number.isInteger(n) ? n : n.toFixed(2)}${currency().symbol}`
 
@@ -147,7 +148,12 @@ export const api = {
   setLoc(loc, real, acc) {
     if (real && state.locReal && state.loc && distKm(state.loc, loc) < 0.05 && !(acc && state.locAcc && acc < state.locAcc / 2)) return
     const patch = { loc, locReal: !!real, locAcc: real ? Math.round(acc || 0) : null, locDenied: false, region: regionFor(loc).id }
-    if (CLOUD) { set(patch); if (real) cloud.pushProfile(); return }
+    if (CLOUD) {
+      set(patch); cloud.relistenPros()
+      // only workers publish a position; write again only after a real move (300 m) or 10 min, not on every GPS tick
+      if (real && state.user?.pro?.registered && (!lastPosPush || distKm(lastPosPush.loc, loc) > 0.3 || now() - lastPosPush.t > 10 * 60e3)) { lastPosPush = { loc, t: now() }; cloud.pushProfile() }
+      return
+    }
     if (!state.pros || !state.prosCenter || distKm(state.prosCenter, loc) > 30) { patch.pros = seedPros(loc); patch.prosCenter = loc }
     set(patch)
   },
@@ -436,5 +442,5 @@ if (CLOUD) {
   // pros: own blocked flag = admin block (users/{me}.pro.blocked) or 3 no-shows
   subs.add(() => { const u = state.user; if (!u?.pro) return; const bl = !!state.adminBlocked || (u.pro.noShows || 0) >= 3; if (bl !== !!u.pro.blocked) set(s => ({ user: { ...s.user, pro: { ...s.user.pro, blocked: bl, online: false } } })) })
   // keep "online" fresh so stale pros drop off
-  setInterval(() => { if (state.user?.pro?.online) cloud.pushProfile() }, 5 * 60e3)
+  setInterval(() => { if (state.user?.pro?.online) cloud.pushProfile() }, 30 * 60e3)
 }
