@@ -32,6 +32,10 @@ Already coded on staging: `config.bots.on` absent = ON for everyone; cities tbs 
 - Add `syn` words (ka + slang/ru: კომპი, ნოუთბუქი, ვინდოუსი, айфон, вайфай, ტელიკი, кондер …), en/ru names, a few other locales optional. Include the new services in bots (`seedPros`) so every city has some.
 - Phosphor glyph paths (MIT) are added to `GLYPH` like the existing ones.
 
+## C2. Small fixes from kimi's check (1090fc0)
+- A real user's name may not start with 🤖 (strip it in `clean()` for names), so nobody looks like a bot.
+- Sheet on short screens (≤ 660 px): keep the action buttons visible — make the sheet's last button row `position: sticky; bottom: 0` with the sheet background.
+
 ## D. Checks before release (all must pass, emulator only — see `tests/e2e/README.md`)
 1. `npm run build` ok. 2. `tests/e2e/bots-isolation.cjs` → ALL PASS. 3. `tests/e2e/overlap-audit.cjs` → no findings except the sticky-header lines. 4. Manual look at 3 screenshots: new group tiles, avatar picker, a bot price in the list. 5. Firestore rules emulator suite still green.
 
