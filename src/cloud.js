@@ -45,6 +45,26 @@ export async function initCloud(c) {
 const round = p => p && [Math.round(p[0] * 2000) / 2000, Math.round(p[1] * 2000) / 2000]
 export const roundPos = round
 
+// geohash cells (precision 4 ≈ 39×20 km). A client listens only to pros in its cell + 8 neighbours (≥ 19 km around),
+// so reads do not grow with the number of users in the country.
+const GH = '0123456789bcdefghjkmnpqrstuvwxyz'
+export function geohash([lat, lng], prec = 4) {
+  let a = [-90, 90], b = [-180, 180], h = '', bit = 0, ch = 0, even = true
+  while (h.length < prec) {
+    const r = even ? b : a, v = even ? lng : lat, mid = (r[0] + r[1]) / 2
+    if (v >= mid) { ch = ch * 2 + 1; r[0] = mid } else { ch = ch * 2; r[1] = mid }
+    even = !even
+    if (++bit === 5) { h += GH[ch]; bit = 0; ch = 0 }
+  }
+  return h
+}
+export const cellsAround = ([lat, lng]) => {
+  const dLat = 180 / 2 ** 10, dLng = 360 / 2 ** 10 // precision-4 cell size
+  const out = new Set()
+  for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) out.add(geohash([Math.max(-89.9, Math.min(89.9, lat + i * dLat)), ((lng + j * dLng + 540) % 360) - 180]))
+  return [...out]
+}
+
 // ---------- profile ----------
 let pushT
 export function pushProfile() {
@@ -53,7 +73,7 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: (({ rating, jobs, noShows, blocked, verified, ...rest }) => rest)(u.pro || {}), aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, pro: (({ rating, jobs, noShows, blocked, verified, ...rest }) => rest)(u.pro || {}), aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), gh4: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), gh4: geohash(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
   }, 400)
@@ -129,15 +149,24 @@ export function listenMisses(cb) { return onSnapshot(doc(db, 'stats', 'misses'),
 export const setBlocked = (ids, on) => Promise.all(ids.map(id => updateDoc(doc(db, 'users', id), on ? { 'pro.blocked': true, 'pro.online': false } : { 'pro.blocked': false }).catch(console.error)))
 export const bumpStat = (keys, n = 1) => setDoc(doc(db, 'stats', 'cats'), { ...Object.fromEntries(keys.map(k => [k, increment(n)])), _k: keys }, { merge: true }).catch(() => {})
 
-function listenUser() {
-  const region = ctx.get().region || 'ge'
-  // registered pros in my region = the live network
-  sub('pros', onSnapshot(query(collection(db, 'users'), where('region', '==', region)), snap => {
+// pros near me: only registered pros in the geohash cells around my position.
+// Docs written before gh4 existed get it when the pro opens the app (or by a one-time admin backfill).
+let proCells = '', proDocs = new Map()
+export function relistenPros(force) {
+  if (!uid || !ctx) return
+  const s = ctx.get(), cells = cellsAround(s.loc || [41.92, 45.47]), key = cells.join(',')
+  if (!force && key === proCells) return
+  proCells = key
+  sub('pros', onSnapshot(query(collection(db, 'users'), where('pro.registered', '==', true), where('gh4', 'in', cells)), snap => {
+    proDocs = new Map(); snap.forEach(d => proDocs.set(d.id, d.data())); ctx.set({ prosRead: snap.size }); buildPros()
+  }, console.error))
+}
+function buildPros() {
     const now = Date.now()
     const pros = []
+    const all = proDocs
     // (aliases of other accounts are NOT trusted here: anyone could list a real pro's id and hide him)
-    snap.forEach(d => {
-      const u = d.data(); if (d.id === uid && !!u.pro?.blocked !== !!ctx.get().adminBlocked) ctx.set({ adminBlocked: !!u.pro?.blocked })
+    all.forEach((u, id) => { const d = { id }
       if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || u.pro.blocked) return
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
@@ -149,7 +178,12 @@ function listenUser() {
     if (w) { const hit = pros.find(p => p.online && (p.cats || []).includes(w) && !p.posUnknown && ctx.dist(ctx.get().loc || p.pos, p.pos) < 15)
       if (hit) { ctx.set({ watchCat: null }); ctx.ping('job'); ctx.api.notifyAvail?.(w, hit.name) } }
     ctx.set({ pros })
-  }))
+}
+function listenUser() {
+  const region = ctx.get().region || 'ge'
+  // my own profile (admin block flag) — one document, not the whole user list
+  sub('me', onSnapshot(doc(db, 'users', uid), d => { const u = d.data() || {}; if (!!u.pro?.blocked !== !!ctx.get().adminBlocked) ctx.set({ adminBlocked: !!u.pro?.blocked }) }, () => {}))
+  relistenPros(true)
   // my requests as a client
   sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', '==', uid)), snap => {
     const prev = ctx.get().requests

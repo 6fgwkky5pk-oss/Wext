@@ -73,7 +73,7 @@ export function ProRow({ p, onClick, right }) {
     <Avatar p={p} />
     <div className="grow">
       <div className="row" style={{ gap: 6 }}><b className="ell">{p.name}</b></div>
-      <div className="meta">{p.dist != null && <span>{p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}{p.myPrice ? <span>· 🏷️ {p.myPrice} ₾{p.priceUnit ? '/' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[p.priceUnit]) : ''}{p.priceLvl ? ' · ' + t('lvl_' + p.priceLvl) : ''}</span> : null}</div>
+      <div className="meta">{p.dist != null && <span>{p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}{p.myPrice ? <span>· 🏷️ {p.myPrice} ₾{p.priceUnit ? '/' + t({ h: 'perH', d: 'perD', m2: 'perM2', m100: 'perM100', pc: 'perPc', m3: 'perM3' }[p.priceUnit]) : ''}{p.priceLvl ? ' · ' + t('lvl_' + p.priceLvl) : ''}</span> : null}</div>
       <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={p} /></div>
     </div>
     {right}

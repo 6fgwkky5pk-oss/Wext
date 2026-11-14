@@ -118,7 +118,6 @@ export function CallNow({ cat: initCat, group }) {
   const blocked = useStore(s => s.blockedIds)
   const pros = useMemo(() => cat ? api.nearbyPros(cat, 15).filter(p => !brig || p.type !== 'individual').map(p => ({ ...p, icon: catIcon(p.cat), myPrice: ((p.prices || {})[cat] || [])[0] || null, priceUnit: (TYPICAL[cat] || [])[2], priceLvl: priceLevel(((p.prices || {})[cat] || [])[0], typicalFor(cat)) })) : [], [cat, loc, blocked, brig])
   const online = pros.filter(p => p.online)
-  const watching = useStore(s => s.watchCat) === cat
   const p = cat ? priceFor(cat, 'instant', brig) : null
   const bundle = cat ? api.activeBundle(cat) : null
   const user = useStore(s => s.user)
@@ -199,17 +198,19 @@ export function CallNow({ cat: initCat, group }) {
       </div>
       <div className="sheet">
         <div className="grab" />
+        {!locReal && <button className="locwarn big" style={{ marginBottom: 12 }} onClick={askLoc}>📍 <span className="grow">{t('noLocList')}</span><b>{t('turnLocOn')}</b></button>}
         <div className="seg brigseg">
           <button className={!brig ? 'on' : ''} onClick={() => setBrig(false)}>👤 {t('oneMan')} · {money(priceFor(cat, 'instant', false).amount)}</button>
           <button className={brig ? 'on' : ''} onClick={() => setBrig(true)}>👷 {t('brigadeN')} · {money(priceFor(cat, 'instant', true).amount)}</button>
         </div>
-        <div className="row between" style={{ marginTop: 12 }}><h3>{t('nearby')} · {online.length}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
+        <div className="row between" style={{ marginTop: 12 }}><h3>{t('nearFree', { n: pros.length, free: online.length })}</h3>{p.surge > 1 && <span className="badge r">⚡ {t('highDemand')} ×{p.surge}</span>}</div>
         <div className="list" style={{ marginTop: 12 }}>
           {online.length === 0 && <div className="empty" style={{ padding: 20 }}><div className="e">🕐</div>{t('noPros')}
-            {(CLOUD ? pros.length : online.length) > 0 && <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ marginTop: 12 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button>}</div>}
+            </div>}
+          {online.length === 0 && (CLOUD ? pros.length : online.length) > 0 && <NotifyToggle cat={cat} />}
           {pros.slice(0, 8).map(x => <ProRow key={x.id} p={x} onClick={() => setFocus(x.id)} />)}
         </div>
-        {typ && <div className="typical"><span>🏷️ {t('typical')}</span><b>{typ[0]}–{typ[1]} ₾{typ[2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', pc: 'perPc', m3: 'perM3' }[typ[2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
+        {typ && <div className="typical"><span>🏷️ {t('typical')}</span><b>{typ[0]}–{typ[1]} ₾{typ[2] ? ' / ' + t({ h: 'perH', d: 'perD', m2: 'perM2', m100: 'perM100', pc: 'perPc', m3: 'perM3' }[typ[2]]) : ''}</b><small>{t('typicalNote')}</small></div>}
         {cat === 'driver' && <div className="hold" style={{ marginTop: 12 }}><span>🪪</span><span>{t('driverLicense')}</span></div>}
         <div className="grid2" style={{ marginTop: 14 }}><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
         <div className="field" style={{ marginTop: 10 }}><label>{t('note')}</label>
@@ -222,7 +223,7 @@ export function CallNow({ cat: initCat, group }) {
         <div className="docknote">{!locReal ? t('noLocWhy') : t('noProsWhy')}</div>
         {!locReal
           ? <button className="btn yellow" style={{ height: 62 }} onClick={askLoc}>📍 {t('turnLocOn')}</button>
-          : <button className={'btn ' + (watching ? 'light' : 'yellow')} style={{ height: 62 }} onClick={() => api.watchCat(watching ? null : cat)}>🔔 {watching ? t('notifyOn') : t('notifyMe')}</button>}
+          : <NotifyToggle cat={cat} />}
       </> :
       <button className="btn primary" style={{ height: 62 }} onClick={send}>
         <Icon n="bolt" />{bundle && !brig ? <>{t('newRequest')} · {t('contactsLeft', { n: 3 - bundle.contacts })}</> : <>{t('requestFor', { fee: money(p.amount) })}{p.old && <span className="old">{money(p.old)}</span>}</>}
@@ -230,6 +231,20 @@ export function CallNow({ cat: initCat, group }) {
     </div>
     {pay && <PaySheet amount={p.amount} onClose={() => setPay(false)} onDone={async () => { setPay(false); const id = await api.createRequest({ cat, note, brigade: brig, photo, voice }); if (id) nav.replace('request', { id }) }} />}
   </>
+}
+
+// clear on/off switch: "tell me when someone in this service is free"
+function NotifyToggle({ cat }) {
+  const { t, lang } = useT()
+  const on = useStore(s => s.watchCat) === cat
+  const name = catName(cat, lang)
+  return <button className={'ntog' + (on ? ' on' : '')} onClick={() => api.watchCat(on ? null : cat)} aria-pressed={on}>
+    <span className="grow col" style={{ gap: 3, textAlign: 'left', minWidth: 0 }}>
+      <b>🔔 {on ? t('notifyOnT') : t('notifyMe')}</b>
+      <small>{on ? t('notifyOnSub', { cat: name }) : t('notifyOff', { cat: name })}</small>
+    </span>
+    <span className={'sw' + (on ? ' on' : '')}><i /></span>
+  </button>
 }
 
 export function PaySheet({ amount, onClose, onDone }) {
