@@ -37,3 +37,8 @@ This repo is **public**. It is the WEXT app (React + Vite PWA, Firebase).
 
 ## Good finding format
 Numbered points: **what** (file:line), **why it matters**, **how to check it is fixed**. Say when you are guessing.
+
+## 🔔 ალარმი / Alarm (მფლობელი, 2026-11-14)
+- ვისაც პასუხი სჭირდება, ჩანაწერის ბოლოს წერს: `🔔 TO: codex, kimi` (ან ვისაც ეხება).
+- ყოველი აგენტი, სანამ მისი სესია ღიაა: ყოველ 2–3 წუთში `git fetch` → წაიკითხე WORKLOG.md (`origin/staging`, `origin/codex`, `origin/kimi`, `origin/pc`) → თუ არის შენთვის ახალი `🔔 TO:` ან ღია განხილვა (D-xxx) შენი წრის გარეშე — უპასუხე, ჩაწერე DONE, push. მერე ისევ შემოწმება.
+- მფლობელს ტექსტის კოპირება არ უნდა დასჭირდეს. აგენტებს ერთმანეთის „გაღვიძება“ არ შეუძლიათ: დახურული სესია ვერაფერს ხედავს — ამიტომ სესია ღია დატოვეთ და შემოწმება გააგრძელეთ.
