@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { api, CLOUD, useStore, money, promoActive, getState, groupOrder, setDemo } from '../store'
+import { api, CLOUD, useStore, money, promoActive, getState, groupOrder, setDemo, BOT_CITY_IDS } from '../store'
 import { LANGS } from '../i18n'
 import { catName, CATEGORIES, GROUPS, groupName, TYPICAL, SLANG } from '../data'
 import { useT, Icon, Top, Sheet, toast, Avatar, fmtDate } from '../ui'
@@ -29,7 +29,7 @@ export function Profile({ install }) {
     <div className="pad">
       <div className="card row" style={{ gap: 14 }}>
         <Avatar p={{ name: user.name, hue: 38, type: 'individual' }} lg />
-        <div className="grow"><h2 className="ell">{user.name}</h2><div className="small mute b">{user.phone}</div>
+        <div className="grow"><h2 style={{ overflowWrap: 'anywhere', lineHeight: 1.2 }}>{user.name}</h2><div className="small mute b">{user.phone}</div>
           <span className="badge y" style={{ marginTop: 6 }}>{isPro ? '🧰 ' + t('proMode') : '🙋 ' + t('clientMode')}</span></div>
       </div>
       <div className="card" style={{ marginTop: 12, padding: '4px 14px' }}>
@@ -97,6 +97,22 @@ function ResetAll() {
       : <button className="btn outline" onClick={() => setAsk(true)}>🔄 {t('resetAll')}</button>}
     <small className="mute b">{t('resetAllSub')}</small>
     <button className="btn outline sm" onClick={() => cloud.setConfig({ crews: !cfg.crews })}>👷 {t('crewsFlag')}: {cfg.crews ? 'ON' : 'OFF'}</button>
+    <BotsAdmin />
+  </div>
+}
+// bots: one switch for everyone + how many per city (memory only on each phone; they never get calls, messages or orders)
+const CITY_KA = { tbs: 'თბილისი', rst: 'რუსთავი', kut: 'ქუთაისი', bat: 'ბათუმი', tel: 'თელავი', gor: 'გორი', zug: 'ზუგდიდი', pot: 'ფოთი' }
+function BotsAdmin() {
+  const { t } = useT()
+  const b = useStore(s => s.config?.bots) || {}
+  const on = b.on !== false
+  const [cnt, setCnt] = useState(() => Object.fromEntries(BOT_CITY_IDS.map(([c, n]) => [c, b.cities?.[c] ?? n])))
+  return <div className="col" style={{ gap: 8, borderTop: '1px solid var(--line)', paddingTop: 10, marginTop: 4 }}>
+    <button className={'btn sm ' + (on ? 'green' : 'outline')} onClick={() => api.setConfig({ bots: { ...b, on: !on } })}>🤖 {t('botsAll')}: {on ? 'ON' : 'OFF'}</button>
+    <small className="mute b">{t('botsSub')}</small>
+    <div className="grid2" style={{ gap: 6 }}>{BOT_CITY_IDS.map(([c]) => <label key={c} className="row small b" style={{ gap: 6 }}><span className="grow">{CITY_KA[c]}</span>
+      <input className="inp" style={{ width: 70, height: 38, padding: '0 8px', textAlign: 'center' }} type="number" inputMode="numeric" value={cnt[c]} onChange={e => setCnt({ ...cnt, [c]: e.target.value })} /></label>)}</div>
+    <button className="btn primary sm" onClick={() => { api.setConfig({ bots: { ...b, cities: Object.fromEntries(Object.entries(cnt).map(([k, v]) => [k, Math.max(0, Math.min(400, +v || 0))])) } }); toast('✓') }}>{t('save')}</button>
   </div>
 }
 

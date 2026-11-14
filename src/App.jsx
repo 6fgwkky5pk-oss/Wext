@@ -112,7 +112,7 @@ function Shell() {
   const top = stack.slice(-1)[0]
   const Screen = top && SCREENS[top.name]
   const isPro = user.role === 'pro'
-  const tabs = [['home', 'home', t('home')], isPro ? ['stats', 'star', t('stats')] : ['mypros', 'users', t('myProsTab')], ['chats', 'chat', t('inbox')], ['profile', 'user', t('profile')]]
+  const tabs = [['home', 'home', t('home')], isPro ? ['stats', 'star', t('stats')] : ['mypros', 'users', t('myProsTab')], ['chats', 'chat', t('chats')], ['profile', 'user', t('profile')]]
 
   return <Nav.Provider value={nav}>
     <div className={'app' + (big ? ' big' : '')} data-theme={THEME}>

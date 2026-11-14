@@ -92,9 +92,14 @@ export function priceFor(cat, kind = 'instant', brigade = false) {
 // approximate price range per service (not binding): admin override in config.typical, else the default in data.js
 export const typicalFor = cat => { const o = state.config?.typical?.[cat]; const d = TYPICAL[cat]; if (o && o[0] && o[1]) return [o[0], o[1], d?.[2]]; return d || null }
 let lastPosPush = null
+let botKey = ''
 // test mode: bots per city (memory only, never in the database)
 const BOT_CITIES = [['tbs', [41.7151, 44.8271], 120], ['rst', [41.5495, 44.993], 70], ['kut', [42.2679, 42.6946], 100], ['bat', [41.6168, 41.6367], 100],
   ['tel', [41.9198, 45.4731], 30], ['gor', [41.9816, 44.1124], 30], ['zug', [42.5088, 41.8709], 30], ['pot', [42.1462, 41.6719], 20]]
+export const BOT_CITY_IDS = BOT_CITIES.map(c => [c[0], c[2]])
+// bots are on for everyone unless the admin turned them off (config.bots.on = false); my own test mode always shows them
+export const botsOn = () => DEMO || state.config?.bots?.on !== false
+const botCount = (city, n) => { const c = state.config?.bots?.cities?.[city]; return c == null || c === '' || isNaN(+c) ? n : Math.max(0, Math.min(400, +c)) }
 // a brigade with members: it is "near" and "free" by the nearest green member who does this service (or the brigadier himself)
 function crewView(p, cat, loc) {
   if (!p.crewMembers) return p
@@ -162,7 +167,7 @@ export const api = {
   setLoc(loc, real, acc) {
     if (real && state.locReal && state.loc && distKm(state.loc, loc) < 0.05 && !(acc && state.locAcc && acc < state.locAcc / 2)) return
     const patch = { loc, locReal: !!real, locAcc: real ? Math.round(acc || 0) : null, locDenied: false, region: regionFor(loc).id }
-    if (DEMO) api._bots(loc)
+    if (botsOn()) api._bots()
     if (CLOUD) {
       set(patch); cloud.relistenPros()
       // only workers publish a position; write again only after a real move (300 m) or 10 min, not on every GPS tick
@@ -188,18 +193,21 @@ export const api = {
 
   // test mode: ~80 bots around me (memory only), regenerated when I move far
   _bots() {
-    if (state.demoBots?.length >= 600) return
+    if (!botsOn()) { if (state.demoBots?.length) set({ demoBots: [], demoFeed: [] }); return }
+    const key = BOT_CITIES.map(([city, , n]) => botCount(city, n)).join(',')
+    if (state.demoBots?.length && botKey === key) return
+    botKey = key
     const bots = []
-    BOT_CITIES.forEach(([city, c, n]) => {
+    BOT_CITIES.forEach(([city, c, n0]) => { const n = botCount(city, n0); if (!n) return
       const out = []
       for (let k = 0; out.length < n; k++) out.push(...seedPros([c[0] + (k % 3 - 1) * 0.018, c[1] + (Math.floor(k / 3) % 3 - 1) * 0.024]).map(p => ({ ...p, id: 'bot_' + city + k + '_' + p.id })))
-      bots.push(...out.slice(0, n).map(p => ({ ...p, name: '🤖 ' + p.name, bot: true })))
+      bots.push(...out.slice(0, n).map(p => ({ ...p, name: '🤖 ' + p.name, bot: true, online: false }))) // a bot is always busy: never counted as free, never chosen
     })
     set({ demoBots: bots })
   },
-  nearbyPros(cat, radius = 50) {
+  nearbyPros(cat, radius = 50) { // (bots are only shown; _dispatch never sends them anything)
     const loc = state.loc || [41.92, 45.47]
-    const all = DEMO ? [...(state.pros || []), ...(state.demoBots || [])] : (state.pros || [])
+    const all = botsOn() ? [...(state.pros || []), ...(state.demoBots || [])] : (state.pros || [])
     return all.filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id)).map(p => crewView(p, cat, loc)).filter(Boolean)
       .map(p => ({ ...p, dist: distKm(loc, p.pos) })).filter(p => p.dist <= radius).sort((a, b) => (b.online - a.online) || a.dist - b.dist)
   },
@@ -478,18 +486,21 @@ export function setDemo(on) {
   } catch {}
   location.reload()
 }
-// test mode: every minute some bots go free/busy and bot clients book bot workers
-if (DEMO) {
+// bots: every minute some go free/busy and bot clients "book" bot workers (only on screen, nothing is sent anywhere)
+{
   const NAMES = ['ნინო', 'გიორგი', 'მარიამ', 'ლევან', 'თამარ', 'დავით', 'ანა', 'ირაკლი']
   const STEPS = ['accepted', 'arrived', 'done']
   const tick = () => {
-    const pros = (state.demoBots || []).map(p => Math.random() < 0.15 ? { ...p, online: !p.online } : p)
-    const here = state.loc || [41.92, 45.47], free = pros.filter(p => p.online && distKm(here, p.pos) < 30)
+    api._bots(); if (!botsOn()) return
+    const pros = state.demoBots || []
+    const here = state.loc || [41.92, 45.47], free = pros.filter(p => distKm(here, p.pos) < 30)
     const ev = [...Array(1 + Math.floor(Math.random() * 3))].map(() => { const p = free[Math.floor(Math.random() * free.length)]
       return p && { id: Math.random().toString(36).slice(2), at: now(), client: '🤖 ' + NAMES[Math.floor(Math.random() * NAMES.length)], pro: p.name, cat: p.cat, st: STEPS[Math.floor(Math.random() * 3)] } }).filter(Boolean)
     set(s => ({ demoBots: pros, demoFeed: [...ev, ...(s.demoFeed || [])].slice(0, 30) }))
   }
-  setTimeout(() => { api._bots(state.loc || [41.92, 45.47]); tick() }, 3000); setInterval(tick, 60e3)
+  setTimeout(tick, 3000); setInterval(tick, 60e3)
+  // admin changed the bot switch or counts: rebuild within a few seconds
+  let seen = ''; setInterval(() => { const k = JSON.stringify(state.config?.bots || null); if (k !== seen) { const first = !seen; seen = k; if (!first) tick() } }, 3000)
 }
 
 // resume pro network after reload
