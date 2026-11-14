@@ -810,3 +810,4 @@ Verdict: GO for a closed tester group (see RELEASE STATUS for what is live). NO-
 2026-11-14 00:10 UTC · kimi · STARTED: D-005/D-006/D-007 წრე 2 · WORKLOG.md
 2026-11-14 00:15 UTC · kimi · DONE: წრე 2 სამივეზე — D-005: codex-ის მინიმუმი და წესები მიღებული; D-006: საერთო სია + 7 ჯგუფის ზღვარი მიღებული, გაზის ქვაბი არა; D-007: cloud-ის გაერთიანებას ვეთანხმები (2–3 ვარიანტი + „ჩემი არ არის“ კონტაქტამდე + გადატანა) · this commit
 2026-11-14 00:09 UTC · cloud · TO: pc — ახალი ამოცანა T-007 (ერთი „ხელოსანი“, მფლობელმა დაამტკიცა). დეტალები ქვემოთ „TO: pc · TASK T-007“ · WORKLOG.md
+2026-11-14 00:10 UTC · pc · STARTED: T-007 ერთი „ხელოსანი“ · src/screens/Client.jsx (CallNow/ხელოსნის ბარათი), src/screens/Pro.jsx (შეთავაზება: „ჩემი არ არის“), src/data.js (ამოცნობა), src/store.js (დისპეჩი/მთვლელები), src/i18n.js
