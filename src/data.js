@@ -130,10 +130,11 @@ function lev(a, b, max) {
 }
 const tolerance = w => w.length >= 8 ? 2 : w.length >= 4 ? 1 : 0
 
-export function searchCats(q, lang) {
-  const t = norm(q.trim())
-  if (!t) return CATEGORIES
-  const words = t.split(/\s+/).flatMap(w => /[a-z]/.test(w) ? [w, latToKa(w)] : [w])
+// stem: free-text descriptions ("ონკანიდან წყალი ჟონავს") — skip 1–2 letter words, let a dictionary word match the start of an inflected word
+export function scoreCats(q, { stem = false } = {}) {
+  const t = norm(String(q || '').trim())
+  if (!t) return []
+  const words = t.split(/\s+/).filter(w => !stem || w.length >= 3).flatMap(w => /[a-z]/.test(w) ? [w, latToKa(w)] : [w])
   return CATEGORIES.map(c => {
     const hay = norm(Object.values(c.n).join(' ') + ' ' + c.syn + ' ' + (SLANG[c.id] || '') + ' ' + (EXTRA[c.id] || ''))
     const tokens = hay.split(/\s+/).filter(Boolean)
@@ -141,11 +142,25 @@ export function searchCats(q, lang) {
     for (const w of words) {
       if (tokens.some(x => x === w)) score += 3
       else if (tokens.some(x => x.startsWith(w) || (w.length >= 4 && x.startsWith(w.slice(0, -1))))) score += 2
+      else if (stem && tokens.some(x => x.length >= 4 && w.startsWith(x.length > 5 ? x.slice(0, -1) : x))) score += 2
       else if (w.length >= 3 && hay.includes(w)) score += 1
       else if (tolerance(w) && tokens.some(x => lev(w, x.slice(0, w.length + 1), tolerance(w)) <= tolerance(w) || lev(w, x, tolerance(w)) <= tolerance(w))) score += 1
     }
     return { c, score }
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).map(x => x.c)
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score)
+}
+export function searchCats(q, lang) {
+  if (!norm(String(q || '').trim())) return CATEGORIES
+  return scoreCats(q).map(x => x.c)
+}
+// T-007: one "handyman" entry — guess the trade from the client's own words (on the phone, free).
+// sure = one clear winner; otherwise up to 3 likely trades (+ general handyman) to pick from
+export function guessHandy(text) {
+  const r = scoreCats(text, { stem: true }).filter(x => x.c.g === 'handy')
+  const [a, b] = r
+  const sure = a && a.score >= 3 && (!b || a.score >= b.score + 2) ? a.c : null
+  const options = r.slice(0, 3).map(x => x.c)
+  return { sure, options }
 }
 
 // Multi-city / multi-country from day one. Location decides region + currency.

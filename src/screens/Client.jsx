@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { api, useStore, priceFor, money, typicalFor, promoActive, getState, CLOUD, groupOrder, catRank } from '../store'
-import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh, priceLevel } from '../data'
+import { CATEGORIES, GROUPS, groupName, catName, searchCats, catById, TYPICAL, notePh, priceLevel, guessHandy } from '../data'
 import { PhotoBtn, VoiceBtn, MicSearch } from '../media'
 import { useT, Icon, Bolt, ProRow, Top, Sheet, Avatar, TypeBadge, catIcon, CatIcon, GroupIcon, catTint, groupTint, fmtDate, promoText, RoleSwitch, useNow, toast, Ring } from '../ui'
 import { useNav } from '../nav'
@@ -108,7 +108,9 @@ export function CallNow({ cat: initCat, group }) {
   const [cat, setCat] = useState(initCat || null)
   const [brig, setBrig] = useState(false)
   const [q, setQ] = useState('')
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(() => { if (initCat || group !== 'handy') return ''; try { return sessionStorage.getItem('wext:t7') || '' } catch { return '' } })
+  const [manual, setManual] = useState(false), [guess, setGuess] = useState(null)
+  const [exCat] = useState(() => { const h = ['plumber', 'electric', 'appliance', 'carpenter', 'locksmith']; return h[Math.floor(Math.random() * h.length)] })
   const [photo, setPhoto] = useState(null), [voice, setVoice] = useState(null)
   const [pay, setPay] = useState(false)
   const [focus, setFocus] = useState(null)
@@ -125,6 +127,42 @@ export function CallNow({ cat: initCat, group }) {
   const locReal = useStore(s => s.locReal)
   const askLoc = () => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Safari → Location'), { enableHighAccuracy: true, timeout: 15000 })
 
+  // T-007: "handyman" = describe the problem, the app picks the trade (client confirms before any paid search)
+  if (!cat && group === 'handy' && !manual) {
+    const ex = notePh(exCat, lang)
+    const all = catRank(CATEGORIES.filter(c => c.g === 'handy'), stats || {})
+    const keep = v => { setNote(v); setGuess(null); try { sessionStorage.setItem('wext:t7', v) } catch {} }
+    const pick = (id, via) => { api.bump(id, 'handy'); api.bump(via); setCat(id) }
+    const find = () => { if (!note.trim()) { toast(t('describeFirst')); return } setGuess(guessHandy(note)) }
+    const opts = guess && !guess.sure ? [...new Set([...(guess.options.length ? guess.options : all.slice(0, 3)).map(c => c.id), 'handyman'])] : []
+    return <div className="scroll nopad">
+      <Top title={groupName('handy', lang)} onBack={nav.back} />
+      <div className="pad col" style={{ gap: 12 }}>
+        <h2 style={{ margin: 0 }}>{t('pickService')}</h2>
+        <div className="small mute b">{t('describeSub')}</div>
+        <div className="field" style={{ position: 'relative' }}>
+          <textarea className="inp" rows={4} placeholder={ex ? (lang === 'ka' ? 'მაგ. ' : 'e.g. ') + ex : t('notePh')} value={note} onChange={e => keep(e.target.value)} />
+          <div style={{ position: 'absolute', right: 8, bottom: 8 }}><MicSearch onText={x => keep((note ? note + ' ' : '') + x)} /></div>
+        </div>
+        <div className="grid2"><VoiceBtn value={voice} onChange={setVoice} /><PhotoBtn value={photo} onChange={setPhoto} /></div>
+        {!guess && <button className="btn primary" style={{ height: 58 }} onClick={find}><Icon n="search" />{t('findPro')}</button>}
+        {guess?.sure && <div className="card col" style={{ gap: 10 }}>
+          <div className="row" style={{ gap: 10 }}><span className="av" style={{ background: catTint(guess.sure.id), fontSize: 26 }}><CatIcon id={guess.sure.id} /></span>
+            <b className="grow">{t('weSearch', { cat: catName(guess.sure.id, lang) })}</b></div>
+          <div className="grid2"><button className="btn light" onClick={() => { api.bump('f_change'); setGuess({ sure: null, options: guess.options.filter(c => c.id !== guess.sure.id) }) }}>{t('changeIt')}</button>
+            <button className="btn primary" onClick={() => pick(guess.sure.id, 'f_desc')}>✓ {t('yes')}</button></div>
+        </div>}
+        {guess && !guess.sure && <div className="col" style={{ gap: 8 }}>
+          <b>{t('pickOne')}</b>
+          {opts.map(id => <button key={id} className="prorow" style={{ width: '100%' }} onClick={() => pick(id, 'f_desc')}>
+            <span className="av" style={{ background: catTint(id), fontSize: 26 }}><CatIcon id={id} /></span>
+            <b className="grow" style={{ textAlign: 'left' }}>{catName(id, lang)}</b><Icon n="right" s={18} /></button>)}
+        </div>}
+        <button className="btn outline sm" style={{ alignSelf: 'center' }} onClick={() => setManual(true)}>{t('pickSelf')}</button>
+      </div>
+    </div>
+  }
+
   if (!cat) {
     const res0 = searchCats(q, lang).filter(c => !group || q || c.g === group)
     const res = q ? res0 : catRank(res0, stats || {})
@@ -133,7 +171,7 @@ export function CallNow({ cat: initCat, group }) {
       <div className="pad col">
         <div className="search"><Icon n="search" s={20} /><input autoFocus={!group} placeholder={t('search')} value={q} onChange={e => setQ(e.target.value)} /></div>
         <div className="list" style={{ marginTop: 6 }}>
-          {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => { api.bump(c.id, c.g); setCat(c.id) }}>
+          {res.map(c => <button key={c.id} className="prorow" style={{ width: '100%' }} onClick={() => { api.bump(c.id, c.g); if (group === 'handy') api.bump('f_list'); setCat(c.id) }}>
             <span className="av" style={{ background: catTint(c.id), fontSize: 26 }}><CatIcon id={c.id} /></span>
             <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b>
             <span className="mute small b">{api.nearbyPros(c.id, 6).filter(x => x.online).length} ●</span><Icon n="right" s={18} /></button>)}
@@ -147,7 +185,7 @@ export function CallNow({ cat: initCat, group }) {
     if (live) { nav.replace('request', { id: live.id }); return }
     if ((!bundle || brig) && !user.card) { setPay(true); return }
     const id = await api.createRequest({ cat, note, brigade: brig, photo, voice })
-    if (id) nav.replace('request', { id })
+    if (id) { try { sessionStorage.removeItem('wext:t7') } catch {} } if (id) nav.replace('request', { id })
   }
 
   return <>

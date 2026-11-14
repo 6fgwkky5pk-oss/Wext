@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api, useStore } from '../store'
-import { CATEGORIES, catName, TYPICAL, searchCats, PRICE_Q } from '../data'
+import { CATEGORIES, catName, catById, TYPICAL, searchCats, PRICE_Q } from '../data'
 import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
 import { useNav } from '../nav'
 
@@ -88,6 +88,7 @@ export function Incoming() {
       <button className="btn red" onClick={() => api.respondIncoming(false)}>✕ {t('decline')}</button>
       <button className="btn primary" style={{ background: 'var(--green)' }} onClick={() => api.respondIncoming(true)}>✓ {t('acceptIt')}</button>
     </div>
+    {catById(inc.cat)?.g === 'handy' && <button className="btn outline sm" style={{ marginTop: 12, alignSelf: 'center', width: '100%' }} onClick={() => api.respondIncoming(false, 'notMine')}>🙅 {t('notMine')}</button>}
   </div>
 }
 

@@ -344,9 +344,11 @@ export const api = {
       ping(viaSms ? 'soft' : 'job')
     })
   },
-  respondIncoming(accept) {
+  // why = 'notMine' (T-007): wrong trade, said before any contact → plain decline (no fee for the client, search goes on) + a counter
+  respondIncoming(accept, why) {
     const inc = state.incoming; if (!inc) return
     set({ incoming: null })
+    if (!accept && why === 'notMine') api.bump('f_notmine')
     if (accept && !state.user.pro.online) api.updatePro({ online: true })
     if (CLOUD) {
       if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, eta: Math.max(4, Math.round(inc.dist * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }); else set({ note: { k: 'takenByOther', icon: '⏱', cat: inc.cat, ts: now() } }) })
