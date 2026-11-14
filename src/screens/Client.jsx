@@ -83,7 +83,7 @@ export function Home({ install }) {
             <span className="e" style={{ background: groupTint(id) }}><GroupIcon g={id} size="32px" /></span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
           </button>)}
         </div>
-        {DEMO && <DemoFeed />}
+        {bots?.length > 0 && <DemoFeed />}
         {p.promo && <div className="h7promo">🔥 {promoText(t, cfg.promoEnd, lang)} · <b>{money(p.amount)}</b> <s>{money(cfg.baseFee)}</s></div>}
         <div className="trust">🔒 <span>{t('trustLine')}</span></div>
         {install && <InstallCard onClick={install} />}
@@ -100,7 +100,7 @@ function DemoFeed() {
   const pros = useStore(s => s.demoBots) || NONE
   const ST = { accepted: t('accepted'), arrived: t('arrivedOk'), done: '✓' }
   return <div className="card col" style={{ gap: 8 }}>
-    <b>🤖 {t('demoFeed')} · {pros.filter(p => p.online).length} / {pros.length} 🟢</b>
+    <b>🤖 {t('demoFeed')} · {pros.length} · {t('botBusy')}</b>
     {feed.slice(0, 6).map(e => <div key={e.id} className="row small" style={{ gap: 8 }}><span style={{ fontSize: 18 }}>{catIcon(e.cat)}</span>
       <span className="grow ell"><b>{e.client}</b> → {e.pro} · {catName(e.cat, lang)}</span><span className="mute b">{ST[e.st]}</span></div>)}
   </div>

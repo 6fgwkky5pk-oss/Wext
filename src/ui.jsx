@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { initials, catById } from './data'
 import { useStore, api } from './store'
 import { makeT, RTL } from './i18n'
@@ -74,7 +75,7 @@ export function ProRow({ p, onClick, right }) {
     <div className="grow">
       <div className="row" style={{ gap: 6 }}><b className="ell">{p.name}</b></div>
       <div className="meta">{p.dist != null && <span>{p.posUnknown ? '?' : fmtKm(p.dist, t)}</span>}{p.myPrice ? <span>· 🏷️ {p.myPrice} ₾{p.priceUnit ? '/' + t({ h: 'perH', d: 'perD', m2: 'perM2', m100: 'perM100', pc: 'perPc', m3: 'perM3' }[p.priceUnit]) : ''}{p.priceLvl ? ' · ' + t('lvl_' + p.priceLvl) : ''}</span> : null}</div>
-      <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}><TypeBadge p={p} /></div>
+      <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}>{p.bot && <span className="badge">⏳ {t('botBusy')}</span>}<TypeBadge p={p} /></div>
     </div>
     {right}
   </button>
@@ -89,7 +90,12 @@ export function Top({ title, onBack, right, y }) {
 }
 
 export function Sheet({ onClose, children }) {
-  return <div className="overlay" onClick={onClose}><div className="modal" onClick={e => e.stopPropagation()}><div className="grab" />{children}</div></div>
+  // drawn straight into .app, so no scroll box (iOS makes each one its own layer) can put the tab bar on top of it
+  // (host is looked up after mount: on the first render after login the old .app is still in the page)
+  const [host, setHost] = useState(null)
+  useLayoutEffect(() => { setHost(document.querySelector('.app')) }, [])
+  const el = <div className="overlay" onClick={onClose}><div className="modal" onClick={e => e.stopPropagation()}><div className="grab" />{children}</div></div>
+  return host && host.isConnected ? createPortal(el, host) : el
 }
 
 export function Stepper({ v, set, min = 1, max = 99 }) {

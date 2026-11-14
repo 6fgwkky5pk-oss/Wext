@@ -175,7 +175,7 @@ function PriceQs({ cats, prices, onChange }) {
       <b>{catIcon(c)} {catName(c, lang)}</b>
       {qs.map((q, i) => <div key={i} className="row" style={{ gap: 8, marginTop: 8 }}>
         <span className="grow small b">{q[lang] || q.en}</span>
-        <input className="inp" style={{ width: 84, height: 42 }} type="number" inputMode="numeric" placeholder={i === 0 && d ? d[0] + '–' + d[1] : ''} value={v[i] ?? ''} onChange={e => put(i, e.target.value)} />
+        <input className="inp" style={{ width: 100, height: 42, padding: '0 8px', textAlign: 'center' }} type="number" inputMode="numeric" placeholder={i === 0 && d ? d[0] + '–' + d[1] : ''} value={v[i] ?? ''} onChange={e => put(i, e.target.value)} />
         <span className="small b">₾</span></div>)}
     </div> })}</div>
 }
