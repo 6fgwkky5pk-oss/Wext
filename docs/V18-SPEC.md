@@ -36,8 +36,14 @@ Already coded on staging: `config.bots.on` absent = ON for everyone; cities tbs 
 - A real user's name may not start with 🤖 (strip it in `clean()` for names), so nobody looks like a bot.
 - Sheet on short screens (≤ 660 px): keep the action buttons visible — make the sheet's last button row `position: sticky; bottom: 0` with the sheet background.
 
+## C3. Location you can see (owner 13:51: people sitting together could not see each other — the workers' phones sent a coarse network location in another city)
+- Home (client and work mode), under the top bar: „📍 შენ: <nearest city/region name>“ (+ „±N კმ“ when accuracy > 1 km). Tap = ask for location again (same as the 📍 button).
+- If `locAcc` > 2000 m: yellow warning „მდებარეობა უხეშია — ჩართე ზუსტი მდებარეობა (Settings → Privacy → Location Services → Safari/WEXT → Precise Location)“ — for workers also on the green-toggle screen.
+- Publish `locAcc` (rounded to 100 m) on the worker doc (rules: number 0–100000) so admin can see coarse positions; admin users tab shows „±N კმ“.
+- Test: `tests/e2e/brigade-visible.cjs` (brigade member near the client → client sees the brigade with ~1 km distance; brigadier offer lists the nearest member) must pass.
+
 ## D. Checks before release (all must pass, emulator only — see `tests/e2e/README.md`)
-1. `npm run build` ok. 2. `tests/e2e/bots-isolation.cjs` → ALL PASS. 3. `tests/e2e/overlap-audit.cjs` → no findings except the sticky-header lines. 4. Manual look at 3 screenshots: new group tiles, avatar picker, a bot price in the list. 5. Firestore rules emulator suite still green.
+1. `npm run build` ok. 2. `tests/e2e/bots-isolation.cjs` → ALL PASS; `tests/e2e/brigade-visible.cjs` prints the brigade in the client list and the member in the offer. 3. `tests/e2e/overlap-audit.cjs` → no findings except the sticky-header lines. 4. Manual look at 3 screenshots: new group tiles, avatar picker, a bot price in the list. 5. Firestore rules emulator suite still green.
 
 ## E. Release
 `public/sw.js` → `const V = 'wext-v18'`; CLAUDE.md "Release state" → live = wext-v18 (bots for everyone, new IT group, avatars, prices), next wext-v19; `git checkout main && git merge --ff-only staging && git push`; verify `sw.js` on `gh-pages` shows wext-v18; WORKLOG DONE. Keep `prosOld` (remove in v19).
