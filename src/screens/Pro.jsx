@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { api, useStore } from '../store'
-import { CATEGORIES, catName, catById, TYPICAL, searchCats, PRICE_Q } from '../data'
-import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch } from '../ui'
+import { api, useStore, groupOrder, catRank } from '../store'
+import { CATEGORIES, catName, catById, TYPICAL, searchCats, PRICE_Q, groupName } from '../data'
+import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch, CatIcon, GroupIcon, groupTint, toast } from '../ui'
 import { useNav } from '../nav'
 
 export function ProHome() {
@@ -13,7 +13,7 @@ export function ProHome() {
   const active = jobs.filter(j => ['accepted', 'arrived', 'agreed'].includes(j.status) && !j.proDoneAt)
   const todayN = jobs.filter(j => new Date(j.acceptedAt).toDateString() === new Date().toDateString()).length
 
-  if (!pro.registered) return <ProJoin />
+  if (!pro.registered || pro.setup) return <ProJoin />
   if (pro.blocked) return <div className="scroll"><div className="empty" style={{ paddingTop: 120 }}><div className="e">⛔</div><h2>{t('blockedMsg')}</h2><p>{t('noShows')}: {pro.noShows}/3</p></div></div>
 
   return <div className="scroll">
@@ -46,6 +46,7 @@ export function ProHome() {
           <button className="btn green" onClick={() => api.proAgree(j.id)}>🤝 {t('agreed')}</button>
         </div>}
       </div>)}
+      <LocWarn />
       <button className={'toggle ' + (pro.online ? 'on' : 'off')} onClick={() => api.setOnline(!pro.online)}>
         <div><div style={{ fontSize: 46 }}>{pro.online ? '●' : '○'}</div>{pro.online ? t('online') : t('offline')}</div>
       </button>
@@ -96,7 +97,6 @@ export function ProSettings() {
   const { t, lang } = useT()
   const nav = useNav()
   const pro = useStore(s => s.user.pro)
-  const [sq, setSq] = useState('')
   const toggle = id => api.updatePro({ cats: pro.cats.includes(id) ? pro.cats.filter(c => c !== id) : [...pro.cats, id] })
   return <div className="scroll nopad">
     <div className="top"><button className="iconbtn" onClick={nav.back}><Icon n="back" /></button><h2>{t('myServices')}</h2></div>
@@ -111,13 +111,53 @@ export function ProSettings() {
         <PriceQs cats={pro.cats} prices={pro.prices || {}} onChange={prices => api.updatePro({ prices })} />
       </>}
       <h3 style={{ marginTop: 8 }}>{t('myCats')}</h3>
-      <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-        <div className="search" style={{ width: '100%' }}><Icon n="search" s={20} /><input placeholder={t('findService')} value={sq} onChange={e => setSq(e.target.value)} /></div>
-        {(sq ? searchCats(sq, lang) : CATEGORIES).map(c => <button key={c.id} className={'chip' + (pro.cats.includes(c.id) ? ' on' : '')} onClick={() => toggle(c.id)}>{catIcon(c.id)} {c.n[lang] || c.n.en}</button>)}
-      </div>
+      <div className="col" style={{ gap: 12 }}><ServicePick cats={pro.cats} onToggle={toggle} /></div>
       <button className="btn primary" style={{ marginTop: 12 }} onClick={nav.back}>{t('save')}</button>
     </div>
   </div>
+}
+
+// a worker without a real location is invisible to clients: say so and offer to turn it on
+const askLoc = () => navigator.geolocation?.getCurrentPosition(pos => api.setLoc([pos.coords.latitude, pos.coords.longitude], true, pos.coords.accuracy), () => toast('⚙️ Settings → Location'), { enableHighAccuracy: true, timeout: 15000 })
+function LocWarn() {
+  const { t } = useT()
+  const locReal = useStore(s => s.locReal)
+  if (locReal) return null
+  return <button className="locwarn" style={{ marginBottom: 12 }} onClick={askLoc}>📍 <span className="grow">{t('proLocWarn')}</span><Icon n="right" s={16} /></button>
+}
+
+// pick services the same way a client does: group tiles first, then the group's services
+const SUB = { handy: 'groupHandySub', clean: 'groupCleanSub', ride: 'groupRideSub', land: 'groupLandSub', machine: 'groupMachineSub', move: 'groupMoveSub', road: 'groupRoadSub' }
+function ServicePick({ cats, onToggle }) {
+  const { t, lang } = useT()
+  const stats = useStore(s => s.catStats)
+  const [g, setG] = useState(null), [q, setQ] = useState('')
+  const groups = groupOrder(stats || {}).filter(id => CATEGORIES.some(c => c.g === id))
+  const n = id => cats.filter(c => catById(c)?.g === id).length
+  const list = q ? searchCats(q, lang) : g ? catRank(CATEGORIES.filter(c => c.g === g), stats || {}) : null
+  const top = groups[0], rest = groups.slice(1)
+  return <>
+    <div className="search h7search"><Icon n="search" s={20} /><input placeholder={t('findService')} value={q} onChange={e => setQ(e.target.value)} />{q && <button onClick={() => setQ('')}><Icon n="close" s={18} /></button>}</div>
+    {list ? <>
+      {g && !q && <div className="row" style={{ gap: 10 }}>
+        <button className="iconbtn" onClick={() => setG(null)} aria-label={t('allGroups')}><Icon n="back" /></button>
+        <span className="e" style={{ fontSize: 28 }}><GroupIcon g={g} /></span><h2 style={{ margin: 0 }}>{groupName(g, lang)}</h2></div>}
+      <div className="list">{list.map(c => { const on = cats.includes(c.id)
+        return <button key={c.id} className={'prorow pickrow' + (on ? ' on' : '')} style={{ width: '100%' }} onClick={() => onToggle(c.id)} aria-pressed={on}>
+          <span className="av" style={{ background: catTint(c.id), fontSize: 26 }}><CatIcon id={c.id} /></span>
+          <b className="grow" style={{ textAlign: 'left' }}>{c.n[lang] || c.n.en}</b><span className="chk">{on ? '✓' : ''}</span></button> })}</div>
+      {g && !q && <button className="btn outline sm" style={{ alignSelf: 'center' }} onClick={() => setG(null)}>← {t('allGroups')}</button>}
+    </> : <>
+      <button className="h7hero" onClick={() => setG(top)}>
+        <span className="hc" style={{ background: '#fff' }}><GroupIcon g={top} size="54px" /></span>
+        <span className="grow col" style={{ gap: 2, textAlign: 'left', minWidth: 0 }}><b>{groupName(top, lang)}</b><small>{t(SUB[top])}</small></span>
+        <Icon n="right" s={26} />{n(top) > 0 && <span className="gcount">{n(top)}</span>}
+      </button>
+      <div className="h7grid">{rest.map(id => <button key={id} className="h7t" onClick={() => setG(id)}>
+        <span className="e" style={{ background: groupTint(id) }}><GroupIcon g={id} size="32px" /></span><b>{groupName(id, lang)}</b><small>{t(SUB[id])}</small>
+        {n(id) > 0 && <span className="gcount">{n(id)}</span>}</button>)}</div>
+    </>}
+  </>
 }
 
 // Optional price questions per service (one number each, skippable)
@@ -138,14 +178,16 @@ function PriceQs({ cats, prices, onChange }) {
 export function ProJoin() {
   const { t, lang } = useT()
   const pro = useStore(s => s.user.pro)
-  const [step, setStep] = useState(0), [jq, setJq] = useState('')
+  const [step, setStep] = useState(0)
   const [prices, setPrices] = useState(pro.prices || {})
   const [cats, setCats] = useState(pro.cats)
   const [type, setType] = useState(pro.type)
   const [n, setN] = useState(Math.max(pro.members, 3))
   const tog = id => setCats(cats.includes(id) ? cats.filter(c => c !== id) : [...cats, id])
-  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, prices, registered: true, stopped: false }); setTimeout(() => api.setOnline(true), 300) }
-  return <div className="scroll">
+  const finish = () => { api.updatePro({ cats, type, members: type === 'individual' ? 1 : n, prices, registered: true, stopped: false, setup: false }); setTimeout(() => api.setOnline(true), 300) }
+  // registered (visible to clients, gets offers as SMS-style banner) right after picking services; the rest is optional
+  const next0 = () => { api.updatePro({ cats, registered: true, setup: true, stopped: false }); setStep(1); document.querySelector('.scroll')?.scrollTo(0, 0) }
+  return <div className={'scroll' + (step === 0 ? ' home7' : '')} style={{ paddingBottom: step === 0 ? 180 : undefined }}>
     <div className="fhead"><span className="wlogo"><img src="icons/icon-192.png" alt="" />WEXT</span><RoleSwitch /></div>
     <div className="pad col" style={{ gap: 12 }}>
       <div className="steps">{[0, 1, 2, 3].map(i => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
@@ -156,10 +198,9 @@ export function ProJoin() {
       </div>}
       {step === 0 && <>
         <h1 style={{ marginTop: 8 }}>{t('joinTitle')}</h1>
-        <p className="mute b small" style={{ margin: 0 }}>{t('joinSub')}</p>
-        <div className="search"><Icon n="search" s={20} /><input placeholder={t('findService')} value={jq} onChange={e => setJq(e.target.value)} /></div>
-        <div className="jgrid">{(jq ? searchCats(jq, lang) : CATEGORIES).map(c => <button key={c.id} className={'jt' + (cats.includes(c.id) ? ' on' : '')} onClick={() => tog(c.id)}><i style={{ background: catTint(c.id) }}>{catIcon(c.id)}</i>{c.n[lang] || c.n.en}</button>)}</div>
-        <button className="btn primary" style={{ marginTop: 8 }} disabled={!cats.length} onClick={() => setStep(1)}>{t('next')} <Icon n="right" /></button>
+        <p className="b small" style={{ margin: 0 }}>{t('pickHint')}</p>
+        <ServicePick cats={cats} onToggle={tog} />
+        {cats.length > 0 && <div className="joindock"><button className="btn primary" onClick={next0}>{t('pickedN', { n: cats.length })} <Icon n="right" /></button></div>}
       </>}
       {step === 1 && <>
         <h1 style={{ marginTop: 8 }}>🏷️ {t('priceStepTitle')}</h1>
@@ -183,7 +224,9 @@ export function ProJoin() {
           <div className="okline"><b>🔒</b>{t('ready3')}</div>
         </div>
         <p className="tiny mute" style={{ margin: 0, lineHeight: 1.5 }}>⚠️ {t('noShowRule')}</p>
+        <LocWarn />
         <button className="btn green" style={{ height: 64, fontSize: 19 }} onClick={finish}>{t('startWork')} <Icon n="right" /></button>
+        <p className="center small b mute" style={{ margin: 0 }}>{t('startWorkSub')}</p>
       </>}
     </div>
   </div>
