@@ -134,7 +134,7 @@ export function CallNow({ cat: initCat, group }) {
     const keep = v => { setNote(v); setGuess(null); try { sessionStorage.setItem('wext:t7', v) } catch {} }
     const pick = (id, via) => { api.bump(id, 'handy'); api.bump(via); setCat(id) }
     const find = () => { if (!note.trim()) { toast(t('describeFirst')); return } setGuess(guessHandy(note)) }
-    const opts = guess && !guess.sure ? [...new Set([...(guess.options.length ? guess.options : all.slice(0, 3)).map(c => c.id), 'handyman'])] : []
+    const opts = guess && !guess.sure ? [...new Set([...(guess.options.length ? guess.options : all.filter(c => c.id !== guess.no).slice(0, 3)).map(c => c.id), 'handyman'])].filter(id => id !== guess.no) : []
     return <div className="scroll nopad">
       <Top title={groupName('handy', lang)} onBack={nav.back} />
       <div className="pad col" style={{ gap: 12 }}>
@@ -149,7 +149,7 @@ export function CallNow({ cat: initCat, group }) {
         {guess?.sure && <div className="card col" style={{ gap: 10 }}>
           <div className="row" style={{ gap: 10 }}><span className="av" style={{ background: catTint(guess.sure.id), fontSize: 26 }}><CatIcon id={guess.sure.id} /></span>
             <b className="grow">{t('weSearch', { cat: catName(guess.sure.id, lang) })}</b></div>
-          <div className="grid2"><button className="btn light" onClick={() => { api.bump('f_change'); setGuess({ sure: null, options: guess.options.filter(c => c.id !== guess.sure.id) }) }}>{t('changeIt')}</button>
+          <div className="grid2"><button className="btn light" onClick={() => { api.bump('f_change'); setGuess({ sure: null, no: guess.sure.id, options: guess.options.filter(c => c.id !== guess.sure.id) }) }}>{t('changeIt')}</button>
             <button className="btn primary" onClick={() => pick(guess.sure.id, 'f_desc')}>✓ {t('yes')}</button></div>
         </div>}
         {guess && !guess.sure && <div className="col" style={{ gap: 8 }}>
