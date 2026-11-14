@@ -368,6 +368,7 @@ export function RequestTrack({ id }) {
         <div className="grab" />
         <div className="row"><span className="badge g" style={{ fontSize: 13, padding: '6px 10px' }}>✓ {r.status === 'agreed' ? '🤝 ' + t('agreedOk') : r.status === 'arrived' ? t('arrivedOk') : r.status === 'done' ? t('jobDone') : t('accepted')}</span>
           {r.status === 'accepted' && <span className="small b mute">{t('onTheWay', { m: r.eta })}</span>}</div>
+        {r.crewMemberName && <div className="hold" style={{ marginTop: 10 }}><span>👷</span><span>{t('crewComing', { name: r.crewMemberName, d: r.crewMemberDist })}</span></div>}
         <div className="row" style={{ marginTop: 16, gap: 14 }}>
           <Avatar p={pro} lg />
           <div className="grow"><h2>{pro.name}</h2>

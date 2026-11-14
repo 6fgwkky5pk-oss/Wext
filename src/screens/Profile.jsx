@@ -85,6 +85,21 @@ export function BugReport({ from }) {
   </div>
 }
 
+// admin: everyone starts again (profiles made before now are logged out and hidden; nothing is deleted) + brigade members switch
+function ResetAll() {
+  const { t } = useT()
+  const cfg = useStore(s => s.config) || {}
+  const [ask, setAsk] = useState(false)
+  if (!CLOUD) return null
+  return <div className="card col" style={{ gap: 8 }}>
+    {ask ? <div className="grid2"><button className="btn outline" onClick={() => setAsk(false)}>{t('cancel')}</button>
+      <button className="btn red" onClick={() => { cloud.setConfig({ epoch: Date.now() }); setAsk(false) }}>{t('resetYes')}</button></div>
+      : <button className="btn outline" onClick={() => setAsk(true)}>🔄 {t('resetAll')}</button>}
+    <small className="mute b">{t('resetAllSub')}</small>
+    <button className="btn outline sm" onClick={() => cloud.setConfig({ crews: !cfg.crews })}>👷 {t('crewsFlag')}: {cfg.crews ? 'ON' : 'OFF'}</button>
+  </div>
+}
+
 export function Admin() {
   const { t, lang } = useT()
   const nav = useNav()
@@ -113,6 +128,7 @@ export function Admin() {
     <Top title={t('admin')} onBack={nav.back} />
     <div className="pad col">
       <button className="btn outline" onClick={() => setDemo(true)}>🧪 {t('demoOn')}</button>
+      <ResetAll />
       <div className="seg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>{[['stats', t('stats')], ['users', t('users')], ['complaints', t('complaints')], ['prices', t('prices')], ['words', t('words')], ['bugs', t('bugs')], ['orders', t('orders')], ['testers', t('testers')]].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} style={{ fontSize: 12 }}>{l}</button>)}</div>
 
       {tab === 'stats' && <div className="grid2">

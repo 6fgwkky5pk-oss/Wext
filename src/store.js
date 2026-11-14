@@ -33,7 +33,7 @@ let saveT
 function set(patch) {
   state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) }
   subs.forEach(f => f())
-  clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)) } catch {} }, 150)
+  clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ ...state, demoBots: undefined })) } catch {} }, 150)
 }
 export const getState = () => state
 export function useStore(sel = s => s) {
@@ -92,6 +92,19 @@ export function priceFor(cat, kind = 'instant', brigade = false) {
 // approximate price range per service (not binding): admin override in config.typical, else the default in data.js
 export const typicalFor = cat => { const o = state.config?.typical?.[cat]; const d = TYPICAL[cat]; if (o && o[0] && o[1]) return [o[0], o[1], d?.[2]]; return d || null }
 let lastPosPush = null
+// test mode: bots per city (memory only, never in the database)
+const BOT_CITIES = [['tbs', [41.7151, 44.8271], 120], ['rst', [41.5495, 44.993], 70], ['kut', [42.2679, 42.6946], 100], ['bat', [41.6168, 41.6367], 100],
+  ['tel', [41.9198, 45.4731], 30], ['gor', [41.9816, 44.1124], 30], ['zug', [42.5088, 41.8709], 30], ['pot', [42.1462, 41.6719], 20]]
+// a brigade with members: it is "near" and "free" by the nearest green member who does this service (or the brigadier himself)
+function crewView(p, cat, loc) {
+  if (!p.crewMembers) return p
+  const self = !p.posUnknown && p.ownCats && (cat ? p.ownCats.includes(cat) : p.ownCats.length > 0) ? [{ pos: p.pos, online: p.online }] : []
+  const cand = [...self, ...p.crewMembers.filter(m => !cat || m.cats.includes(cat))]
+  if (!cand.length) return null
+  const on = cand.filter(m => m.online), pool = on.length ? on : cand
+  const best = pool.reduce((a, b) => distKm(loc, a.pos) <= distKm(loc, b.pos) ? a : b)
+  return { ...p, pos: best.pos, online: on.length > 0, crewNear: true }
+}
 export const currency = () => regionFor(state.loc || [41.92, 45.47])
 export const money = n => `${Number.isInteger(n) ? n : n.toFixed(2)}${currency().symbol}`
 
@@ -174,14 +187,20 @@ export const api = {
   updatePro(patch) { set(s => ({ user: { ...s.user, pro: { ...s.user.pro, ...patch } } })); if (CLOUD) cloud.pushProfile() },
 
   // test mode: ~80 bots around me (memory only), regenerated when I move far
-  _bots(loc) {
-    if (state.demoBots?.length && state.botsCenter && distKm(state.botsCenter, loc) < 30) return
-    set({ demoBots: seedPros(loc).map(p => ({ ...p, id: 'bot_' + p.id, name: '🤖 ' + p.name, bot: true })), botsCenter: loc })
+  _bots() {
+    if (state.demoBots?.length >= 600) return
+    const bots = []
+    BOT_CITIES.forEach(([city, c, n]) => {
+      const out = []
+      for (let k = 0; out.length < n; k++) out.push(...seedPros([c[0] + (k % 3 - 1) * 0.018, c[1] + (Math.floor(k / 3) % 3 - 1) * 0.024]).map(p => ({ ...p, id: 'bot_' + city + k + '_' + p.id })))
+      bots.push(...out.slice(0, n).map(p => ({ ...p, name: '🤖 ' + p.name, bot: true })))
+    })
+    set({ demoBots: bots })
   },
   nearbyPros(cat, radius = 50) {
     const loc = state.loc || [41.92, 45.47]
     const all = DEMO ? [...(state.pros || []), ...(state.demoBots || [])] : (state.pros || [])
-    return all.filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id))
+    return all.filter(p => (!cat || (p.cats || [p.cat]).includes(cat)) && !state.blockedIds.includes(p.id)).map(p => crewView(p, cat, loc)).filter(Boolean)
       .map(p => ({ ...p, dist: distKm(loc, p.pos) })).filter(p => p.dist <= radius).sort((a, b) => (b.online - a.online) || a.dist - b.dist)
   },
 
@@ -359,13 +378,15 @@ export const api = {
     })
   },
   // why = 'notMine' (T-007): wrong trade, said before any contact → plain decline (no fee for the client, search goes on) + a counter
-  respondIncoming(accept, why) {
+  respondIncoming(accept, why, member) {
     const inc = state.incoming; if (!inc) return
     set({ incoming: null })
     if (!accept && why === 'notMine') api.bump('f_notmine')
     if (accept && !state.user.pro.online) api.updatePro({ online: true })
     if (CLOUD) {
-      if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, eta: Math.max(4, Math.round(inc.dist * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }); else set({ note: { k: 'takenByOther', icon: '⏱', cat: inc.cat, ts: now() } }) })
+      const mem = accept && member ? { id: member.id, name: member.name, dist: member.dist } : null
+      if (mem) cloud.setCrewBusy(cloud.myId(), mem.id, inc.id)
+      if (accept) cloud.acceptRequest(inc.id, { name: state.user.name, member: mem, eta: Math.max(4, Math.round((mem ? mem.dist : inc.dist) * 3 + 3)) }).then(ok => { if (ok) api.updatePro({ jobs: state.user.pro.jobs + 1 }); else set({ note: { k: 'takenByOther', icon: '⏱', cat: inc.cat, ts: now() } }) })
       else { set(s => ({ declined: [...(s.declined || []), inc.id] })); cloud.declineRequest(inc.id) }
       return
     }
@@ -375,6 +396,19 @@ export const api = {
       pushMsg(job.threadId, { from: 'client', text: inc.note || '👋' })
     } else api._scheduleIncoming()
   },
+  // brigade members (D-008)
+  joinCrew(bid, info, cats) {
+    set(s => ({ user: { ...s.user, role: 'pro' } }))
+    api.updatePro({ registered: true, setup: false, stopped: false, type: 'individual', members: 1, cats, crewOf: bid, crewName: info.name || '—', crewSize: info.pro?.members || 2, consentAt: now() })
+    setTimeout(() => api.setOnline(true), 300)
+  },
+  leaveCrew() {
+    const c = state.user?.pro?.crewOf; if (!c) return
+    if (CLOUD) cloud.leaveCrew(c)
+    api.updatePro({ crewOf: null, crewName: null, crewSize: null, consentAt: null, registered: false, online: false })
+  },
+  assignMember(jobId, m) { if (!CLOUD) return; cloud.setCrewBusy(cloud.myId(), m.id, jobId); cloud.updateRequest(jobId, { crewMemberId: m.id, crewMemberName: m.name, crewMemberDist: m.dist, eta: Math.max(4, Math.round(m.dist * 3 + 3)) }) },
+  memberDecline(job) { if (!CLOUD) return; cloud.setCrewBusy(state.user.pro.crewOf, cloud.myId(), null); cloud.updateRequest(job.id, { crewMemberId: null, crewMemberName: null, crewMemberDist: null, crewDeclined: [...(job.crewDeclined || []), cloud.myId()] }) },
   openSms() { set(s => s.incoming ? { incoming: { ...s.incoming, opened: true, expires: now() + 75000 } } : {}); ping('job') },
   proOnWay(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { onWayAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, onWayAt: now() } : j) })) },
   proArrived(jobId) { if (CLOUD) { cloud.updateRequest(jobId, { status: 'arrived', arrivedAt: now() }); return } set(s => ({ proJobs: s.proJobs.map(j => j.id === jobId ? { ...j, status: 'arrived', arrivedAt: now() } : j) })) },
@@ -450,7 +484,7 @@ if (DEMO) {
   const STEPS = ['accepted', 'arrived', 'done']
   const tick = () => {
     const pros = (state.demoBots || []).map(p => Math.random() < 0.15 ? { ...p, online: !p.online } : p)
-    const free = pros.filter(p => p.online)
+    const here = state.loc || [41.92, 45.47], free = pros.filter(p => p.online && distKm(here, p.pos) < 30)
     const ev = [...Array(1 + Math.floor(Math.random() * 3))].map(() => { const p = free[Math.floor(Math.random() * free.length)]
       return p && { id: Math.random().toString(36).slice(2), at: now(), client: '🤖 ' + NAMES[Math.floor(Math.random() * NAMES.length)], pro: p.name, cat: p.cat, st: STEPS[Math.floor(Math.random() * 3)] } }).filter(Boolean)
     set(s => ({ demoBots: pros, demoFeed: [...ev, ...(s.demoFeed || [])].slice(0, 30) }))

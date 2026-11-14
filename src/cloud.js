@@ -76,10 +76,35 @@ export function pushProfile() {
   pushT = setTimeout(() => {
     const s = ctx.get(), u = s.user; if (!u) return
     setDoc(doc(db, 'users', uid), {
-      name: u.name, role: u.role, hue: u.hue ?? 38, pro: (({ rating, jobs, noShows, blocked, verified, ...rest }) => rest)(u.pro || {}), aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), gh4: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: round(s.loc), gh4: geohash(s.loc), posReal: true, posAcc: s.locAcc || null, posAt: Date.now() } : {}), region: s.region || 'ge',
+      name: u.name, role: u.role, hue: u.hue ?? 38, joinedAt: u.createdAt || Date.now(), pro: (({ rating, jobs, noShows, blocked, verified, ...rest }) => rest)(u.pro || {}), aliases: u.aliases || [], ...(!u.pro?.registered ? { pos: deleteField(), gh4: deleteField(), posReal: deleteField(), posAcc: deleteField(), posAt: deleteField() } : s.locReal ? { pos: (u.pro?.crewOf ? round1k : round)(s.loc), gh4: geohash(s.loc), posReal: true, posAcc: u.pro?.crewOf ? null : (s.locAcc || null), posAt: Date.now() } : {}), region: s.region || 'ge',
       updatedAt: Date.now(),
     }, { merge: true }).catch(console.error)
+    if (u.pro?.crewOf) pushCrew()
+    listenCrew()
   }, 400)
+}
+
+// ---------- brigade members (D-008) ----------
+// A member joins by the brigadier's link and agrees himself. Clients see only a ~1 km zone (public users/{uid}.pos);
+// the exact point is in crews/{brigadier}/members/{member}, readable by that brigadier and the member only; no history, only the last point.
+const round1k = p => p && [Math.round(p[0] * 100) / 100, Math.round(p[1] * 100) / 100]
+export function pushCrew() {
+  const s = ctx.get(), u = s.user, c = u?.pro?.crewOf; if (!uid || !c) return
+  setDoc(doc(db, 'crews', c, 'members', uid), {
+    name: u.name, cats: u.pro.cats || [], online: !!u.pro.online, consentAt: u.pro.consentAt || Date.now(),
+    ...(s.locReal && u.pro.online ? { pos: round(s.loc), at: Date.now() } : {}),
+  }, { merge: true }).catch(console.error)
+}
+export const leaveCrew = c => uid && deleteDoc(doc(db, 'crews', c, 'members', uid)).catch(() => {})
+export const setCrewBusy = (c, mid, rid) => updateDoc(doc(db, 'crews', c, 'members', mid), { busy: rid || null }).catch(() => {})
+export async function getUser(id) { try { const d = await getDoc(doc(db, 'users', id)); return d.exists() ? d.data() : null } catch { return null } }
+let crewOn = false
+function listenCrew() {
+  const p = ctx.get().user?.pro, want = !!(uid && p?.registered && p.type !== 'individual' && !p.crewOf)
+  if (want === crewOn) return
+  crewOn = want
+  if (!want) { unsubs.crew?.(); delete unsubs.crew; ctx.set({ crew: [] }); return }
+  sub('crew', onSnapshot(collection(db, 'crews', uid, 'members'), snap => { const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); ctx.set({ crew: a }) }, () => {}))
 }
 export async function onLogin() {
   const u = ctx.get().user
@@ -119,7 +144,7 @@ async function restoreByPhone(phone, p9) {
     if (!ids.size) return
     let best = null; const all = new Set()
     for (const id of ids) {
-      const x = (await getDoc(doc(db, 'users', id))).data(); if (!x) continue
+      const x = (await getDoc(doc(db, 'users', id))).data(); if (!x || !epochOk(x)) continue
       all.add(id); (x.aliases || []).forEach(a => a !== uid && all.add(a))
       const score = (x.pro?.registered ? 1e15 : 0) + (x.updatedAt || 0)
       if (!best || score > best.score) best = { id, x, score }
@@ -141,6 +166,9 @@ function listenGlobal() {
     const { blockedIds = [], ...cfg } = c
     setExtraSyn(cfg.syn)
     ctx.set(s => ({ config: { ...s.config, ...cfg }, blockedIds }))
+    // admin "everyone starts again": profiles made before config.epoch are logged out here and hidden everywhere (nothing is deleted)
+    const u = ctx.get().user
+    if (cfg.epoch && u && (u.createdAt || 0) < cfg.epoch) resetForEpoch()
   }))
   sub('stats', onSnapshot(doc(db, 'stats', 'cats'), d => { const { _k, ...st } = d.data() || {}; ctx.set({ catStats: st }) }, () => {}))
 }
@@ -174,13 +202,25 @@ function buildPros() {
     const pros = []
     const all = new Map([...oldDocs, ...proDocs])
     // (aliases of other accounts are NOT trusted here: anyone could list a real pro's id and hide him)
+    const crews = new Map(), mine = ctx.get().user?.pro?.crewOf
     all.forEach((u, id) => { const d = { id }
-      if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || u.pro.blocked) return
+      if (isMe(d.id) || u.movedTo || !u.pro?.registered || !u.pos || u.pro.blocked || !epochOk(u)) return
+      if (u.pro.crewOf) {
+        const k = u.pro.crewOf; if (isMe(k) || k === mine) return
+        const c = crews.get(k) || { name: u.pro.crewName || '—', size: u.pro.crewSize || 2, list: [] }
+        c.list.push({ cats: u.pro.cats || [], pos: u.pos, online: !!u.pro.online && now - (u.updatedAt || 0) < 6 * 3600e3 }); crews.set(k, c); return
+      }
       pros.push({
         id: d.id, name: u.name, type: u.pro.type, cat: u.pro.cats?.[0], cats: u.pro.cats || [], prices: u.pro.prices || {}, members: u.pro.members || 1,
         verified: !!u.pro.verified, rating: u.pro.rating || 5, jobs: u.pro.jobs || 0, pos: u.pos, posUnknown: !u.posReal && Math.abs(u.pos[0] - 41.92) < 0.0006 && Math.abs(u.pos[1] - 45.47) < 0.0006, hue: u.hue ?? 30,
         online: !!u.pro.online && now - (u.updatedAt || 0) < 6 * 3600e3,
       })
+    })
+    crews.forEach((c, k) => {
+      const own = pros.find(p => p.id === k), mcats = c.list.flatMap(m => m.cats)
+      if (own) { own.ownCats = own.cats; own.cats = [...new Set([...own.cats, ...mcats])]; own.crewMembers = c.list; return }
+      pros.push({ id: k, name: c.name, type: 'brigade', cat: mcats[0], cats: [...new Set(mcats)], ownCats: [], prices: {}, members: c.size, verified: false, rating: 5, jobs: 0,
+        pos: c.list[0].pos, posUnknown: false, hue: 30, online: c.list.some(m => m.online), crewMembers: c.list })
     })
     const w = ctx.get().watchCat
     if (w) { const hit = pros.find(p => p.online && (p.cats || []).includes(w) && !p.posUnknown && ctx.dist(ctx.get().loc || p.pos, p.pos) < 15)
@@ -192,6 +232,9 @@ function listenUser() {
   // my own profile (admin block flag) — one document, not the whole user list
   sub('me', onSnapshot(doc(db, 'users', uid), d => { const u = d.data() || {}; if (!!u.pro?.blocked !== !!ctx.get().adminBlocked) ctx.set({ adminBlocked: !!u.pro?.blocked }) }, () => {}))
   relistenPros(true)
+  sub('crewJobs', onSnapshot(query(collection(db, 'requests'), where('crewMemberId', '==', uid)), snap => {
+    const a = []; snap.forEach(d => { const r = d.data(); if (['accepted', 'arrived', 'agreed'].includes(r.status)) a.push({ id: d.id, ...r }) }); ctx.set({ crewJobs: a })
+  }, () => {}))
   // my requests as a client
   sub('myReqs', onSnapshot(query(collection(db, 'requests'), where('clientId', '==', uid)), snap => {
     const prev = ctx.get().requests
@@ -234,7 +277,7 @@ function listenUser() {
     const jobs = []
     snap.forEach(d => {
       const r = d.data()
-      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, rating: r.rating || null, outcomeBy: r.outcomeBy || null, doneAt: r.doneAt || null, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId })
+      jobs.push({ id: d.id, cat: r.cat, note: r.note, photo: r.photo || null, voice: r.voice || null, client: r.clientName, clientId: r.clientId, pos: r.pos, dist: r.posReal === false || !loc ? null : +ctx.dist(loc, r.pos).toFixed(1), status: r.status, rating: r.rating || null, outcomeBy: r.outcomeBy || null, doneAt: r.doneAt || null, clientDeal: r.clientDeal || null, proDeal: r.proDeal || null, acceptedAt: r.acceptedAt, onWayAt: r.onWayAt || null, proDoneAt: r.proDoneAt || null, threadId: r.threadId, crewMemberId: r.crewMemberId || null, crewMemberName: r.crewMemberName || null, crewMemberDist: r.crewMemberDist ?? null, crewDeclined: r.crewDeclined || [] })
       if (r.threadId) listenThread(r.threadId, d.id, 'pro')
       if (bothYes(r)) updateDoc(doc(db, 'requests', d.id), { status: 'agreed', agreedAt: Date.now() }).catch(() => {})
     })
@@ -298,6 +341,11 @@ export function listenThread(tid, reqId, side) {
   })
 }
 
+async function resetForEpoch() {
+  if (uid) await updateDoc(doc(db, 'users', uid), { name: '—', pro: { type: 'individual', cats: [], members: 1, online: false, registered: false }, pos: deleteField(), gh4: deleteField(), aliases: [], resetAt: Date.now() }).catch(() => {})
+  ctx.api.logout()
+}
+const epochOk = x => (x?.joinedAt || 0) >= (ctx.get().config?.epoch || 0)
 export function logoutCloud() {
   Object.keys(unsubs).forEach(k => { if (k !== 'config') { unsubs[k](); delete unsubs[k] } })
   Object.keys(threadSubs).forEach(k => { threadSubs[k](); delete threadSubs[k] })
@@ -334,7 +382,8 @@ export async function acceptRequest(id, pro) {
     const ref = doc(db, 'requests', id)
     const d = await tx.get(ref)
     if (!d.exists() || d.data().status !== 'searching') return false
-    tx.update(ref, { status: 'accepted', proId: uid, proName: pro.name, eta: pro.eta, acceptedAt: Date.now(), threadId: 't_' + id })
+    tx.update(ref, { status: 'accepted', proId: uid, proName: pro.name, eta: pro.eta, acceptedAt: Date.now(), threadId: 't_' + id,
+      ...(pro.member ? { crewMemberId: pro.member.id, crewMemberName: pro.member.name, crewMemberDist: pro.member.dist } : {}) })
     return true
   })
 }

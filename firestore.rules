@@ -91,6 +91,12 @@ service cloud.firestore {
       allow create: if signedIn() && reqCreateOk();
       allow update: if signedIn() && (reqUpdateOk() || isAdmin());
     }
+    // [D-008] brigade members: exact point readable only by the brigadier and the member himself; brigadier may only set "busy"
+    match /crews/{bid}/members/{mid} {
+      allow read: if me(bid) || me(mid);
+      allow create, update: if me(mid) || (me(bid) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['busy']));
+      allow delete: if me(mid) || me(bid);
+    }
     match /threads/{tid}/msgs/{m} {
       allow read: if signedIn() && (threadSide(tid) || isAdmin());
       allow create: if signedIn() && request.resource.data.from == request.auth.uid && threadSide(tid);

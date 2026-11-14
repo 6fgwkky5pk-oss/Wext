@@ -11,6 +11,7 @@ import { Home, CallNow, RequestTrack, Activity } from './screens/Client'
 import { ChatList, Chat, Voice, IncomingCall } from './screens/Chat'
 import { Projects, Rides, seedBoards } from './screens/Projects'
 import { ProHome, Incoming, ProSettings } from './screens/Pro'
+import { JoinCrew } from './crew'
 import { Profile, BugReport, Admin } from './screens/Profile'
 import { MyPros, ProStats } from './screens/Tabs'
 
@@ -75,6 +76,9 @@ function Shell() {
   const [tab, setTab] = useState(() => new URLSearchParams(location.search).has('admin') ? 'profile' : 'home')
   const [stack, setStack] = useState([])
   const [iosHelp, setIosHelp] = useState(false)
+  // brigade invite link (?crew=<brigadier>): kept until the person is logged in, then the consent screen opens
+  const [invite, setInvite] = useState(() => { const q = new URLSearchParams(location.search).get('crew'); try { if (q) localStorage.setItem('wext:crew', q); return q || localStorage.getItem('wext:crew') } catch { return q } })
+  const doneInvite = () => { try { localStorage.removeItem('wext:crew') } catch {}; setInvite(null); if (location.search.includes('crew=')) history.replaceState({}, '', location.pathname) }
   const inst = useInstall()
   useLocation()
 
@@ -113,7 +117,7 @@ function Shell() {
   return <Nav.Provider value={nav}>
     <div className={'app' + (big ? ' big' : '')} data-theme={THEME}>
       {DEMO && <button className="demobar" onClick={() => setDemo(false)}>🧪 {t('demoBar')} · <u>{t('demoExit')}</u></button>}
-      {Screen ? <Screen key={top.k} {...top.params} /> : <>
+      {invite && CLOUD ? <JoinCrew bid={invite} onDone={doneInvite} /> : Screen ? <Screen key={top.k} {...top.params} /> : <>
         {tab === 'home' && (isPro ? <ProHome /> : <Home install={installFn} />)}
         {tab === 'mypros' && <MyPros />}
         {tab === 'stats' && <ProStats />}

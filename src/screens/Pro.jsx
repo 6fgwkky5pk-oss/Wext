@@ -3,6 +3,7 @@ import { api, useStore, groupOrder, catRank } from '../store'
 import { CATEGORIES, catName, catById, TYPICAL, searchCats, PRICE_Q, groupName } from '../data'
 import { useT, Icon, Ring, useNow, catIcon, catTint, fmtKm, Stepper, RoleSwitch, CatIcon, GroupIcon, groupTint, toast } from '../ui'
 import { useNav } from '../nav'
+import { CrewCard, CrewPick, CrewOnJob, MemberCard } from '../crew'
 
 export function ProHome() {
   const { t, lang } = useT()
@@ -20,6 +21,8 @@ export function ProHome() {
     <div className="top"><div className="grow"><RoleSwitch /><h1 style={{ fontSize: 24, marginTop: 10 }} className="ell">{user.name}</h1></div>
       <button className="iconbtn" style={{ alignSelf: 'flex-start' }} onClick={() => nav.go('bug')}><Icon n="bug" s={20} /></button></div>
     <div className="pad">
+      <MemberCard />
+      <CrewCard />
       {!pro.cats.length && <button className="card row" style={{ width: '100%', background: '#FFF1C2', textAlign: 'left' }} onClick={() => nav.go('proSettings')}>
         <span style={{ fontSize: 26 }}>👉</span><b className="grow">{t('myCats')}</b><Icon n="right" /></button>}
       {pro.cats.length > 0 && <button className="mycats" onClick={() => nav.go('proSettings')}>
@@ -28,6 +31,7 @@ export function ProHome() {
       </button>}
       {active.map(j => <div key={j.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--ink)' }}>
         <div className="row"><span style={{ fontSize: 28 }}>{catIcon(j.cat)}</span><div className="grow"><b>{catName(j.cat, lang)} · {j.client}</b><div className="meta">{fmtKm(j.dist, t)}{j.note ? ' · ' + j.note : ''}</div></div></div>
+        <CrewOnJob j={j} />
         {j.photo && <img src={j.photo} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 14, marginTop: 8 }} />}
         {j.voice && <audio src={j.voice} controls style={{ width: '100%', marginTop: 8 }} />}
         <div className="jsteps">{[t('stepOnWay'), t('stepArrived'), t('stepDone')].map((l, i) => { const at = j.status === 'agreed' ? 2 : j.status === 'arrived' ? 2 : j.onWayAt ? 1 : 0; return <span key={i} className={i < at ? 'ok' : i === at ? 'now' : ''}>{i < at ? '✓ ' : ''}{l}</span> })}</div>
@@ -65,6 +69,7 @@ export function Incoming() {
   const { t, lang } = useT()
   const inc = useStore(s => s.incoming)
   const now = useNow(250)
+  const [member, setMember] = useState(null)
   const left = inc ? (inc.expires - now) / 1000 : 0
   useEffect(() => { if (inc && left <= 0) api.respondIncoming(false) }, [left <= 0])
   if (!inc) return null
@@ -84,10 +89,11 @@ export function Incoming() {
       {inc.photo && <img src={inc.photo} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 16 }} />}
       {inc.voice && <audio src={inc.voice} controls style={{ width: '100%' }} />}
     </div>}
+    <CrewPick inc={inc} value={member} onChange={setMember} />
     <div style={{ marginTop: 24 }}><Ring left={left} total={75} /></div>
     <div className="bigbtns">
       <button className="btn red" onClick={() => api.respondIncoming(false)}>✕ {t('decline')}</button>
-      <button className="btn primary" style={{ background: 'var(--green)' }} onClick={() => api.respondIncoming(true)}>✓ {t('acceptIt')}</button>
+      <button className="btn primary" style={{ background: 'var(--green)' }} onClick={() => api.respondIncoming(true, null, member)}>✓ {member ? t('acceptSend', { name: member.name }) : t('acceptIt')}</button>
     </div>
     {catById(inc.cat)?.g === 'handy' && <button className="btn outline sm" style={{ marginTop: 12, alignSelf: 'center', width: '100%' }} onClick={() => api.respondIncoming(false, 'notMine')}>🙅 {t('notMine')}</button>}
   </div>

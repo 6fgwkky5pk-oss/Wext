@@ -432,3 +432,10 @@ textarea.inp { height: 96px; padding: 14px 16px; resize: none; }
 .joindock .btn { height: 58px; box-shadow: var(--shadow-lg); }
 .locwarn.big { font-size: 14px; padding: 14px; border: 2px solid var(--red); }
 .demobar { position: absolute; top: var(--safe-t); left: 50%; transform: translateX(-50%); z-index: 60; background: #6A4BE0; color: #fff; font-size: 11.5px; font-weight: 800; padding: 4px 12px; border-radius: 0 0 12px 12px; white-space: nowrap; max-width: 96%; overflow: hidden; text-overflow: ellipsis; }
+/* brigade members */
+.crewlink { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; border-radius: 14px; background: #FFF6DA; border: 2px dashed #C98700; font-weight: 800; text-align: left; color: inherit; }
+.crewlink small { display: block; font-size: 12px; font-weight: 700; color: #6b5a2a; }
+.av.sm { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; flex: none; }
+.crewrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.92); color: #111; border: 3px solid transparent; }
+.crewrow.on { border-color: var(--green); }
+.tagg { background: #E9F8EF; color: #12B76A; border-radius: 8px; padding: 1px 7px; font-size: 11.5px; margin-left: 6px; }
