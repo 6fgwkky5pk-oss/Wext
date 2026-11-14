@@ -1,0 +1,76 @@
+<!doctype html><meta charset="utf-8">
+<style>
+body{margin:0;background:#FFC21A;font-family:'Noto Sans Georgian',system-ui,sans-serif;color:#111;width:1180px;padding:28px 34px;box-sizing:border-box}
+h1{font-size:32px;margin:0 0 4px;font-weight:900}
+.sub{font-size:16px;font-weight:700;margin-bottom:16px;opacity:.75}
+.v{background:#fff;border-radius:26px;padding:16px 20px;margin-bottom:16px;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+.v h2{margin:0 0 4px;font-size:22px;font-weight:900}.v p{margin:0 0 12px;font-size:14px;font-weight:700;opacity:.65}
+.row{display:grid;grid-template-columns:repeat(8,1fr);gap:12px 8px}
+.it{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;font-weight:800;text-align:center;line-height:1.2}
+.it small{font-weight:700;opacity:.6;font-size:11px}
+.pair{display:flex;gap:6px}
+svg{width:92px;height:92px;display:block}
+.new{outline:3px dashed #D7263D;outline-offset:4px;border-radius:14px;padding:2px}
+</style>
+<h1>ავატარები რეგიონების მიხედვით</h1>
+<div class="sub">აპი მდებარეობით თვითონ სთავაზობს. ადამიანს შეუძლია სხვა აირჩიოს ან საკუთარი ფოტო დააყენოს. სია ადვილად ემატება: ქვეყანა → რეგიონი → ნიშანი.</div>
+<div class="v"><h2>საქართველო</h2><p>წითელი ჩარჩო = ახალი ვარიანტები (თბილისი, სამეგრელო). აირჩიე, რომელი მოგწონს.</p><div class="row" id="GE"></div></div>
+<div class="v"><h2>უცხოეთი (მაგალითი, იგივე მიდგომა)</h2><p>ქვეყანა ან ქალაქი თავისი ცნობილი ნიშნით.</p><div class="row" id="W"></div></div>
+<script>
+const S = {
+  grape: c => `${[[50,40],[40,50],[60,50],[50,60],[34,62],[66,62],[44,71],[56,71],[50,81]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="8.5" fill="${c}"/>`).join('')}<path d="M50 32 C50 24 54 19 60 17" stroke="#3b7a2a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M52 27 C62 18 74 22 74 30 C66 32 58 31 52 27Z" fill="#4E9A3A"/>`,
+  balcony: c => `<rect x="18" y="22" width="64" height="40" rx="4" fill="#fff"/><path d="M18 22 h64 v8 h-64z" fill="${c}"/>${[26,38,50,62,74].map(x=>`<path d="M${x} 30 v32" stroke="${c}" stroke-width="3"/>`).join('')}<path d="M14 62 h72 v8 h-72z" fill="${c}"/>${[22,34,46,58,70].map(x=>`<path d="M${x} 70 l4 10 l4 -10" stroke="${c}" stroke-width="3" fill="none"/>`).join('')}`,
+  baths: c => `${[[30,26],[50,20],[70,26]].map(([x,r])=>`<path d="M${x-14} 74 v-6 a14 14 0 0 1 28 0 v6z" fill="${c}"/><circle cx="${x}" cy="56" r="3.5" fill="#fff"/>`).join('')}<rect x="12" y="74" width="76" height="8" rx="3" fill="${c}"/><path d="M40 40 c-4 -6 4 -8 0 -14 M60 40 c-4 -6 4 -8 0 -14" stroke="#9aa" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  pepper: c => `<path d="M58 26 c-2 -8 4 -12 10 -10" stroke="#2E7D32" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M48 28 c14 -4 22 4 18 18 c-4 16 -18 30 -36 38 c8 -14 10 -26 8 -38 c0 -10 4 -16 10 -18z" fill="${c}"/><path d="M50 36 c4 -2 8 0 8 4" stroke="#fff8" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  canyon: c => `<path d="M10 84 V30 l18 -8 l6 62z M90 84 V26 l-18 -6 l-6 64z" fill="#8B6B4A"/><path d="M40 22 h20 v62 h-20z" fill="${c}"/><path d="M44 30 v50 M50 26 v54 M56 30 v50" stroke="#fff9" stroke-width="2.5"/><ellipse cx="50" cy="84" rx="26" ry="5" fill="${c}"/>`,
+  qvevri: c => `<path d="M38 26 h24 v6 c14 8 20 22 16 38 c-3 12 -14 20 -28 20 s-25 -8 -28 -20 c-4 -16 2 -30 16 -38z" fill="${c}"/><rect x="36" y="22" width="28" height="7" rx="3" fill="#00000033"/>`,
+  khacha: c => `<circle cx="50" cy="54" r="30" fill="${c}"/><circle cx="50" cy="54" r="22" fill="#FFE07A"/><circle cx="44" cy="50" r="4" fill="#fff6"/>`,
+  boat: c => `<path d="M12 52 c10 -8 66 -8 76 0 c-8 18 -26 26 -38 26 s-30 -8 -38 -26z" fill="${c}"/><ellipse cx="50" cy="54" rx="24" ry="9" fill="#FFE07A"/><circle cx="50" cy="54" r="6" fill="#FFB020"/><circle cx="48" cy="52" r="2" fill="#fff"/>`,
+  wave: c => `<circle cx="64" cy="38" r="12" fill="#FFB020"/><path d="M14 62 q12 -12 24 0 t24 0 t24 0 V86 H14z" fill="${c}"/><path d="M14 72 q12 -10 24 0 t24 0 t24 0" stroke="#fff9" stroke-width="3" fill="none"/>`,
+  mandarin: c => `<circle cx="50" cy="56" r="26" fill="${c}"/><path d="M50 30 c0 -6 2 -10 6 -12" stroke="#2E7D32" stroke-width="4" fill="none"/><path d="M54 26 c10 -10 22 -4 22 4 c-8 4 -16 2 -22 -4z" fill="#3E9B48"/><circle cx="42" cy="48" r="4" fill="#fff6"/>`,
+  tower: c => `<path d="M40 86 V30 l10 -10 l10 10 V86z" fill="${c}"/><rect x="46" y="38" width="8" height="10" rx="2" fill="#fff9"/><rect x="46" y="58" width="8" height="10" rx="2" fill="#fff9"/><path d="M14 86 l18 -22 l12 14 M86 86 l-16 -20 l-10 12" fill="#cfd8dc"/>`,
+  wine: c => `<path d="M14 84 l20 -30 l14 16 l12 -22 l26 36z" fill="#9DB7A5"/><path d="M42 18 h16 c2 14 0 26 -8 30 c-8 -4 -10 -16 -8 -30z" fill="${c}"/><path d="M50 48 v20 M40 70 h20" stroke="#555" stroke-width="3" stroke-linecap="round"/>`,
+  sheep: c => `${[[38,46],[50,40],[62,46],[34,58],[50,56],[66,58],[44,66],[58,66]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="11" fill="#fff" stroke="${c}" stroke-width="2"/>`).join('')}<ellipse cx="24" cy="52" rx="9" ry="12" fill="${c}"/><path d="M40 74 v10 M58 74 v10" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`,
+  apple: c => `<path d="M50 34 c-14 -10 -32 0 -30 20 c2 20 16 32 30 26 c14 6 28 -6 30 -26 c2 -20 -16 -30 -30 -20z" fill="${c}"/><path d="M50 34 c0 -8 2 -12 6 -16" stroke="#6b4a2b" stroke-width="4" fill="none"/><path d="M54 26 c8 -8 18 -4 18 2 c-6 4 -12 2 -18 -2z" fill="#3E9B48"/><circle cx="36" cy="46" r="5" fill="#fff6"/>`,
+  kazbegi: c => `<path d="M8 84 l30 -50 l10 12 l14 -26 l30 64z" fill="${c}"/><path d="M48 46 l14 -26 l8 16 l-6 -2 l-6 6 l-4 -6z" fill="#fff"/><rect x="20" y="66" width="12" height="10" fill="#6b4a2b"/><path d="M19 66 l7 -7 l7 7z" fill="#6b4a2b"/><rect x="25" y="54" width="2" height="5" fill="#6b4a2b"/>`,
+  vardzia: c => `<path d="M8 86 V40 c14 -14 30 -20 42 -20 s30 6 42 20 V86z" fill="${c}"/>${[[26,46],[42,40],[58,40],[74,46],[20,62],[36,58],[52,58],[68,58],[82,64],[30,74],[60,74]].map(([x,y])=>`<path d="M${x-4} ${y+8} v-5 a4 4 0 0 1 8 0 v5z" fill="#3b2a1a"/>`).join('')}`,
+  borjomi: c => `<path d="M42 14 h16 v10 c8 6 10 12 10 20 v38 c0 4 -4 6 -8 6 h-20 c-4 0 -8 -2 -8 -6 v-38 c0 -8 2 -14 10 -20z" fill="${c}"/><rect x="34" y="48" width="32" height="18" rx="3" fill="#fff"/><circle cx="50" cy="57" r="5" fill="${c}"/>`,
+  palm: c => `<path d="M50 86 c2 -18 2 -34 -2 -46" stroke="#8B6B4A" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M48 40 c-10 -12 -26 -12 -34 -4 c12 -2 22 0 34 4z M48 40 c10 -14 26 -14 34 -6 c-12 -2 -22 0 -34 6z M48 40 c-4 -14 2 -24 10 -26 c-6 8 -8 16 -10 26z M48 40 c-14 -2 -22 6 -24 14 c8 -8 16 -12 24 -14z" fill="${c}"/><path d="M8 86 h84" stroke="#1E8FC8" stroke-width="6" stroke-linecap="round"/>`,
+  // foreign
+  tulip: c => `<path d="M50 86 V52" stroke="#2E7D32" stroke-width="5"/><path d="M50 70 c-10 -2 -18 -10 -18 -20 c8 4 14 10 18 20z" fill="#3E9B48"/><path d="M34 26 l8 10 l8 -14 l8 14 l8 -10 c2 20 -4 30 -16 30 s-18 -10 -16 -30z" fill="${c}"/>`,
+  pretzel: c => `<path d="M50 72 c-26 -6 -30 -40 -10 -42 c14 -2 18 18 10 32 c-8 -14 -4 -34 10 -32 c20 2 16 36 -10 42z M30 66 l40 -12 M70 66 l-40 -12" stroke="${c}" stroke-width="9" fill="none" stroke-linecap="round"/>`,
+  sunflower: c => `${[...Array(12)].map((_,i)=>{const a=i*30;return `<ellipse cx="50" cy="26" rx="7" ry="14" fill="${c}" transform="rotate(${a} 50 50)"/>`}).join('')}<circle cx="50" cy="50" r="15" fill="#6b4a2b"/>`,
+  apricot: c => `<circle cx="50" cy="56" r="26" fill="${c}"/><path d="M50 32 c-6 10 -6 36 0 48" stroke="#00000022" stroke-width="3" fill="none"/><path d="M52 30 c8 -10 20 -8 22 -2 c-8 4 -14 4 -22 2z" fill="#3E9B48"/>`,
+  tower2: c => `<path d="M50 14 l4 18 h-8z M44 32 h12 l6 26 h-24z M38 58 h24 l12 28 h-14 c-2 -10 -6 -14 -10 -14 s-8 4 -10 14 h-14z" fill="${c}"/>`,
+}
+const GE = [
+  ['თბილისი','balcony','#0F9488','#DDF4F1','ხის აივანი',1],
+  ['თბილისი','baths','#B5562B','#FBE9DF','აბანოების გუმბათები',1],
+  ['სამეგრელო','pepper','#D7263D','#FDE3E6','აჯიკის წიწაკა',1],
+  ['სამეგრელო','canyon','#1E8FC8','#E0F2FB','მარტვილის კანიონი',1],
+  ['კახეთი','grape','#7B2D8E','#F1E4F6','ყურძენი'],
+  ['კახეთი','qvevri','#B5562B','#FBE9DF','ქვევრი'],
+  ['იმერეთი','khacha','#E8A33B','#FFF1DC','ხაჭაპური'],
+  ['აჭარა','boat','#C98700','#FFF3D6','აჭარული ხაჭაპური'],
+  ['აჭარა','wave','#1E8FC8','#E0F2FB','ზღვა'],
+  ['გურია','mandarin','#F08A1C','#FFEEDB','მანდარინი'],
+  ['სვანეთი','tower','#6B6B6B','#ECECEC','სვანური კოშკი'],
+  ['რაჭა','wine','#8E1B3A','#F7E1E7','ხვანჭკარა, მთები'],
+  ['ქვემო ქართლი','sheep','#6b5a4a','#EFEAE4','ცხვარი'],
+  ['შიდა ქართლი','apple','#D7263D','#FDE3E6','ვაშლი'],
+  ['მცხეთა-მთიანეთი','kazbegi','#5E7FA8','#E3ECF6','ყაზბეგი, გერგეტი'],
+  ['სამცხე-ჯავახეთი','vardzia','#B08A60','#F5ECE1','ვარძია'],
+  ['სამცხე-ჯავახეთი','borjomi','#1F7A55','#DFF3E6','ბორჯომი'],
+  ['აფხაზეთი','palm','#1F9A4E','#DFF3E6','პალმა, ზღვა'],
+]
+const W = [
+  ['თურქეთი','tulip','#D7263D','#FDE3E6','ტიტა'],
+  ['გერმანია','pretzel','#A0652D','#F7E7DA','პრეცელი'],
+  ['უკრაინა','sunflower','#F2B705','#E3ECF6','მზესუმზირა'],
+  ['სომხეთი','apricot','#F08A1C','#FFEEDB','გარგარი'],
+  ['საფრანგეთი','tower2','#5E6B7A','#E3ECF6','ეიფელის კოშკი'],
+]
+const card = ([n,g,c,bg,d,isNew]) => `<div class="it"><div class="${isNew?'new':''}"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="${bg}"/>${S[g](c)}</svg></div>${n}<small>${d}</small></div>`
+document.getElementById('GE').innerHTML = GE.map(card).join('')
+document.getElementById('W').innerHTML = W.map(card).join('')
+</script>
